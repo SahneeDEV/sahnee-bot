@@ -1,0 +1,38 @@
+﻿{
+    "Logging": {
+        "LogLevel": {
+            "Default": "Debug",
+            "System": "Information",
+            "Microsoft": "Information"
+        }
+    },
+    "General": {
+        "Id": "",
+        "Permissions": 268856320,
+        "Token": "",
+        "CommandPrefix": "/",
+        "DatabasePath": "../sahnee-bot.db",
+        "CommandChannel": "bot-commands",
+        "DatabaseCleanup": "1.00:00:00"
+    },
+    "WarningBot": {
+        "WarningPrefix": "warning: ",
+        "WarningRoleCleanup": "0.05:00:00",
+        "DatabaseCollection": "warningbot",
+        "WarningHistoryCount": 10,
+        "WarningLeaderboardCount": 3,
+        "Admins": [
+            "Owner",
+            "Administrator",
+            "Admin",
+            "Server Admin",
+            "Ficker",
+            "Moderator",
+            "Mod",
+            "Mods",
+            "Staff",
+            "Community Manager"
+        ],
+        "PunishMessage": "Too stupid to use the bot \uD83D\uDD95"
+    }
+}
