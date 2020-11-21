@@ -43,9 +43,10 @@ namespace sahnee_bot.commands.CommandActions
                 Dictionary<ulong, uint> topWarnings = new Dictionary<ulong, uint>();
                 foreach (KeyValuePair<ulong, List<WarningBotSchema>> warningUser in guildWarnings)
                 {
-                    uint currentUserWarnings = (uint) (warningUser.Value.Count - warningUser.Value
-                        .FindAll(unwarnings => unwarnings.WarningType == WarningType.Unwarn).Count);
-                    topWarnings.Add(warningUser.Key,currentUserWarnings);
+                    uint currentUserUnwarnings = (uint) warningUser.Value.FindAll(unwarning => unwarning.WarningType == WarningType.Unwarn).Count();
+                    uint currentUserWarnings = (uint) warningUser.Value.FindAll(warning => warning.WarningType == WarningType.Warning).Count();
+                    uint currentUserStats = currentUserWarnings - currentUserUnwarnings;
+                    topWarnings.Add(warningUser.Key,currentUserStats);
                 }
                 //sort the dictionary
                 List<KeyValuePair<ulong, uint>> tempList = topWarnings.ToList();
