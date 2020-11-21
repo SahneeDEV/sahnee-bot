@@ -75,7 +75,7 @@ namespace sahnee_bot.commands.CommandActions
                 //create a new schema instance
                 WarningBotSchema warningBotSchema = new WarningBotSchema
                 {
-                    From = message.Author.Id, To = user.Id, Time = DateTime.Now, Reason = reason, WarningType = WarningType.Warning, _id = StaticDatabase.GetWarningCollectionId(), Number = userNewWarnings, GuildId = guild.Id
+                    From = message.Author.Id, To = user.Id, Time = DateTime.Now, Reason = reason, WarningType = WarningType.Unwarn, _id = StaticDatabase.GetWarningCollectionId(), Number = userNewWarnings, GuildId = guild.Id
                 };
                 //update the current warning number in the table
 

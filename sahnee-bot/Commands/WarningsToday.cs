@@ -23,13 +23,34 @@ namespace sahnee_bot.commands
         /// <returns></returns>
         [Command("warningstoday")]
         [RoleHandling(RoleTypes.WarningBotAdmin)]
-        [Summary("Shows all warnings for the current guild that have been issued today")]
+        [Summary("Shows all warnings for the current guild and a specific user that have been issued today")]
         public async Task WarningsTodayAsync([Summary("the user the warnings will be showed for")]IGuildUser user)
         {
             try
             {
                 await StaticLock.AquireWarningsTodayAsync();
                 await _warningsTodayAction.WarningsTodayAsync(user, Context.Guild, Context.Channel);
+            }
+            finally
+            {
+                StaticLock.UnlockCommandWarningsToday();
+            }
+        }
+
+        /// <summary>
+        /// Command warningstoday
+        /// shows all warnings for every user today
+        /// </summary>
+        /// <returns></returns>
+        [Command("warningstoday")]
+        [RoleHandling(RoleTypes.WarningBotAdmin)]
+        [Summary("Shows all warnings for the current guild that have been issued today")]
+        public async Task WarningsTodayAsync()
+        {
+            try
+            {
+                await StaticLock.AquireWarningsTodayAsync();
+                await _warningsTodayAction.WarningsTodayAsync(Context.Guild, Context.Channel);
             }
             finally
             {

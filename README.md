@@ -33,7 +33,7 @@ You're done, enjoy!
 * `/warnhistory @UserName all` - Prints all warnings for a specific user.
 * `/warnleaderboard` - Prints a leaderboard of the top warned people on your guild. The default amount can be set in your configuration.
 * `/warnleaderboard <Amount>` - Does the same as above but prints out a custom amount of people.
-* `/warningstoday @UserName` - Shows all warnings of the user that he got in the last 24 hours.
+* `/warningstoday <@UserName>` - Shows all warnings of the user that he got in the last 24 hours. Can be used without an username, will then show all warnings/unwarns for the last 24 hours
 * `/cleanuproles` - Will manually run the cleanup for not needed roles on your server.
 * `/migratedatabase` - Will migrate your database to the latest scheme. Will not do anything if scheme is already up-to-date.
 * `/userstats @UserName` - Will show you some Debug information about the given user
