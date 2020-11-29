@@ -24,10 +24,10 @@ Furthermore you can generate a neat looking leaderboard for your server. Not to 
 You're done, enjoy!
 
 ## 2. Commands
-* `/warn @UserName "Your reason here!"` - Issues a warning to the given user. The user will also be notified personally about their most evil transgression.
-* `/unwarn @UserName "Your reason here!"` - Revokes a warning from the given user. The user will also be notified personally.
+* `/warn @UserName "Your reason here! <optional http/s link>"` - Issues a warning to the given user. The user will also be notified personally about their most evil transgression.
+* `/unwarn @UserName "Your reason here! <optional http/s link>"` - Revokes a warning from the given user. The user will also be notified personally.
 * `/unwarn @UserName` - Revokes a warning from the given user. This allows for not giving a reason why the user has been unwarned. The user will also be notified personally.
-* `/warnall "Your reason here!"` - Issues a warning to all users and bots on your server.
+* `/warnall "Your reason here! <optional http/s link>"` - Issues a warning to all users and bots on your server.
 * `/warnhistory @UserName` - Shows the warning history for the given user. The default amount is `10`. It can be changes via the configuration file
 * `/warnhistory @UserName <Amount>` - Does the same as the default command but shows a custom amount of historical entries.
 * `/warnhistory @UserName all` - Prints all warnings for a specific user.
@@ -39,7 +39,9 @@ You're done, enjoy!
 * `/userstats @UserName` - Will show you some Debug information about the given user
 
  _Information_:
-Bots can be warned but will never receive any message of their warning like users would.
+- Bots can be warned but will never receive any message of their warning/unwarn like users would.
+- Links at the end of warn/unwarn/warnall commands will display the file behind that link.
+- Warn/Unwarn/Warnall can have images as attachments. Attachments will not be shown in the history
 
 ## 3. Permissions
 Permissions are handled by role names on your discord server.
@@ -97,25 +99,21 @@ __Currently these jobs are available:__
 
 | Job-Name | Description | Default execution time
 | -----| ----- | ------|
-| CleanupWarningRoles | This job will go through all of the roles on your server and delete unassigned `warning-roles`| Every day|
-| ClearDatabaseLog | This job will lock all commands while it's active. The database-log file will be written into the database file|
+| CleanupWarningRoles | This job will go through all of the roles on your server and delete unassigned `warning-roles`| Every 5 hours|
+| ClearDatabaseLog | This job will lock all commands while it's active. The database-log file will be written into the database file| Every day|
 
 
 ## 5. How to install on your own hardware
 
 ### 5.1 Download an run
 #### Linux:
-1. Compile for Linux
-2. Edit the configuration
-3. Get the bot working: Start your bot `./sahnee-bot`
+1. Get the bot working: Start your bot `./sahnee-bot`
     
  You are done! Enjoy your bot.
 
 #### Windows:
 
-1. Compile for Windows
-2. Edit the configuration
-3. start the __.exe__ file
+Not supported yet.
 
 ### 5.2. The configuration file
 
@@ -132,10 +130,11 @@ In case you get lost, this is the default config:
     },
     "General": {
         "Id": "<Your ID here>",
-        "Permissions": 8,
+        "Permissions": 268856320,
         "Token": "<Your token here>",
         "CommandPrefix": "/",
         "DatabasePath": "./sahnee-bot.db",
+        "ChangeLogPath": "../changelog.txt",
         "CommandChannel": "bot-commands",
         "DatabaseCleanup": "1.00:00:00"
     },
@@ -166,12 +165,13 @@ __Let's go through the settings__
 | Setting | Description |
 | --- | --- |
 | `General:Id` | The client ID of the bot. The client we are hosting publicly is `603990770667487243`, if you want to run your own bot insert your ID here.|
-| `General:Permission`| The permissions of this bot. By default the bot has permission `8` which makes it an administrator. (This is subject to change in a later version) |
+| `General:Permission`| The permissions of this bot. By default the bot has permission `268856320` which makes it capable of creating roles and adding/removing roles from users. |
 | `General:Token` | Your super secret bot token. [See how to generate one](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) [1] |
 | `General:CommandPrefix` | Defines the prefix for using any command. Can be any single character. By default it's set to `/`. |
 | `General:DatabasePath` | Defines the path/location of your database file. We're using LiteDB [2] This will also be the location of the database log file. |
+| `General:ChangeLogPath`| Defines the path of the changelog file. It's plain text. Not needed if you don't want to let your users know about changes or new commands. |
 | `General:CommandChannel` | Defines the channel where the bot will listen for commands. |
-| `General:DatabaseCleanup` | Job that will write the database-log file to the database file. |
+| `General:DatabaseCleanup` | Job that will write the database-log file to the database file. The format is a **TimeSpan**. `0(days).00(hours):00(minutes):00(seconds)`. Please notice the `.` between the _days_ and _hours_. |
 | `WarningBot:WarningPrefix` | Users will be given a role based on their warning count. If this value is e.g. set to `"warnings: `" the role of 4 warnings will be named "warnings: 4". |
 | `WarningBot:WarningRoleCleanup` | This is the cleanup job for your `warning-roles`. The format is a **TimeSpan**. `0(days).00(hours):00(minutes):00(seconds)`. Please notice the `.` between the _days_ and _hours_. |
 | `WarningBot:DatabaseCollection` | Name for the Collection(Table) in the database. Only change if you really need to. |

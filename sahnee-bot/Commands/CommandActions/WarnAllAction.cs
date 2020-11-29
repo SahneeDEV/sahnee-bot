@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
 using sahnee_bot.Database;
 using sahnee_bot.Database.Schema;
@@ -17,6 +16,7 @@ namespace sahnee_bot.commands.CommandActions
         private readonly RoleInformation _roleInformation = new RoleInformation();
         private readonly RoleUserInteraction _roleUserInteraction = new RoleUserInteraction();
         private readonly RoleCreation _roleCreation = new RoleCreation();
+        private readonly SendMessageWithAttachment _sendMessageWithAttachment = new SendMessageWithAttachment();
 
         public async Task WarnAllAsync(string reason, IGuild guild, ISocketMessageChannel channel, IUserMessage message)
         {
@@ -94,7 +94,33 @@ namespace sahnee_bot.commands.CommandActions
                     //Send the message to the user
                     try
                     {
-                        await user.SendMessageAsync($"👎 [{guild.Name}] You have been warned by <@{message.Author.Id}> in channel {channel.Name}. This is warning #{userNewWarnings}. (Reason: {reason})");
+                        //Check if an Image/Discord CDN Attachment/any url source was in the message, if so, print at the end
+                        if (reason != null && reason.Contains("https://"))
+                        {
+                            int reasonStart = reason.IndexOf("https://",StringComparison.Ordinal);
+                            string cdnContent = reason.Substring(reasonStart ,reason.Length - reasonStart);
+                            string reasonWithoutCdnContent = reason.Remove(reasonStart - 1);
+                            await user.SendMessageAsync($"<@{user.Id}> has been warned by <@{message.Author.Id}>in channel {channel.Name}. This is warning #{userNewWarnings}. (Reason: {reasonWithoutCdnContent})\n{cdnContent}");
+                        }
+                        else if (message.Attachments.Count > 0)
+                        {
+                            await _sendMessageWithAttachment.SendUserMessageWithAttachmentAsync(
+                                message.Attachments,
+                                channel,
+                                message,
+                                user,
+                                guild,
+                                message.Author.Id,
+                                userNewWarnings,
+                                reason,
+                                WarningType.Warning
+                            );
+                        }
+                        else
+                        {
+                            await user.SendMessageAsync($"👎 [{guild.Name}] You have been warned by <@{message.Author.Id}> in channel {channel.Name}. This is warning #{userNewWarnings}. (Reason: {reason})");
+                        }
+                        //await user.SendMessageAsync($"👎 [{guild.Name}] You have been warned by <@{message.Author.Id}> in channel {channel.Name}. This is warning #{userNewWarnings}. (Reason: {reason})");
                     }
                     catch (Exception e)
                     {
@@ -105,7 +131,32 @@ namespace sahnee_bot.commands.CommandActions
                 //Send the feedback message back to the channel
                 try
                 {
-                    await channel.SendMessageAsync($"<@{user.Id}> has been warned by <@{message.Author.Id}>. This is warning #{userNewWarnings}. (Reason: {reason})");
+                    //Check if an Image/Discord CDN Attachment/any url source was in the message, if so, print at the end
+                    if (reason != null && reason.Contains("https://"))
+                    {
+                        int reasonStart = reason.IndexOf("https://",StringComparison.Ordinal);
+                        string cdnContent = reason.Substring(reasonStart ,reason.Length - reasonStart);
+                        string reasonWithoutCdnContent = reason.Remove(reasonStart - 1);
+                        await channel.SendMessageAsync($"<@{user.Id}> has been warned by <@{message.Author.Id}>. This is warning #{userNewWarnings}. (Reason: {reasonWithoutCdnContent})\n{cdnContent}");
+                    }
+                    else if (message.Attachments.Count > 0)
+                    {
+                        await _sendMessageWithAttachment.SendChannelMessageWithAttachmentAsync(
+                            message.Attachments,
+                            channel,
+                            message,
+                            user,
+                            message.Author.Id,
+                            userNewWarnings,
+                            reason,
+                            WarningType.Warning
+                        );
+                    }
+                    else
+                    {
+                        await channel.SendMessageAsync($"<@{user.Id}> has been warned by <@{message.Author.Id}>. This is warning #{userNewWarnings}. (Reason: {reason})");
+                    }
+                    //await channel.SendMessageAsync($"<@{user.Id}> has been warned by <@{message.Author.Id}>. This is warning #{userNewWarnings}. (Reason: {reason})");
                 }
                 catch (Exception e)
                 {

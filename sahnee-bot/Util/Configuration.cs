@@ -31,6 +31,7 @@ namespace sahnee_bot.Util
             public string Token { get; set; }
             public char CommandPrefix { get; set; }
             public string DatabasePath { get; set; }
+            public string ChangeLogPath { get; set; }
             public string CommandChannel { get; set; }
             public TimeSpan DatabaseCleanup { get; set; }
         }

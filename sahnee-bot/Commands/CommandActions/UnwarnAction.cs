@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
@@ -17,6 +18,7 @@ namespace sahnee_bot.commands.CommandActions
         private readonly RoleInformation _roleInformation = new RoleInformation();
         private readonly RoleUserInteraction _roleUserInteraction = new RoleUserInteraction();
         private readonly RoleCreation _roleCreation = new RoleCreation();
+        private readonly SendMessageWithAttachment _sendMessageWithAttachment = new SendMessageWithAttachment();
 
         /// <summary>
         /// Executes the unwarning procedure
@@ -108,14 +110,40 @@ namespace sahnee_bot.commands.CommandActions
                 //Send the message to the user
                 try
                 {
-                    if (reason != "")
-                    { 
-                        await user.SendMessageAsync($"❤ [{guild.Name}] One of your warnings has been revoked by <@{message.Author.Id}> in channel {channel.Name}. Only #{userNewWarnings} warnings left!. (Reason: {reason})");
+                    //Check if an Image/Discord CDN Attachment/any url source was in the message, if so, print at the end
+                    if (reason != null && reason.Contains("https://"))
+                    {
+                        int reasonStart = reason.IndexOf("https://",StringComparison.Ordinal);
+                        string cdnContent = reason.Substring(reasonStart ,reason.Length - reasonStart);
+                        string reasonWithoutCdnContent = reason.Remove(reasonStart - 1);
+                        await user.SendMessageAsync($"❤ [{guild.Name}] One of your warnings has been revoked by <@{message.Author.Id}> in channel {channel.Name}. Only #{userNewWarnings} warnings left!. (Reason: {reasonWithoutCdnContent})\n{cdnContent}");
+                    }
+                    else if (message.Attachments.Count > 0)
+                    {
+                        await _sendMessageWithAttachment.SendUserMessageWithAttachmentAsync(
+                            message.Attachments,
+                            channel,
+                            message,
+                            user,
+                            guild,
+                            message.Author.Id,
+                            userNewWarnings,
+                            reason,
+                            WarningType.Unwarn
+                            );
                     }
                     else
                     {
-                        await user.SendMessageAsync($"❤ [{guild.Name}] One of your warnings has been revoked by <@{message.Author.Id}> in channel {channel.Name}. Only #{userNewWarnings} warnings left!.");
+                        if (reason != "")
+                        {
+                            await user.SendMessageAsync($"❤ [{guild.Name}] One of your warnings has been revoked by <@{message.Author.Id}> in channel {channel.Name}. Only #{userNewWarnings} warnings left!. (Reason: {reason})");
+                        }
+                        else
+                        {
+                            await user.SendMessageAsync($"❤ [{guild.Name}] One of your warnings has been revoked by <@{message.Author.Id}> in channel {channel.Name}. Only #{userNewWarnings} warnings left!.");
+                        }
                     }
+                    
                 }
                 catch (Exception e)
                 {
@@ -126,6 +154,27 @@ namespace sahnee_bot.commands.CommandActions
             //Send the feedback message back to the channel
             try
             {
+                //Check if an Image/Discord CDN Attachment/any url source was in the message, if so, print at the end
+                if (reason != null && reason.Contains("https://"))
+                {
+                    int reasonStart = reason.IndexOf("https://",StringComparison.Ordinal);
+                    string cdnContent = reason.Substring(reasonStart ,reason.Length - reasonStart);
+                    string reasonWithoutCdnContent = reason.Remove(reasonStart - 1);
+                    await channel.SendMessageAsync($"❤ <@{user.Id}> was unwarned by <@{message.Author.Id}>. Still #{userNewWarnings} warnings left. (Reason: {reasonWithoutCdnContent})\n{cdnContent}");
+                }
+                else if (message.Attachments.Count > 0)
+                {
+                    await _sendMessageWithAttachment.SendChannelMessageWithAttachmentAsync(
+                        message.Attachments,
+                        channel,
+                        message,
+                        user,
+                        message.Author.Id,
+                        userNewWarnings,
+                        reason,
+                        WarningType.Unwarn
+                    );
+                }
                 if (reason != "")
                 {
                     await channel.SendMessageAsync($"❤ <@{user.Id}> was unwarned by <@{message.Author.Id}>. Still #{userNewWarnings} warnings left. (Reason: {reason})");

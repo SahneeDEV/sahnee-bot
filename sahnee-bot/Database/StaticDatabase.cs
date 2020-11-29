@@ -20,8 +20,10 @@ namespace sahnee_bot.Database
         /// </summary>
         private static ILiteCollection<WarningBotSchema> _warningCollection;
         private static ILiteCollection<WarningBotCurrentStatesSchema> _warningCurrentStateCollection;
+        private static ILiteCollection<WarningBotChangeLogSchema> _warningChangeLogCollection;
         private static ulong _warningCollectionId;
         private static ulong _warningCollectionCurrentStateId;
+        private static ulong _warningCollectionChangeLogId;
 
         /// <summary>
         /// Loads a instance of the database
@@ -35,8 +37,11 @@ namespace sahnee_bot.Database
             _warningCollection = _dataBase.GetCollection<WarningBotSchema>(StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection);
             _warningCollectionId = (ulong)_warningCollection.Query().Count() + 1;
             //warning state table
-            _warningCurrentStateCollection = _dataBase.GetCollection<WarningBotCurrentStatesSchema>(StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection+ "_state");
+            _warningCurrentStateCollection = _dataBase.GetCollection<WarningBotCurrentStatesSchema>(StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_state");
             _warningCollectionCurrentStateId = (ulong) _warningCurrentStateCollection.Query().Count() + 1;
+            //change log state table
+            _warningChangeLogCollection = _dataBase.GetCollection<WarningBotChangeLogSchema>(StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_changelog");
+            _warningCollectionChangeLogId = (ulong) _warningChangeLogCollection.Query().Count() + 1;
         }
 
         /// <summary>
@@ -68,6 +73,16 @@ namespace sahnee_bot.Database
         }
 
         /// <summary>
+        /// Returns the warningchangelog collection
+        /// In here, the guilds who already received or who didnt receive the changelog message are stored
+        /// </summary>
+        /// <returns></returns>
+        public static ILiteCollection<WarningBotChangeLogSchema> WarningChangeLogCollection()
+        {
+            return _warningChangeLogCollection;
+        }
+
+        /// <summary>
         /// Increments the id by one
         /// </summary>
         public static void UpdateWarningCollectionId()
@@ -81,6 +96,14 @@ namespace sahnee_bot.Database
         public static void UpdateWarningCurrentStateId()
         {
             _warningCollectionCurrentStateId = _warningCollectionCurrentStateId + 1;
+        }
+
+        /// <summary>
+        /// Increments the id by one
+        /// </summary>
+        public static void UpdateWarningChangeLogId()
+        {
+            _warningCollectionChangeLogId = _warningCollectionChangeLogId + 1;
         }
 
         /// <summary>
@@ -99,6 +122,15 @@ namespace sahnee_bot.Database
         public static ulong GetWarningCurrentStateId()
         {
             return _warningCollectionCurrentStateId;
+        }
+
+        /// <summary>
+        /// Returns the current id
+        /// </summary>
+        /// <returns></returns>
+        public static ulong GetWarningChangeLogId()
+        {
+            return _warningCollectionChangeLogId;
         }
 
         /// <summary>

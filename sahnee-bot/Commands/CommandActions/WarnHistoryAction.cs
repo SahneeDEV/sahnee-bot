@@ -61,10 +61,12 @@ namespace sahnee_bot.commands.CommandActions
                 {
                     await this.ExecuteWarnHistoryAsync(user, null, guild,SpecialCommands.All, channel, message);
                 }
-
-                await channel.SendMessageAsync(
-                    $"😕 I dont know what you want to tell me with this parameter: {specialCommand}.");
-                return;
+                else
+                {
+                    await channel.SendMessageAsync(
+                        $"😕 I dont know what you want to tell me with this parameter: {specialCommand}.");
+                    return;
+                }
             }
             catch (Exception e)
             {
