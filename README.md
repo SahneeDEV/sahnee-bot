@@ -109,11 +109,26 @@ You don't need to use this external API module. You can just leave anything rela
 ## 6. How to install on your own hardware
 
 ### 6.1 Download an run
+
 #### Linux:
-1. Clone the repo
-2. Build the project
-3. Make sure your files are located as configured
-4. Get the bot working: Start your bot `./sahnee-bot`
+
+1. Clone the repo:
+   ```
+   git clone https://github.com/Sahnee-DE/sahnee-bot.git
+   cd sahnee-bot
+   ```
+3. Build the project
+   ```
+   dotnet publish -c Release -r linux-x64 --self-contained true -o ./build
+   ```
+   Make sure to replace `linux-x64` with whatever OS & processor architecture you are using.
+5. Create a `config.json` file in your `build` directory. You can find a template for it [here](https://github.com/Sahnee-DE/sahnee-bot/blob/master/sahnee-bot/config.json).
+   Make sure to insert your bot `Id` and `Token`. You must also change the value of `ChangeLogPath` to `"./changelog.txt"` (remove one dot)
+7. To start your bot run the `sahnee-bot` command in the `build` directory:
+   ```
+   cd build
+   ./sahnee-bot
+   ```
     
  You are done! Enjoy your bot.
 
