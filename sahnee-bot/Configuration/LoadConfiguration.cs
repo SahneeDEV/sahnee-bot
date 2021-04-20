@@ -2,7 +2,7 @@
 using System.IO;
 using Newtonsoft.Json;
 
-namespace sahnee_bot.Util
+namespace sahnee_bot.Configuration
 {
     public class LoadConfiguration
     {
@@ -49,7 +49,7 @@ namespace sahnee_bot.Util
             //read the file
             string fileContent = File.ReadAllText(_configurationPath);
             //Deserialize the content into the JsonObject
-            Configuration jsonObject = JsonConvert.DeserializeObject<Configuration>(fileContent);
+            sahnee_bot.Configuration.Configuration jsonObject = JsonConvert.DeserializeObject<sahnee_bot.Configuration.Configuration>(fileContent);
             _configurationLoaded = true;
             return jsonObject;
         }
@@ -83,7 +83,7 @@ namespace sahnee_bot.Util
             //read the file
             string fileContent = File.ReadAllText(_configurationPath);
             //Deserialize the content into the JsonObject
-            _configuration = JsonConvert.DeserializeObject<Configuration>(fileContent);
+            _configuration = JsonConvert.DeserializeObject<sahnee_bot.Configuration.Configuration>(fileContent);
             _configurationLoaded = true;
         }
     }

@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using sahnee_bot.Configuration;
 using sahnee_bot.Database;
 using sahnee_bot.Database.Schema;
+using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
 namespace sahnee_bot.commands.CommandActions
@@ -15,9 +15,9 @@ namespace sahnee_bot.commands.CommandActions
     public class WarnHistoryAction
     {
         //Variables
-        private readonly Logging _logging = new Logging();
+        private readonly Logger _logger = new Logger();
         private readonly string[] _allSpecialCommands = new string[1] {"all"};
-        
+
         /// <summary>
         /// Get the warn history of a specific user with an optional specific amount of items
         /// </summary>
@@ -37,7 +37,7 @@ namespace sahnee_bot.commands.CommandActions
             catch (Exception e)
             {
                 await channel.SendMessageAsync($"😭 Something went wrong {e.Message}");
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "WarnHistoryAction:WarnHistoryAsync");
                 return;
             }
         }
@@ -64,17 +64,19 @@ namespace sahnee_bot.commands.CommandActions
                 else
                 {
                     await channel.SendMessageAsync(
-                        $"😕 I dont know what you want to tell me with this parameter: {specialCommand}.");
-                    return;
+                                        $"😕 I dont know what you want to tell me with this parameter: {specialCommand}.");
+                                    return;
                 }
             }
             catch (Exception e)
             {
                 await channel.SendMessageAsync($"😭 Something went wrong {e.Message}");
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "WarnHistoryAction:WarnHistoryAsync");
                 return;
             }
         }
+        
+        
 
         /// <summary>
         /// Handles the history generation itself
@@ -91,24 +93,46 @@ namespace sahnee_bot.commands.CommandActions
             amount ??= StaticConfiguration.GetConfiguration().WarningBot.WarningHistoryCount;
             //get the given amount of warnings/unwarnings from the history database table
             List<WarningBotSchema> userWarningBotSchemata = new List<WarningBotSchema>();
-            if (specialCommand == SpecialCommands.Custom)
+            //check if the user is null
+            if (user != null)
+            {
+                if (specialCommand == SpecialCommands.Custom)
+                {
+                    userWarningBotSchemata = StaticDatabase.WarningCollection().Query()
+                        .Where(to => to.To == user.Id && to.GuildId == guild.Id)
+                        .OrderByDescending(date => date.Time)
+                        .Limit((int)amount)
+                        .ToList();
+                }
+                if (specialCommand == SpecialCommands.All)
+                {
+                    userWarningBotSchemata = StaticDatabase.WarningCollection().Query()
+                        .Where(to => to.To == user.Id && to.GuildId == guild.Id)
+                        .OrderByDescending(date => date.Time)
+                        .ToList();
+                }
+            }
+            else
             {
                 userWarningBotSchemata = StaticDatabase.WarningCollection().Query()
-                    .Where(to => to.To == user.Id && to.GuildId == guild.Id)
+                    .Where(to => to.GuildId == guild.Id)
                     .OrderByDescending(date => date.Time)
-                    .Limit((int)amount)
+                    .Limit((int) amount)
                     .ToList();
             }
-            if (specialCommand == SpecialCommands.All)
-            {
-                userWarningBotSchemata = StaticDatabase.WarningCollection().Query()
-                    .Where(to => to.To == user.Id && to.GuildId == guild.Id)
-                    .OrderByDescending(date => date.Time)
-                    .ToList();
-            }
+
             //generate the message
             List<string> messages = new List<string>();
-            string messageHeader = $"📚 This is the warning history for <@{user.Id}>: 📚\n";
+            string messageHeader = "";
+            if (user != null)
+            {
+                messageHeader = $"📚 This is the warning history for <@{user.Id}>: 📚\n";
+            }
+            else
+            {
+                messageHeader = $"📚 This is the warning history for everybody: 📚\n";
+            }
+             
             messages.Add(messageHeader);
             string tempMessageBuilder = "";
             string msg = "";
@@ -116,7 +140,9 @@ namespace sahnee_bot.commands.CommandActions
             {
                 if (userWarning.WarningType == WarningType.Warning)
                 {
-                    msg += $"👎 (Warning: {userWarning.Number}) Warned from <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n";
+                    msg += user != null ?
+                        $"👎 (Warning: {userWarning.Number}) Warned from <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n" :
+                        $"👎 (Warning: {userWarning.Number}) <@{userWarning.To}> has been warned by <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n";
                     //check if we exceed the length with this string
                     if (tempMessageBuilder.Length + msg.Length > StaticInternalConfiguration.CharacterLimitMessageOutbound)
                     {
@@ -129,7 +155,9 @@ namespace sahnee_bot.commands.CommandActions
                 }
                 if (userWarning.WarningType == WarningType.Unwarn)
                 {
-                    msg += $"❤ (Warning: {userWarning.Number}) Unwarned from <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n";
+                    msg += user != null ?
+                        $"❤ (Unwarn: {userWarning.Number}) Unwarned from <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n" :
+                        $"❤ (Unwarn: {userWarning.Number}) <@{userWarning.To}> has been unwarned by <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n";
                     //check if we exceed the length with this string
                     //check if we exceed the length with this string
                     if (tempMessageBuilder.Length + msg.Length > StaticInternalConfiguration.CharacterLimitMessageOutbound)
@@ -157,7 +185,7 @@ namespace sahnee_bot.commands.CommandActions
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error,"WarnHistoryAction:ExecuteWarnHistoryAsync");
             }
         }
         

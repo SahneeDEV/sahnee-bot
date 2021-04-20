@@ -1,9 +1,11 @@
 ﻿using System;
+using sahnee_bot.Logging;
 
-namespace sahnee_bot.Util
+namespace sahnee_bot.Configuration
 {
     public static class StaticConfiguration
     {
+        //Variables
         private static Configuration _configuration;
 
         /// <summary>
@@ -18,8 +20,7 @@ namespace sahnee_bot.Util
             }
             catch (Exception e)
             {
-                Logging logging = new Logging();
-                logging.LogToConsoleBase(e.Message);
+                Console.WriteLine(e);
             }
         }
 
@@ -45,8 +46,7 @@ namespace sahnee_bot.Util
             }
             catch (Exception e)
             {
-                Logging logging = new Logging();
-                logging.LogToConsoleBase(e.Message);
+                Console.WriteLine(e);
             }
         }
     }

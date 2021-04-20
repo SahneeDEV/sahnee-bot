@@ -2,6 +2,8 @@
 {
     public enum RoleTypes
     {
-        WarningBotAdmin
+        WarningBotAdmin,
+        WarningBotMod,
+        WarningBotNull
     }
 }

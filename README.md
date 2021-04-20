@@ -37,6 +37,10 @@ You're done, enjoy!
 * `/cleanuproles` - Will manually run the cleanup for not needed roles on your server.
 * `/migratedatabase` - Will migrate your database to the latest scheme. Will not do anything if scheme is already up-to-date.
 * `/userstats @UserName` - Will show you some Debug information about the given user
+* `/changelog <Amount>` - Will show you the latest changelog. With a given number will show you the last X changelogs
+* `/changeprefix <NewPrefix>` - Will change the prefix the bot is listening on in your guild. Can be any single character.
+* `/addmodrole @Role` - Will grant a role on your discord server the moderator permissions.
+* `/addadminrole @Role` - Will grant a role on your discord server the administrator permissions -> Be careful with this one
 
  _Information_:
 - Bots can be warned but will never receive any message of their warning/unwarn like users would.
@@ -44,25 +48,16 @@ You're done, enjoy!
 - Warn/Unwarn/Warnall can have images as attachments. Attachments will not be shown in the history
 
 ## 3. Permissions
+Since version 0.9.93 the following changes happens:
+* roles can now be individually set and removed. That means, you no longer rely on our given roles.
+* users with the `Serveradministrator` privilege will always have access to every command.
+
 Permissions are handled by role names on your discord server.
-
-### If hosted by sahnee.dev:
-
-You need to make sure that the default roles exist on your server.
-Otherwise you cannot control the bot.
-
-These are the default roles:
-
-| Module | Role-name |
-| ----| -----|
-| WarningBot | `Owner`, `Administrator`, `Admin`, `Server Admin`, `Moderator`, `Mod`, `Mods`, `Staff`, `Community Manager` |
 
 ### If self-hosted:
 
-The `config.json` provides a section called `Admins` for each "Module" of the bot to be accessed with separate roles.
-
-If you host this bot yourself, you can configure the roles by your needs.
-You can add any name into the configuration file `config.json` into the _`Admins`_ array. This array can contain **1+n** roles.
+Anything here can be changed to your needs.
+As of now, the `Admins` are not used by the bot anymore because they got obsolete. We use a new permission system. They will make their way out of the config in a future release.
 
 Example:
 ```json
@@ -102,12 +97,23 @@ __Currently these jobs are available:__
 | CleanupWarningRoles | This job will go through all of the roles on your server and delete unassigned `warning-roles`| Every 5 hours|
 | ClearDatabaseLog | This job will lock all commands while it's active. The database-log file will be written into the database file| Every day|
 
+## 5. External API's
 
-## 5. How to install on your own hardware
+Since version 0.9.93 we support an external API module.
 
-### 5.1 Download an run
+As of now, we currently provide only one API: discordbotlist.com
+In the future this list will expand.
+
+You don't need to use this external API module. You can just leave anything related to this empty in the config file.
+
+## 6. How to install on your own hardware
+
+### 6.1 Download an run
 #### Linux:
-1. Get the bot working: Start your bot `./sahnee-bot`
+1. Clone the repo
+2. Build the project
+3. Make sure your files are located as configured
+4. Get the bot working: Start your bot `./sahnee-bot`
     
  You are done! Enjoy your bot.
 
@@ -115,19 +121,12 @@ __Currently these jobs are available:__
 
 Not supported yet.
 
-### 5.2. The configuration file
+### 6.2. The configuration file
 
 In case you get lost, this is the default config:
 
 ```json
 {
-    "Logging": {
-        "LogLevel": {
-            "Default": "Debug",
-            "System": "Information",
-            "Microsoft": "Information"
-        }
-    },
     "General": {
         "Id": "<Your ID here>",
         "Permissions": 268856320,
@@ -136,7 +135,8 @@ In case you get lost, this is the default config:
         "DatabasePath": "./sahnee-bot.db",
         "ChangeLogPath": "../changelog.txt",
         "CommandChannel": "bot-commands",
-        "DatabaseCleanup": "1.00:00:00"
+        "DatabaseCleanup": "1.00:00:00",
+        "LogLevel": 1
     },
     "WarningBot": {
         "WarningPrefix": "warning: ",
@@ -144,19 +144,28 @@ In case you get lost, this is the default config:
         "DatabaseCollection": "warningbot",
         "WarningHistoryCount": 10,
         "WarningLeaderboardCount": 3,
-        "Admins": [
-            "Owner",
-            "Administrator",
-            "Admin",
-            "Server Admin",
-            "Moderator",
-            "Mod",
-            "Mods",
-            "Staff",
-            "Community Manager"
-        ],
+       "Admins": [
+          "Owner",
+          "Administrator",
+          "Admin",
+          "Server Admin"
+       ],
+       "Mods": [
+          "Moderator",
+          "Mod",
+          "Mods",
+          "Staff",
+          "Community Manager"
+       ],
         "PunishMessage": "Some insult text here"
-    }
+    },
+    "ExternalApi": {
+      "DiscordBotList": {
+         "ApiUrl": "",
+         "BotId": "",
+         "AuthToken": ""
+      }
+   }
 }
 ```
 
@@ -172,6 +181,7 @@ __Let's go through the settings__
 | `General:ChangeLogPath`| Defines the path of the changelog file. It's plain text. Not needed if you don't want to let your users know about changes or new commands. |
 | `General:CommandChannel` | Defines the channel where the bot will listen for commands. |
 | `General:DatabaseCleanup` | Job that will write the database-log file to the database file. The format is a **TimeSpan**. `0(days).00(hours):00(minutes):00(seconds)`. Please notice the `.` between the _days_ and _hours_. |
+| `General:LogLevel` | Defines the loglevel. Can go from 1 to 5 where with every increased number the output of logs will also increase.|
 | `WarningBot:WarningPrefix` | Users will be given a role based on their warning count. If this value is e.g. set to `"warnings: `" the role of 4 warnings will be named "warnings: 4". |
 | `WarningBot:WarningRoleCleanup` | This is the cleanup job for your `warning-roles`. The format is a **TimeSpan**. `0(days).00(hours):00(minutes):00(seconds)`. Please notice the `.` between the _days_ and _hours_. |
 | `WarningBot:DatabaseCollection` | Name for the Collection(Table) in the database. Only change if you really need to. |
@@ -179,7 +189,9 @@ __Let's go through the settings__
 | `WarningBot:WarningLeaderboardCount` | The default amount of people to show if the `/warnleaderboard` command is issued. |
 | `WarningBot:Admins` | In order to issue warnings a user must have at least one of these permissions. |
 | `WarningBot:PunishMessage`| The Reason of the warning a user gets when he uses the bot incorrectly, like wrong command, too much/many arguments and so on|
-
+| `ExternalAPI:DiscordBotList:ApiUrl`| This is the API Url that will be provided to you by the discordbotlist site.|
+| `ExternalAPI:DiscordBotList:BotId` | This is the BotId that will be provided to you by the discordbotlist site. |
+| `ExternalAPI:DiscordBotList:AuthToken` | This is the AuthToken that will be provided to you by the discordbotlist site. |
 [1] Source: https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
 
 [2] Source: http://www.litedb.org/

@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Threading.Tasks;
 using sahnee_bot.Database;
+using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
 namespace sahnee_bot.Jobs.JobTasks
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class ClearDatabaseLog
     {
         //variables
-        private static readonly Logging _logging = new Logging();
+        private static readonly Logger _logger = new Logger();
         
         public static async Task ClearDatabaseLogAsync()
         {
@@ -19,11 +21,11 @@ namespace sahnee_bot.Jobs.JobTasks
                 {
                     //write the log back to the file and restart the connection
                     StaticDatabase.WriteLogToDatabaseFile();
-                    await _logging.LogToConsoleBase("Cleared Database-Log");
+                    await _logger.Log("Cleared Database-Log", LogLevel.Info);
                 }
                 catch (Exception e)
                 {
-                    await _logging.LogToConsoleBase(e.Message);
+                    await _logger.Log(e.Message, LogLevel.Critical, "ClearDatabaseLog:ClearDatabaseLogAsync");
                 }
             }
             finally

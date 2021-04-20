@@ -6,7 +6,10 @@ using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using sahnee_bot.commands.CommandActions;
-using sahnee_bot.Util;
+using sahnee_bot.Database;
+using sahnee_bot.Database.Schema;
+using sahnee_bot.Logging;
+using sahnee_bot.Queue;
 
 namespace sahnee_bot.commands
 {
@@ -15,8 +18,8 @@ namespace sahnee_bot.commands
         //Variables
         private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
-        private readonly Configuration _configuration;
-        private readonly Logging _logging = new Logging();
+        private readonly Configuration.Configuration _configuration;
+        private readonly Logger _logger = new Logger();
         private readonly IServiceProvider _service;
         private readonly IServiceProvider _messageService = new ServiceContainer();
         private readonly WarnAction _warnAction = new WarnAction();
@@ -27,7 +30,8 @@ namespace sahnee_bot.commands
         /// <param name="client">the current client</param>
         /// <param name="commands">a new command service</param>
         /// <param name="configuration">the current configuration</param>
-        public CommandHandler(DiscordSocketClient client, CommandService commands, Configuration configuration, IServiceProvider service)
+        /// <param name="service">the serviceprovider</param>
+        public CommandHandler(DiscordSocketClient client, CommandService commands, Configuration.Configuration configuration, IServiceProvider service)
         {
             _client = client;
             _commands = commands;
@@ -44,7 +48,26 @@ namespace sahnee_bot.commands
             //Grabs the MessageReceived Event and executes it's own function
             _client.MessageReceived += HandleCommandAsync;
             await _commands.AddModulesAsync(assembly: Assembly.GetEntryAssembly(), services: _service);
-            await _logging.LogToConsoleBase("CommandHandler successfully initialized");
+            await _logger.Log("CommandHandler successfully initialized. Ready for Commands.", LogLevel.Info);
+            _commands.CommandExecuted += OnCommandExecutedAsync;
+        }
+
+        /// <summary>
+        /// Returns a user feeback on command execution
+        /// </summary>
+        /// <param name="command"></param>
+        /// <param name="context"></param>
+        /// <param name="result"></param>
+        /// <returns></returns>
+        private async Task OnCommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        {
+            //give the user feedback, what went wrong, if something went wrong
+            if (!string.IsNullOrEmpty(result.ErrorReason))
+            {
+                await context.Channel.SendMessageAsync("🤔 " + result.ErrorReason);
+                await _logger.Log($"On guild {context.Guild.Id} the following command error occured: {result.ErrorReason}",
+                    LogLevel.Error);
+            }
         }
 
         /// <summary>
@@ -61,30 +84,40 @@ namespace sahnee_bot.commands
             }
             //Prevent from executing a system message or a bot message
             SocketUserMessage userMessage = message as SocketUserMessage;
+            SocketCommandContext context = new SocketCommandContext(_client, userMessage);
             if (userMessage == null || userMessage.Author.IsBot) return;
             //check if the executed command is one that starts with the prefix
             int argPos = 0;
-            if (!(userMessage.HasCharPrefix(_configuration.General.CommandPrefix, ref argPos))) return;
-            SocketCommandContext context = new SocketCommandContext(_client, userMessage);
-            IResult result = await _commands.ExecuteAsync(
-                context: context,
-                argPos: argPos,
-                services: _messageService);
-            //punish the user if he made a mistake and messed up a command
-            if (!result.IsSuccess)
+            //check for the prefix, also if there is a custom prefix
+            WarningBotPrefixSchema guildPrefix = null;
+            try
             {
-                try
+                guildPrefix = StaticDatabase.WarningPrefixCollection().Query()
+                    .Where(g => g.GuildId == context.Guild.Id)
+                    .Single();
+            }
+            catch (Exception e)
+            {
+                if (e.GetType() == typeof(System.InvalidOperationException))
                 {
-                    await StaticLock.AquireWarningAsync();
-                    await this._warnAction.WarnAsync(message.Author as IGuildUser,
-                        StaticConfiguration.GetConfiguration().WarningBot.PunishMessage, context.Guild, context.Channel, context.Message, StaticBot.GetBot().CurrentUser.Id);
-                    await context.Channel.SendMessageAsync("Thats why it didn't work: " + result.ErrorReason);
+                    //ignore, because no custom prefix has been set
                 }
-                finally
+                else
                 {
-                    StaticLock.UnlockCommandWarning();
+                    await _logger.Log(e.Message, LogLevel.Error, "CommandHandler:HandleCommandAsync");
                 }
             }
+
+            if (!(userMessage.HasCharPrefix(
+                guildPrefix != null ? guildPrefix.CustomPrefix : _configuration.General.CommandPrefix, ref argPos))) return;
+            
+            //check if a queue exists if not create a new one
+            MultiThreadQueue queue = QueueFactory.GetQueueManager().CheckIfQueueForGuildExistsOrCreate(context.Guild.Id);
+            //enqueue the message
+            queue.Enqueue(new BasicQueueMessage() {context = context
+                , argPos = argPos, serviceProvider = _service
+                ,commands = _commands
+            });
         }
     }
 }

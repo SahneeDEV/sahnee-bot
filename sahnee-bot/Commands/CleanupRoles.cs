@@ -1,9 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Discord.Commands;
 using sahnee_bot.commands.CommandActions;
-using sahnee_bot.Jobs.JobTasks;
 using sahnee_bot.RoleSystem;
-using sahnee_bot.Util;
 
 namespace sahnee_bot.commands
 {
@@ -20,19 +18,11 @@ namespace sahnee_bot.commands
         /// </summary>
         /// <returns></returns>
         [Command("cleanuproles")]
-        [RoleHandling(RoleTypes.WarningBotAdmin)]
+        [RoleHandling(RoleTypes.WarningBotMod)]
         [Summary("Manually triggers the role warning cleanup script")]
         public async Task CleanupRolesAsync()
         {
-            try
-            {
-                await StaticLock.AquireWarningAsync();
-                await this._cleanupWarningRolesAction.CleanupWarningRoles(Context);
-            }
-            finally
-            {
-                StaticLock.UnlockCommandWarning();
-            }
+            await this._cleanupWarningRolesAction.CleanupWarningRolesAsync(Context);
         }
         
         #endregion

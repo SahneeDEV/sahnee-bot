@@ -1,13 +1,13 @@
 ﻿using System;
-using Discord.Commands;
 using Discord.WebSocket;
+using sahnee_bot.Logging;
 
 namespace sahnee_bot.Util
 {
     public class UserNotDefinedException : Exception
     {
         //Variables
-        private readonly Logging _logging = new Logging();
+        private readonly Logger _logger = new Logger();
         
         public UserNotDefinedException()
         {
@@ -18,7 +18,7 @@ namespace sahnee_bot.Util
         {
             //Log to the console and write to the channel
             channel.SendMessageAsync("An Error Occured: " + message);
-            _logging.LogToConsoleBase("An Error Occured: " + message);
+            _logger.Log("An Error Occured: " + message, LogLevel.Error, "UserNotDefinedException:UserNotDefinedException");
         }
     }
 }

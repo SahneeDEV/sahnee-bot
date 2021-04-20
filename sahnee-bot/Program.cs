@@ -4,10 +4,17 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
+using sahnee_bot.Activity;
 using sahnee_bot.commands;
+using sahnee_bot.Configuration;
 using sahnee_bot.Database;
 using sahnee_bot.Jobs;
 using sahnee_bot.Jobs.JobTasks;
+using sahnee_bot.Logging;
+using sahnee_bot.OtherAPI.DiscordBotList;
+using sahnee_bot.OtherAPI;
+using sahnee_bot.Queue;
+using sahnee_bot.Startup;
 using sahnee_bot.Util;
 
 
@@ -19,7 +26,6 @@ namespace sahnee_bot
 
         static void Main(string[] args)
         {
-            Console.WriteLine("Loading Sahnee-Bot v0.9");
             new Program().MainTask().GetAwaiter().GetResult();
         }
 
@@ -30,34 +36,47 @@ namespace sahnee_bot
         public async Task MainTask()
         {
             //Initialize the necessary classes
+            Logger logger = new Logger();
             DiscordSocketClient bot = new DiscordSocketClient();
-            Logging logging = new Logging();
             LoadConfiguration loadConfiguration = new LoadConfiguration(true);
-            Configuration configuration = loadConfiguration.GetConfiguration();
+            Configuration.Configuration configuration = loadConfiguration.GetConfiguration();
+            Configuration.StaticConfiguration.GetConfiguration();
+            
             CommandServiceConfig commandServiceConfig = new CommandServiceConfig();
             commandServiceConfig.DefaultRunMode = RunMode.Async;
             CommandHandler commandHandler = new CommandHandler(bot, new CommandService(commandServiceConfig), configuration, new ServiceContainer());
-            StaticConfiguration.GetConfiguration();
             JobHandler jobHandler = new JobHandler();
             DiscordSocketConfig config = new DiscordSocketConfig {AlwaysDownloadUsers = true};
             StaticBot.SetBot(bot);
+            
+            //Create a new QueueManager for the current instance
+            QueueManager queueManager = QueueFactory.GetQueueManager();
 
-            //Add Eventhandlers
-            bot.Log += logging.LogToConsole;
-            await commandHandler.InstallCommandsAsync();
+            await logger.Log($"Loading Sahnee-Bot {StaticBot.GetVersion()}", LogLevel.Info);
             
             //load the database
             StaticDatabase.LoadDatabase();
-
+            
+            //Add Eventhandlers
+            bot.Log += logger.Log;
+            bot.JoinedGuild += BroadcastLatestChangeLog.AddNewlyJoinedGuild;
+            bot.JoinedGuild += StartupTutorial.StartupTutorialAsync;
+            bot.JoinedGuild += CreateBotCommandsChannel.CreateBotCommandsChannelAsync;
+            bot.JoinedGuild += BotActivity.ChangeBotActivity;
+            bot.JoinedGuild += SendApiFeedback.SendApiFeedbackAsync;
+            bot.LeftGuild += BotActivity.ChangeBotActivity;
+            bot.LeftGuild += SendApiFeedback.SendApiFeedbackAsync;
+            await commandHandler.InstallCommandsAsync();
+            
             //start the bot
             await bot.LoginAsync(TokenType.Bot, configuration.General.Token);
             if (bot.LoginState != LoginState.LoggedIn)
             {
-                await logging.LogToConsoleBase("Could not login bot!");
+                await logger.Log("Could not login bot!", LogLevel.Critical);
                 return;
             }
             await bot.StartAsync();
-            await logging.LogToConsoleBase("Bot is logged in and started.");
+            await logger.Log("Bot is logged in and started.", LogLevel.Info);
             
             //Jobs
             //WarningRolesCleanup job
@@ -70,6 +89,17 @@ namespace sahnee_bot
             {
                 await ClearDatabaseLog.ClearDatabaseLogAsync();
             });
+            
+            //Changelog Announce procedure
+            await BroadcastLatestChangeLog.BroadcastLatestChangeLogAsync(bot);
+            //set the activity
+            await BotActivity.ChangeBotActivity();
+            //migrate roles if necessary
+            await UpdateRoleSystem.UpdateRoleSystemAsync(bot.Guilds);
+
+            //Add all available APIs
+            SendApiFeedback.AddAvailableApi(new DiscordBotList());
+            await SendApiFeedback.SendApiFeedbackAsync(null);
 
             // Block this task until the program is closed. <--- From the Discord.Net Guide
             await Task.Delay(-1);

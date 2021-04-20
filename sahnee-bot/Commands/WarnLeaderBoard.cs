@@ -1,6 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord.Commands;
 using sahnee_bot.commands.CommandActions;
+using sahnee_bot.Logging;
 using sahnee_bot.RoleSystem;
 using sahnee_bot.Util;
 
@@ -9,8 +11,8 @@ namespace sahnee_bot.commands
     public class WarnLeaderBoard : ModuleBase<SocketCommandContext>
     {
         //Variables
-        private readonly Logging _logging = new Logging();
         private readonly WarnLeaderBoardAction _warnLeaderBoardAction = new WarnLeaderBoardAction();
+        private readonly Logger _logger = new Logger();
 
         #region Commands
 
@@ -20,18 +22,17 @@ namespace sahnee_bot.commands
          /// </summary>
          /// <returns></returns>
          [Command("warnleaderboard")]
-         [RoleHandling(RoleTypes.WarningBotAdmin)]
+         [RoleHandling(RoleTypes.WarningBotMod)]
          [Summary("Returns a fancy leaderboard of the users with the highest warnings")]
          public async Task LeaderBoardAsync()
          {
              try
              {
-                 await StaticLock.AquireWarningAsync();
                  await this._warnLeaderBoardAction.ExecuteWarnLeaderBoardAsync(null, Context);
              }
-             finally
+             catch (Exception e)
              {
-                 StaticLock.UnlockCommandWarning();
+                 await _logger.Log(e.Message, LogLevel.Error);
              }
          }
  
@@ -42,18 +43,17 @@ namespace sahnee_bot.commands
          /// <param name="amount">a custom amount</param>
          /// <returns></returns>
          [Command("warnleaderboard")]
-         [RoleHandling(RoleTypes.WarningBotAdmin)]
+         [RoleHandling(RoleTypes.WarningBotMod)]
          [Summary("Returns a fancy leaderboard of the users with the highest warnings with a custom amount")]
          public async Task LeaderBoardAsync([Summary("The custom amount of users to print in the history")]uint amount)
          {
              try
              {
-                 await StaticLock.AquireWarningAsync();
                  await this._warnLeaderBoardAction.ExecuteWarnLeaderBoardAsync(amount, Context);
              }
-             finally
+             catch (Exception e)
              {
-                 StaticLock.UnlockCommandWarning();
+                 await _logger.Log(e.Message, LogLevel.Error);
              }
          }
 

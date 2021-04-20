@@ -7,6 +7,7 @@ using Discord;
 using Discord.WebSocket;
 using sahnee_bot.Database;
 using sahnee_bot.Database.Schema;
+using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
 namespace sahnee_bot.commands.CommandActions
@@ -14,7 +15,7 @@ namespace sahnee_bot.commands.CommandActions
     public class WarningsTodayAction
     {
         //Variables
-        private readonly Logging _logging = new Logging();
+        private readonly Logger _logger = new Logger();
         
         /// <summary>
         /// Executes the information gathering process and then starts the message creation and message delivery process
@@ -61,7 +62,7 @@ namespace sahnee_bot.commands.CommandActions
             //generate the message
             List<string> messages = new List<string>();
             
-            string messageHeader = user != null ? $"📚 This is the warning history for <@{user.Id}> 📚 for this date: {DateTime.Now:dd.MM.yyy}\n" : $"📚 This is the warning history for all users for this date: {DateTime.Now:dd.MM.yyy}\n";
+            string messageHeader = user != null ? $"📚 This is the warning/unwarning history for <@{user.Id}> 📚 for this date: {DateTime.Now:dd.MM.yyy}\n" : $"📚 This is the warning history for all users for this date: {DateTime.Now:dd.MM.yyy}\n";
             messages.Add(messageHeader);
             string tempMessageBuilder = "";
             string msg = "";
@@ -119,7 +120,7 @@ namespace sahnee_bot.commands.CommandActions
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "WarningsTodayAction:CreateMessagesAndSendAsync");
             }
         }
     }

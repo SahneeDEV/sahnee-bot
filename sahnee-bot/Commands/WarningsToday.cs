@@ -1,8 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using sahnee_bot.commands.CommandActions;
+using sahnee_bot.Logging;
 using sahnee_bot.RoleSystem;
 using sahnee_bot.Util;
 
@@ -12,6 +13,7 @@ namespace sahnee_bot.commands
     {
         //Variables
         private readonly WarningsTodayAction _warningsTodayAction = new WarningsTodayAction();
+        private readonly Logger _logger = new Logger();
 
         #region Commands
 
@@ -22,18 +24,17 @@ namespace sahnee_bot.commands
         /// <param name="user">the user who's warnings will be printed out</param>
         /// <returns></returns>
         [Command("warningstoday")]
-        [RoleHandling(RoleTypes.WarningBotAdmin)]
+        [RoleHandling(RoleTypes.WarningBotMod)]
         [Summary("Shows all warnings for the current guild and a specific user that have been issued today")]
         public async Task WarningsTodayAsync([Summary("the user the warnings will be showed for")]IGuildUser user)
         {
             try
             {
-                await StaticLock.AquireWarningsTodayAsync();
                 await _warningsTodayAction.WarningsTodayAsync(user, Context.Guild, Context.Channel);
             }
-            finally
+            catch (Exception e)
             {
-                StaticLock.UnlockCommandWarningsToday();
+                await _logger.Log(e.Message, LogLevel.Error);
             }
         }
 
@@ -43,18 +44,17 @@ namespace sahnee_bot.commands
         /// </summary>
         /// <returns></returns>
         [Command("warningstoday")]
-        [RoleHandling(RoleTypes.WarningBotAdmin)]
+        [RoleHandling(RoleTypes.WarningBotMod)]
         [Summary("Shows all warnings for the current guild that have been issued today")]
         public async Task WarningsTodayAsync()
         {
             try
             {
-                await StaticLock.AquireWarningsTodayAsync();
                 await _warningsTodayAction.WarningsTodayAsync(Context.Guild, Context.Channel);
             }
-            finally
+            catch (Exception e)
             {
-                StaticLock.UnlockCommandWarningsToday();
+                await _logger.Log(e.Message, LogLevel.Error);
             }
         }
 

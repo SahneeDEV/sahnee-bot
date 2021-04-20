@@ -5,8 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using sahnee_bot.Configuration;
 using sahnee_bot.Database;
 using sahnee_bot.Database.Schema;
+using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
 namespace sahnee_bot.commands.CommandActions
@@ -14,7 +16,7 @@ namespace sahnee_bot.commands.CommandActions
     public class WarnLeaderBoardAction
     {
         //Variables
-        private readonly Logging _logging = new Logging();
+        private readonly Logger _logger = new Logger();
         
         /// <summary>
         /// Executes the leaderboard message creating
@@ -99,7 +101,7 @@ namespace sahnee_bot.commands.CommandActions
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error);
             }
             
             //send the message back to the channel
@@ -113,7 +115,7 @@ namespace sahnee_bot.commands.CommandActions
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "WarnLeaderBoardAction:ExecuteWarnLeaderBoardAsync");
             }
         }
     }

@@ -1,11 +1,8 @@
-﻿
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System;
 using LiteDB;
+using sahnee_bot.Configuration;
 using sahnee_bot.Database.Schema;
-using sahnee_bot.Util;
+using sahnee_bot.Logging;
 
 namespace sahnee_bot.Database
 {
@@ -13,7 +10,7 @@ namespace sahnee_bot.Database
     {
         //Variables
         private static LiteDatabase _dataBase;
-        private static readonly Logging _logging = new Logging();
+        private static readonly Logger _logger = new Logger();
 
         /// <summary>
         /// Collections
@@ -21,9 +18,8 @@ namespace sahnee_bot.Database
         private static ILiteCollection<WarningBotSchema> _warningCollection;
         private static ILiteCollection<WarningBotCurrentStatesSchema> _warningCurrentStateCollection;
         private static ILiteCollection<WarningBotChangeLogSchema> _warningChangeLogCollection;
-        private static ulong _warningCollectionId;
-        private static ulong _warningCollectionCurrentStateId;
-        private static ulong _warningCollectionChangeLogId;
+        private static ILiteCollection<WarningBotPrefixSchema> _warningPrefixCollection;
+        private static ILiteCollection<WarningBotRolesSchema> _warningRolesCollection;
 
         /// <summary>
         /// Loads a instance of the database
@@ -34,14 +30,25 @@ namespace sahnee_bot.Database
             _dataBase = new LiteDatabase(StaticConfiguration.GetConfiguration().General.DatabasePath);
             //get or create all necessary collections
             //warning table
-            _warningCollection = _dataBase.GetCollection<WarningBotSchema>(StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection);
-            _warningCollectionId = (ulong)_warningCollection.Query().Count() + 1;
+            _warningCollection = 
+                _dataBase.GetCollection<WarningBotSchema>(
+                    StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection);
             //warning state table
-            _warningCurrentStateCollection = _dataBase.GetCollection<WarningBotCurrentStatesSchema>(StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_state");
-            _warningCollectionCurrentStateId = (ulong) _warningCurrentStateCollection.Query().Count() + 1;
+            _warningCurrentStateCollection = 
+                _dataBase.GetCollection<WarningBotCurrentStatesSchema>(
+                    StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_state");
             //change log state table
-            _warningChangeLogCollection = _dataBase.GetCollection<WarningBotChangeLogSchema>(StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_changelog");
-            _warningCollectionChangeLogId = (ulong) _warningChangeLogCollection.Query().Count() + 1;
+            _warningChangeLogCollection = 
+                _dataBase.GetCollection<WarningBotChangeLogSchema>(
+                    StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_changelog");
+            //warning prefix table
+            _warningPrefixCollection = 
+                _dataBase.GetCollection<WarningBotPrefixSchema>(
+                    StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_prefix");
+            //warning roles table
+            _warningRolesCollection =
+                _dataBase.GetCollection<WarningBotRolesSchema>(
+                    StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_roles");
         }
 
         /// <summary>
@@ -83,56 +90,25 @@ namespace sahnee_bot.Database
         }
 
         /// <summary>
-        /// Increments the id by one
-        /// </summary>
-        public static void UpdateWarningCollectionId()
-        {
-            _warningCollectionId = _warningCollectionId + 1;
-        }
-
-        /// <summary>
-        /// Increments the id by one
-        /// </summary>
-        public static void UpdateWarningCurrentStateId()
-        {
-            _warningCollectionCurrentStateId = _warningCollectionCurrentStateId + 1;
-        }
-
-        /// <summary>
-        /// Increments the id by one
-        /// </summary>
-        public static void UpdateWarningChangeLogId()
-        {
-            _warningCollectionChangeLogId = _warningCollectionChangeLogId + 1;
-        }
-
-        /// <summary>
-        /// Returns the current id
+        /// Returns the warningprefix collection
+        /// In here, the custom prefix for every guild is saved
         /// </summary>
         /// <returns></returns>
-        public static ulong GetWarningCollectionId()
+        public static ILiteCollection<WarningBotPrefixSchema> WarningPrefixCollection()
         {
-            return _warningCollectionId;
+            return _warningPrefixCollection;
         }
 
         /// <summary>
-        /// Returns the current id
+        /// Returns the warningroles collection
+        /// In here, all roles that can access the commands are saved
         /// </summary>
         /// <returns></returns>
-        public static ulong GetWarningCurrentStateId()
+        public static ILiteCollection<WarningBotRolesSchema> WarningRolesCollection()
         {
-            return _warningCollectionCurrentStateId;
+            return _warningRolesCollection;
         }
-
-        /// <summary>
-        /// Returns the current id
-        /// </summary>
-        /// <returns></returns>
-        public static ulong GetWarningChangeLogId()
-        {
-            return _warningCollectionChangeLogId;
-        }
-
+        
         /// <summary>
         /// Disconnects the database connection and writes back the .log file to the .db file
         /// </summary>
@@ -150,7 +126,7 @@ namespace sahnee_bot.Database
             }
             catch (Exception e)
             {
-                _logging.LogToConsoleBase(e.Message);
+                _logger.Log(e.Message, LogLevel.Critical, "StaticDatabase:WriteLogToDatabaseFile");
             }
         }
     }

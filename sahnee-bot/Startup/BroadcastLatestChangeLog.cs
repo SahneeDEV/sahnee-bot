@@ -5,15 +5,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
+using sahnee_bot.Configuration;
 using sahnee_bot.Database;
 using sahnee_bot.Database.Schema;
+using sahnee_bot.Embeds;
+using sahnee_bot.Logging;
+using sahnee_bot.Util;
 
-namespace sahnee_bot.Util
+namespace sahnee_bot.Startup
 {
     public static class BroadcastLatestChangeLog
     {
         //Variables
-        private static readonly Logging _logging = new Logging();
+        private static readonly Logger _logger = new Logger();
 
         public static async Task BroadcastLatestChangeLogAsync(DiscordSocketClient bot)
         {
@@ -31,7 +35,7 @@ namespace sahnee_bot.Util
                     WarningBotChangeLogSchema guildChangeLogState = StaticDatabase.WarningChangeLogCollection()
                         .Query()
                         .Where(gid => gid.GuildId == guild.Id)
-                        .SingleOrDefault();
+                        .FirstOrDefault();
                     //check if there is an entry
                     if (guildChangeLogState != null)
                     {
@@ -62,7 +66,7 @@ namespace sahnee_bot.Util
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "BoradcastLatestChangeLog:BroadcastLatestChangeLogAsync");
             }
         }
 
@@ -77,40 +81,51 @@ namespace sahnee_bot.Util
             try
             {
                 //get all guild channels and filter the bot-commands channel out of them
-                IGuildChannel botCommandsChannel = null!;
-                IReadOnlyCollection<IGuildChannel> guildChannels = await guild.GetChannelsAsync();
-                foreach (IGuildChannel guildChannel in guildChannels)
-                {
-                    if (guildChannel.Name == StaticConfiguration.GetConfiguration().General.CommandChannel)
-                    {
-                        botCommandsChannel = guildChannel;
-                    }
-                }
+                IGuildChannel botCommandsChannel = await GetBotCommandsChannel.GetBotCommandsChannelAsync(guild);
                 //Fancy Embed
-                string iconUrl = "https://sahnee.dev/wp-content/uploads/2020/04/sahnee-bot-300x300.png";
-                var embed = new EmbedBuilder
-                {
-                    Title = "sahnee-bot got an update!",
-                    Color = Color.Purple,
-                    Description = "Look! I've got some new features/bugfixes",
-                    Timestamp = DateTimeOffset.Now
-                };
-                embed.AddField(StaticBot.GetVersion(), message.Remove(0, message.IndexOf('\n')));
-                embed.WithFooter(footer => footer.Text = "proudly presented by sahnee.dev");
-                embed.WithThumbnailUrl(iconUrl);
-                embed.WithAuthor(author => 
-                { 
-                    author.Name = "sahnee-bot";
-                    author.Url = "https://github.com/Sahnee-DE/sahnee-bot";
-                    author.IconUrl = iconUrl;
-                });
+                EmbedGenerator embedGenerator = new EmbedGenerator();
+                List<EmbedBuilder> embeds = embedGenerator.GenerateSahneeBotEmbed("sahnee-bot got an update!",
+                    "Look! I've got some new features/bugfixes",
+                    "Over here! I got more news",
+                    message, "Even more news");
                 //send the message
                 ISocketMessageChannel botCommandsMessageChannel = (ISocketMessageChannel)botCommandsChannel;
-                await botCommandsMessageChannel.SendMessageAsync(null, false, embed.Build());
+                foreach (EmbedBuilder embed in embeds)
+                {
+                    await botCommandsMessageChannel.SendMessageAsync(null, false, embed.Build());
+                }
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "BroadcastLatestChangeLog:SendChangeLogToGuildAsync");
+            }
+        }
+
+        /// <summary>
+        /// Sends a message with a custom amount of changes into the given guilds channel
+        /// </summary>
+        /// <param name="guild"></param>
+        /// <param name="message"></param>
+        /// <returns></returns>
+        public static async Task SendChangeLogToGuildChannelAsync(IGuild guild, string message, ISocketMessageChannel channel)
+        {
+            try
+            {
+                //Fancy Embed
+                EmbedGenerator embedGenerator = new EmbedGenerator();
+                List<EmbedBuilder> embeds = embedGenerator.GenerateSahneeBotEmbed("sahnee-bot got an update!",
+                    "Look! I've got some new features/bugfixes",
+                    "Over here! I got more news",
+                    message, "Even more news");
+                //send the message
+                foreach (EmbedBuilder embed in embeds)
+                {
+                    await channel.SendMessageAsync(null, false, embed.Build());
+                }
+            }
+            catch (Exception e)
+            {
+                await _logger.Log(e.Message, LogLevel.Error, "BroadcastLatestChangeLog:SendChangeLogToGuildChannelAsync");
             }
         }
 
@@ -124,8 +139,8 @@ namespace sahnee_bot.Util
         {
             try
             {
-                //increment the id
-                StaticDatabase.UpdateWarningChangeLogId();
+                //create new guid
+                Guid g = Guid.NewGuid();
 
                 if (changeLogSchema != null)
                 {
@@ -140,7 +155,7 @@ namespace sahnee_bot.Util
                     //create a new schema instance
                     changeLogSchema = new WarningBotChangeLogSchema
                     {
-                        _id = StaticDatabase.GetWarningChangeLogId(), Seen = true,
+                        _id = g.ToString(), Seen = true,
                         Time = DateTime.Now, GuildId = guild.Id, LatestVersion = StaticBot.GetVersion()
                     };
                     //write to database
@@ -149,7 +164,7 @@ namespace sahnee_bot.Util
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message,LogLevel.Error,"BroadcastLatestChangeLog:ChangeGuildChangelogEntryAsync");
             }
         }
 
@@ -167,7 +182,7 @@ namespace sahnee_bot.Util
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message,LogLevel.Error, "BroadcastLatestChangeLog:AddNewlyJoinedGuild");
             }
         }
     }

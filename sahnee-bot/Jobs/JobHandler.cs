@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
 namespace sahnee_bot.Jobs
@@ -12,7 +13,7 @@ namespace sahnee_bot.Jobs
         // ReSharper disable once PrivateFieldCanBeConvertedToLocalVariable
         private readonly Thread _jobThread;
         private readonly Dictionary<Guid,JobDetails> _jobs = new Dictionary<Guid, JobDetails>();
-        private readonly Logging _logging = new Logging();
+        private readonly Logger _logger = new Logger();
 
         /// <summary>
         /// JobDetails
@@ -40,21 +41,29 @@ namespace sahnee_bot.Jobs
         /// <param name="jobTimeSpan">the timespan for the job</param>
         /// <param name="action">action that will be executed</param>
         /// <returns>unique Guid</returns>
-        public Guid RegisterJob(IJobTimeSpan jobTimeSpan, Func<Task> action)
+        public Guid? RegisterJob(IJobTimeSpan jobTimeSpan, Func<Task> action)
         {
-            Guid id = Guid.NewGuid();
-            lock (_jobs)
+            try
             {
-                var nextRunTime = jobTimeSpan.GetNextExecutionTime();
-                if (!nextRunTime.HasValue)
+                Guid id = Guid.NewGuid();
+                lock (_jobs)
                 {
-                    throw new InvalidOperationException("Cannot start job without valid starttime");
+                    var nextRunTime = jobTimeSpan.GetNextExecutionTime();
+                    if (!nextRunTime.HasValue)
+                    {
+                        throw new InvalidOperationException("Cannot start job without valid starttime");
+                    }
+                    _jobs.Add(id,new JobDetails() { JobTimeSpan = jobTimeSpan, Action = action, NextRunTime = nextRunTime.Value, Guid = id});
+                    _logger.Log($"Started Job: {id}, TimeSpan: {jobTimeSpan}", LogLevel.Info);
                 }
-                _jobs.Add(id,new JobDetails() { JobTimeSpan = jobTimeSpan, Action = action, NextRunTime = nextRunTime.Value, Guid = id});
-                _logging.LogToConsoleBase($"Started Job: {id}, TimeSpan: {jobTimeSpan}");
-            }
 
-            return id;
+                return id;
+            }
+            catch (Exception e)
+            {
+                _logger.Log(e.Message, LogLevel.Error,"CleanupWarningRolesAction:CleanupWarningRolesAsync");
+                return null;
+            }
         }
 
         private void JobThread()
@@ -93,25 +102,31 @@ namespace sahnee_bot.Jobs
                         }
                     }
                 }
-                
+
                 //Execute jobs
-                foreach (var job in jobsToExecute)
+                try
                 {
-                    Task.Run(job.Action).ContinueWith(task =>
+                    foreach (var job in jobsToExecute)
                     {
-                        if (task.Exception != null)
+                        Task.Run(job.Action).ContinueWith(task =>
                         {
-                            _logging.LogToConsoleBase($"Job: {job.Guid} failed! \n {task.Exception}");
-                        }
-                    });
+                            if (task.Exception != null)
+                            {
+                                _logger.Log($"Job: {job.Guid} failed! \n {task.Exception}", LogLevel.Error);
+                            }
+                        });
+                    }
                 }
-                
+                catch (Exception e)
+                {
+                    _logger.Log(e.Message, LogLevel.Error, "CleanupWarningRolesAction:CleanupWarningRolesAsync");
+                }
+
                 //clear the jobsToExecute list
                 jobsToExecute.Clear();
                 
                 Thread.Sleep(100);
             }
         }
-        
     }
 }

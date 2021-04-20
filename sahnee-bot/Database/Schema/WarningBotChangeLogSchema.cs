@@ -1,4 +1,4 @@
-﻿﻿namespace sahnee_bot.Database.Schema
+﻿namespace sahnee_bot.Database.Schema
 {
     public class WarningBotChangeLogSchema : MasterSchema
     {

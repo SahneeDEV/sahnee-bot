@@ -1,4 +1,4 @@
-﻿﻿using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,14 +7,15 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
 using sahnee_bot.Database;
+using sahnee_bot.Logging;
 
 namespace sahnee_bot.Util
 {
     public class SendMessageWithAttachment
     {
         //Variables
-        private readonly Logging _logging = new Logging();
-        
+        private readonly Logger _logger = new Logger();
+
         /// <summary>
         /// Sends the message to the user with the given attachment
         /// </summary>
@@ -79,7 +80,7 @@ namespace sahnee_bot.Util
             catch (Exception e)
             {
                 await channel.SendMessageAsync($"<@{message.Author.Id}>, 😭 I was unable to send a private reason to <@{user.Id}>! Cannot send messages to this user.");
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "SendMessageWithAttachment:SendUserMessageWithAttachmentAsync");
             }
         }
 
@@ -89,7 +90,7 @@ namespace sahnee_bot.Util
             ISocketMessageChannel channel,
             IUserMessage message,
             IGuildUser user,
-            ulong _fromId,
+            ulong fromId,
             uint userNewWarnings,
             string reason,
             WarningType warningType
@@ -115,7 +116,7 @@ namespace sahnee_bot.Util
                         //warning
                         if (warningType == WarningType.Warning)
                         {
-                            await channel.SendFileAsync(websiteStream, attachmentName,$"<@{user.Id}> has been warned by <@{_fromId}>. This is warning #{userNewWarnings}. (Reason: {reason})");
+                            await channel.SendFileAsync(websiteStream, attachmentName,$"<@{user.Id}> has been warned by <@{fromId}>. This is warning #{userNewWarnings}. (Reason: {reason})");
 
                         }
                         //unwarn
@@ -124,12 +125,10 @@ namespace sahnee_bot.Util
                             if (reason != "")
                             { 
                                 await channel.SendFileAsync(websiteStream,attachmentName,$"❤ <@{user.Id}> was unwarned by <@{message.Author.Id}>. Still #{userNewWarnings} warnings left. (Reason: {reason})");
-
                             }
                             else
                             {
                                 await channel.SendFileAsync(websiteStream,attachmentName,$"❤ <@{user.Id}> was unwarned by <@{message.Author.Id}>. Still #{userNewWarnings} warnings left.");
-
                             }
                         }
                     }
@@ -137,7 +136,7 @@ namespace sahnee_bot.Util
             }
             catch (Exception e)
             {
-                await _logging.LogToConsoleBase(e.Message);
+                await _logger.Log(e.Message, LogLevel.Error, "SendMessageWithAttachment:SendChannelMessageWithAttachmentAsync");
             }
         }
     }

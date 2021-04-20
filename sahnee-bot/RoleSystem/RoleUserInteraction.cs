@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Discord;
-using Discord.Commands;
 using Discord.WebSocket;
+using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
 namespace sahnee_bot.RoleSystem
@@ -10,7 +10,7 @@ namespace sahnee_bot.RoleSystem
     public class RoleUserInteraction
     {
         //Variables
-        private readonly Logging _logging = new Logging();
+        private readonly Logger _logger = new Logger();
         
         /// <summary>
         /// Adds a user to a role and checks if successful
@@ -27,14 +27,15 @@ namespace sahnee_bot.RoleSystem
                 //Add the user to the role
                 if (currentUser == null)
                 {
-                    await _logging.LogToConsoleBase($"Current User is Null. Cannot add {role.Name}");
-                    throw new UserNotDefinedException("Current User is numm", channel);
+                    await _logger.Log($"Current User is Null. Cannot add {role.Name}", LogLevel.Error, "RoleUserInteraction:AddUserToRoleAsync");
+                    throw new UserNotDefinedException("Current User is null", channel);
                 }
                 await currentUser.AddRoleAsync(role);
                 return true;
             }
-            catch
+            catch (Exception e)
             {
+                await _logger.Log(e.Message, LogLevel.Error);
                 return false;
             }
         }
@@ -55,14 +56,15 @@ namespace sahnee_bot.RoleSystem
                 //Remove the user from the role
                 if (currentUser == null)
                 {
-                    await _logging.LogToConsoleBase($"Current User is Null. Cannot add {role.Name}");
+                    await _logger.Log($"Current User is Null. Cannot remove {role.Name}", LogLevel.Error, "RoleUserInteraction:RemoveUserFromRole");
                     throw new UserNotDefinedException("Current User is numm", channel);
                 }
                 await currentUser.RemoveRoleAsync(role);
                 return true;
             }
-            catch
+            catch (Exception e)
             {
+                await _logger.Log(e.Message, LogLevel.Error);
                 return false;
             }
         }
