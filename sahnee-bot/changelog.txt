@@ -1,4 +1,7 @@
-﻿Version 0.9.93:
+﻿Version 0.9.94:
++ Custom prefixes now can be any amount of characters long thus are not limited to one character anymore.
+#%&
+Version 0.9.93:
 + Added a new command system for the server. That means for you: quicker command execution that's more stable and reliable
 - Removed the `/warnall` command because this is considered an API abuse. We're planning to get this feature back in the future in another form.
 + Moderation and Administration Roles can now be added individually. 

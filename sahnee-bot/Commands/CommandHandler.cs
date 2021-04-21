@@ -92,7 +92,8 @@ namespace sahnee_bot.commands
             WarningBotPrefixSchema guildPrefix = null;
             try
             {
-                guildPrefix = StaticDatabase.WarningPrefixCollection().Query()
+                guildPrefix = StaticDatabase.WarningPrefixCollection()
+                    .Query()
                     .Where(g => g.GuildId == context.Guild.Id)
                     .Single();
             }
@@ -108,8 +109,29 @@ namespace sahnee_bot.commands
                 }
             }
 
-            if (!(userMessage.HasCharPrefix(
-                guildPrefix != null ? guildPrefix.CustomPrefix : _configuration.General.CommandPrefix, ref argPos))) return;
+            //check what to use
+            if (guildPrefix != null)
+            {
+                //check if char or string
+                if (guildPrefix.CustomPrefix2.Length > 1)
+                {
+                    //string
+                    if (!userMessage.HasStringPrefix(guildPrefix.CustomPrefix2, ref argPos)) return;
+                }
+                else
+                {
+                    //char
+                    if (!userMessage.HasCharPrefix(guildPrefix.CustomPrefix2.ToCharArray()[0], ref argPos)) return;
+                }
+            }
+            //use the default char
+            else
+            {
+                if (!(userMessage.HasCharPrefix(
+                    _configuration.General.CommandPrefix, ref argPos))) return;
+            }
+            
+            
             
             //check if a queue exists if not create a new one
             MultiThreadQueue queue = QueueFactory.GetQueueManager().CheckIfQueueForGuildExistsOrCreate(context.Guild.Id);
