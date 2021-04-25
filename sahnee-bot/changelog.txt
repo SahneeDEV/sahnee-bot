@@ -2,6 +2,8 @@
 + Custom prefixes now can be any amount of characters long thus are not limited to one character anymore.
 + Added a feature to the `/warn` command - `/warn @Role <reason>`. You are now able to warn all users within a role.
 + Added a feature to the `/unwarn` command - `/unwarn @Role <optional: reason>`. You are now able to unwarn all users within a role.
++ The `/warnleaderboard` command will now show users that are no longer on your server, but got warnings before they left.
++ The changelog will not be shown if the changelog.txt file could not be found.
 #%&
 Version 0.9.93:
 + Added a new command system for the server. That means for you: quicker command execution that's more stable and reliable

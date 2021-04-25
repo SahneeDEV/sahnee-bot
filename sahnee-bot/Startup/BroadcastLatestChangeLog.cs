@@ -28,6 +28,11 @@ namespace sahnee_bot.Startup
                 //load the changelog once
                 ChangeLogParser changeLogParser = new ChangeLogParser();
                 string latestChangeLog = await changeLogParser.LatestChangeLog(StaticConfiguration.GetConfiguration().General.ChangeLogPath);
+                //if file not found, don't publish a changelog
+                if (latestChangeLog == "Could not read the changelog.")
+                {
+                    return;
+                }
                 //go through all guilds
                 foreach (IGuild guild in bot.Guilds)
                 {

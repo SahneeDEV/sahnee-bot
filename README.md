@@ -11,7 +11,8 @@ Furthermore you can generate a neat looking leaderboard for your server. Not to 
 2. Commands
 3. Permissions
 4. Jobs
-5. How to install on your own hardware
+5. External API's
+6. How to install on your own hardware
     1. Download and run
     2. The configuration file
 

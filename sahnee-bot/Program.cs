@@ -90,10 +90,10 @@ namespace sahnee_bot
                 await ClearDatabaseLog.ClearDatabaseLogAsync();
             });
             
-            //Changelog Announce procedure
-            await BroadcastLatestChangeLog.BroadcastLatestChangeLogAsync(bot);
             //set the activity
             await BotActivity.ChangeBotActivity();
+            //Changelog Announce procedure
+            await BroadcastLatestChangeLog.BroadcastLatestChangeLogAsync(bot);
             //migrate roles if necessary
             await UpdateRoleSystem.UpdateRoleSystemAsync(bot.Guilds);
 
