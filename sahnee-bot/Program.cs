@@ -90,12 +90,12 @@ namespace sahnee_bot
                 await ClearDatabaseLog.ClearDatabaseLogAsync();
             });
             
-            //set the activity
-            await BotActivity.ChangeBotActivity();
             //Changelog Announce procedure
             await BroadcastLatestChangeLog.BroadcastLatestChangeLogAsync(bot);
             //migrate roles if necessary
             await UpdateRoleSystem.UpdateRoleSystemAsync(bot.Guilds);
+            //set the activity
+            await BotActivity.ChangeBotActivity();
 
             //Add all available APIs
             SendApiFeedback.AddAvailableApi(new DiscordBotList());

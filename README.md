@@ -26,8 +26,10 @@ You're done, enjoy!
 
 ## 2. Commands
 * `/warn @UserName "Your reason here! <optional http/s link>"` - Issues a warning to the given user. The user will also be notified personally about their most evil transgression.
+* `/warn @Role "Your reason here! <optional http/s link>"` - Issues a warning to all users in the given group. All users will also be notified personally.
 * `/unwarn @UserName "Your reason here! <optional http/s link>"` - Revokes a warning from the given user. The user will also be notified personally.
 * `/unwarn @UserName` - Revokes a warning from the given user. This allows for not giving a reason why the user has been unwarned. The user will also be notified personally.
+* `/unwarn @Role <optional "Your reason here!">` - Revokes a warning from all users in the given group. A reason doesn't have to be provided.
 * `/warnall "Your reason here! <optional http/s link>"` - Issues a warning to all users and bots on your server.
 * `/warnhistory @UserName` - Shows the warning history for the given user. The default amount is `10`. It can be changes via the configuration file
 * `/warnhistory @UserName <Amount>` - Does the same as the default command but shows a custom amount of historical entries.
@@ -42,6 +44,10 @@ You're done, enjoy!
 * `/changeprefix <NewPrefix>` - Will change the prefix the bot is listening on in your guild. Can be any single character.
 * `/addmodrole @Role` - Will grant a role on your discord server the moderator permissions.
 * `/addadminrole @Role` - Will grant a role on your discord server the administrator permissions -> Be careful with this one
+* `/randomwarn @User` - Will return a random warning from a user.
+* `/randomwarn @Role` - Will return a random warning from a random user that is in the group.
+* `/randomunwarn @User` - Will return a random unwarn from a user.
+* `/randomunwarn @Role` - Will return a random unwarn from a random user that is in the group.
 
  _Information_:
 - Bots can be warned but will never receive any message of their warning/unwarn like users would.
