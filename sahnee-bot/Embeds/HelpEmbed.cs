@@ -35,6 +35,8 @@ namespace sahnee_bot.Embeds
                              " → Shows the warning history for a given user with a depth or your given _Amount_.\n" +
                              "`/warnhistory @UserName all`" +
                              " → Prints all warnings for the specified user.\n" +
+                             "`/warnerhistory @UserName <Amount>`" +
+                             " → Prints all warnings/unwarns a the user ever issued.\n" +
                              "`/warnleaderboard`" +
                              " → Shows you a leaderboard with your top warned users.\n" +
                              "`/warnleaderboard <Amount>`" +

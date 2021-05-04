@@ -5,7 +5,6 @@ using Discord.Commands;
 using sahnee_bot.commands.CommandActions;
 using sahnee_bot.Logging;
 using sahnee_bot.RoleSystem;
-using sahnee_bot.Util;
 
 namespace sahnee_bot.commands
 {

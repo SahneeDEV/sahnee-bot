@@ -6,6 +6,7 @@
 + The changelog will not be shown if the changelog.txt file could not be found.
 + Added the command `/randomwarn @User` and `/randomwarn @Role` to get a random warning from a single user, or a random user from a group.
 + Added the command `/randomwarn @User` and `/randomwarn @Role` to get a random unwarn from a single user, or a random user from a group.
++ Added the command `/warnerhistory @User <optinoal: amount>` to get all warnings and unwarns a user issued.
 #%&
 Version 0.9.93:
 + Added a new command system for the server. That means for you: quicker command execution that's more stable and reliable
