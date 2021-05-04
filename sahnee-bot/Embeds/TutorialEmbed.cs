@@ -21,6 +21,9 @@ namespace sahnee_bot.Embeds
                              "`/warnleaderboard` → Will show a leaderboard of the top 3.\n" +
                              "`/warnhistory @UserName` → Example: `/warnhistory @SomeUser`\n" +
                              "`/warningstoday @UserName` → Example: `/warningstoday @SomeUser`\n" +
+                             "Permissions are set as follows:\n" +
+                             "`/addmodrole @RoleName` or `/addadminrole @RoleName`\n" +
+                             "Serverowners will always be able to execute every command.\n" + 
                              "If you want to get a full documentation of all commands visit our GitHub: [sahnee-bot](https://github.com/Sahnee-DE/sahnee-bot#2-commands)\n";
             
             List<EmbedBuilder> embeds = embedGenerator.GenerateSahneeBotEmbed("Welcome to sahnee-bot",
