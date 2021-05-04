@@ -20,7 +20,7 @@ Furthermore you can generate a neat looking leaderboard for your server. Not to 
 
 ## 1. Get the bot on your server
 
-[Click, click, done](https://discordapp.com/oauth2/authorize?&client_id=689600370430836793&scope=bot&permissions=268856320)  - Bot hosting provided by [sahnee.dev](https://sahnee.dev)
+[Click, click, done](https://discordapp.com/oauth2/authorize?&client_id=689600370430836793&scope=bot&permissions=2416311382)  - Bot hosting provided by [sahnee.dev](https://sahnee.dev)
 
 You're done, enjoy!
 
