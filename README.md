@@ -34,6 +34,7 @@ You're done, enjoy!
 * `/warnhistory @UserName` - Shows the warning history for the given user. The default amount is `10`. It can be changes via the configuration file
 * `/warnhistory @UserName <Amount>` - Does the same as the default command but shows a custom amount of historical entries.
 * `/warnhistory @UserName all` - Prints all warnings for a specific user.
+* `/warnerhistory @UserName <Amount>` - Prints all warnings/unwarns a user issued.
 * `/warnleaderboard` - Prints a leaderboard of the top warned people on your guild. The default amount can be set in your configuration.
 * `/warnleaderboard <Amount>` - Does the same as above but prints out a custom amount of people.
 * `/warningstoday <@UserName>` - Shows all warnings of the user that he got in the last 24 hours. Can be used without an username, will then show all warnings/unwarns for the last 24 hours
