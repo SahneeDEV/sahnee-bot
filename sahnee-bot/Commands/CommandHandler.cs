@@ -105,34 +105,40 @@ namespace sahnee_bot.commands
                 }
                 else
                 {
-                    await _logger.Log(e.Message, LogLevel.Error, "CommandHandler:HandleCommandAsync");
+                    await _logger.Log(e.Message, LogLevel.Error, "CommandHandler:HandleCommandAsync:GetPrefix");
                 }
             }
 
-            //check what to use
-            if (guildPrefix != null)
+            try
             {
-                //check if char or string
-                if (guildPrefix.CustomPrefix2.Length > 1)
+                //check what to use
+                if (guildPrefix != null)
                 {
-                    //string
-                    if (!userMessage.HasStringPrefix(guildPrefix.CustomPrefix2, ref argPos)) return;
+                    //check if char or string
+                    if (guildPrefix.CustomPrefix2.Length > 1)
+                    {
+                        //string
+                        if (!userMessage.HasStringPrefix(guildPrefix.CustomPrefix2, ref argPos)) return;
+                    }
+                    else
+                    {
+                        //char
+                        if (!userMessage.HasCharPrefix(guildPrefix.CustomPrefix2.ToCharArray()[0], ref argPos)) return;
+                    }
                 }
+                //use the default char
                 else
                 {
-                    //char
-                    if (!userMessage.HasCharPrefix(guildPrefix.CustomPrefix2.ToCharArray()[0], ref argPos)) return;
+                    if (!(userMessage.HasCharPrefix(
+                        _configuration.General.CommandPrefix, ref argPos))) return;
                 }
             }
-            //use the default char
-            else
+            catch (Exception e)
             {
-                if (!(userMessage.HasCharPrefix(
-                    _configuration.General.CommandPrefix, ref argPos))) return;
+                await context.Channel.SendMessageAsync("😥 Sorry! I could not get your prefix. Please contact the developers.");
+                await _logger.Log(e.Message, LogLevel.Error, "CommandHandler:HandleCommandAsync:GetPrefix");
             }
-            
-            
-            
+
             //check if a queue exists if not create a new one
             MultiThreadQueue queue = QueueFactory.GetQueueManager().CheckIfQueueForGuildExistsOrCreate(context.Guild.Id);
             //enqueue the message

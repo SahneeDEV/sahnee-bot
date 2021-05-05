@@ -3,6 +3,7 @@ using LiteDB;
 using sahnee_bot.Configuration;
 using sahnee_bot.Database.Schema;
 using sahnee_bot.Logging;
+using sahnee_bot.Startup.StartupActions;
 
 namespace sahnee_bot.Database
 {
@@ -49,6 +50,9 @@ namespace sahnee_bot.Database
             _warningRolesCollection =
                 _dataBase.GetCollection<WarningBotRolesSchema>(
                     StaticConfiguration.GetConfiguration().WarningBot.DatabaseCollection + "_roles");
+            
+            //migrations
+            DatabaseMigrations.DoDatabaseMigrations();
         }
 
         /// <summary>
