@@ -159,7 +159,6 @@ namespace sahnee_bot.commands.CommandActions
                         $"❤ (Unwarn: {userWarning.Number}) Unwarned from <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n" :
                         $"❤ (Unwarn: {userWarning.Number}) <@{userWarning.To}> has been unwarned by <@{userWarning.From}> at {userWarning.Time} - {userWarning.Reason}.\n";
                     //check if we exceed the length with this string
-                    //check if we exceed the length with this string
                     if (tempMessageBuilder.Length + msg.Length > StaticInternalConfiguration.CharacterLimitMessageOutbound)
                     {
                         //append the string to the list

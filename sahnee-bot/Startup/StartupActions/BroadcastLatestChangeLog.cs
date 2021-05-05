@@ -12,7 +12,7 @@ using sahnee_bot.Embeds;
 using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
-namespace sahnee_bot.Startup
+namespace sahnee_bot.Startup.StartupActions
 {
     public static class BroadcastLatestChangeLog
     {
@@ -28,6 +28,11 @@ namespace sahnee_bot.Startup
                 //load the changelog once
                 ChangeLogParser changeLogParser = new ChangeLogParser();
                 string latestChangeLog = await changeLogParser.LatestChangeLog(StaticConfiguration.GetConfiguration().General.ChangeLogPath);
+                //if file not found, don't publish a changelog
+                if (latestChangeLog == "Could not read the changelog.")
+                {
+                    return;
+                }
                 //go through all guilds
                 foreach (IGuild guild in bot.Guilds)
                 {
@@ -80,8 +85,9 @@ namespace sahnee_bot.Startup
         {
             try
             {
+                GetBotCommandsChannel getBotCommandsChannel = new GetBotCommandsChannel();
                 //get all guild channels and filter the bot-commands channel out of them
-                IGuildChannel botCommandsChannel = await GetBotCommandsChannel.GetBotCommandsChannelAsync(guild);
+                IGuildChannel botCommandsChannel = await getBotCommandsChannel.GetBotCommandsChannelAsync(guild);
                 //Fancy Embed
                 EmbedGenerator embedGenerator = new EmbedGenerator();
                 List<EmbedBuilder> embeds = embedGenerator.GenerateSahneeBotEmbed("sahnee-bot got an update!",

@@ -13,7 +13,7 @@
       <PackageReference Include="Discord.Net.Rest" Version="2.3.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="2.3.1" />
       <PackageReference Include="Discord.Net.WebSocket" Version="2.3.1" />
-      <PackageReference Include="LiteDB" Version="5.0.9" />
+      <PackageReference Include="LiteDB" Version="5.0.10" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     </ItemGroup>
 
@@ -30,6 +30,10 @@
       <Content Include="changelog.txt">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="LeaveEvents\Action" />
     </ItemGroup>
 
 </Project>

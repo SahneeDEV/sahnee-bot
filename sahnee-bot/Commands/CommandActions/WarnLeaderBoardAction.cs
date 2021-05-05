@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Discord.Commands;
-using Discord.WebSocket;
 using sahnee_bot.Configuration;
 using sahnee_bot.Database;
 using sahnee_bot.Database.Schema;
@@ -17,7 +16,7 @@ namespace sahnee_bot.commands.CommandActions
     {
         //Variables
         private readonly Logger _logger = new Logger();
-        
+
         /// <summary>
         /// Executes the leaderboard message creating
         /// </summary>
@@ -32,24 +31,21 @@ namespace sahnee_bot.commands.CommandActions
             {
                 //Check if an custom amount has been given
                 amount ??= StaticConfiguration.GetConfiguration().WarningBot.WarningLeaderboardCount;
-                Dictionary<ulong, List<WarningBotSchema>> guildWarnings = new Dictionary<ulong,List<WarningBotSchema>>();
-                //a query for every user
-                foreach (SocketGuildUser user in Context.Guild.Users)
-                {
-                    guildWarnings.Add(user.Id, StaticDatabase.WarningCollection().Query()
-                        .Where(e => e.GuildId == Context.Guild.Id && e.To == user.Id)
-                        .ToList()
-                    );
-                }
-                //get the top x
+
+                //query all users from the current guild
+                List<WarningBotCurrentStatesSchema> currentWarnings = StaticDatabase.WarningCurrentStateCollection()
+                    .Query()
+                    .Where(g => g.GuildId == Context.Guild.Id)
+                    .Limit((int)amount)
+                    .ToList();
+                
+                //insert into dictionary for further processing
                 Dictionary<ulong, uint> topWarnings = new Dictionary<ulong, uint>();
-                foreach (KeyValuePair<ulong, List<WarningBotSchema>> warningUser in guildWarnings)
+                foreach (WarningBotCurrentStatesSchema currentUser in currentWarnings)
                 {
-                    uint currentUserUnwarnings = (uint) warningUser.Value.FindAll(unwarning => unwarning.WarningType == WarningType.Unwarn).Count();
-                    uint currentUserWarnings = (uint) warningUser.Value.FindAll(warning => warning.WarningType == WarningType.Warning).Count();
-                    uint currentUserStats = currentUserWarnings - currentUserUnwarnings;
-                    topWarnings.Add(warningUser.Key,currentUserStats);
+                    topWarnings.Add(currentUser.UserId, currentUser.Number);
                 }
+
                 //sort the dictionary
                 List<KeyValuePair<ulong, uint>> tempList = topWarnings.ToList();
                 tempList.Sort((pair, valuePair) => pair.Value.CompareTo(valuePair.Value));

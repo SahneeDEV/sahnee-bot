@@ -6,7 +6,7 @@ using sahnee_bot.Database.Standards;
 using sahnee_bot.Logging;
 using sahnee_bot.RoleSystem;
 
-namespace sahnee_bot.Startup
+namespace sahnee_bot.Startup.StartupActions
 {
     public class UpdateRoleSystem
     {

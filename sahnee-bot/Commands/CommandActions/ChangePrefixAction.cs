@@ -24,18 +24,6 @@ namespace sahnee_bot.commands.CommandActions
         {
             try
             {
-                //check that the new prefix only consists of one character
-                if (newPrefix.Length > 1)
-                    //check if there are white spaces that count
-                    if (newPrefix.Replace(" ", "").Length > 1)
-                    {
-                        //well input is incorrect let the user know about that
-                        await channel.SendMessageAsync(
-                            $"🤨 The new prefix {newPrefix} you gave me consists of more than one character. But a prefix only can consist of a single character.");
-                        return;
-                    }
-
-                var tempNewPrefix = newPrefix.ToCharArray();
                 //change the prefix
                 //check if there already exists a custom prefix for the guild
                 WarningBotPrefixSchema customPrefix = null;
@@ -46,7 +34,8 @@ namespace sahnee_bot.commands.CommandActions
                         .Single();
                 }
                 catch (Exception e)
-                {if (e.GetType() == typeof(System.InvalidOperationException))
+                {
+                    if (e.GetType() == typeof(System.InvalidOperationException))
                     {
                         //ignore, because no custom prefix has been set
                     }
@@ -56,6 +45,7 @@ namespace sahnee_bot.commands.CommandActions
                     }
                 }
 
+                //create a new entry in the database
                 if (customPrefix == null)
                 {
                     //create new unique guid
@@ -64,22 +54,25 @@ namespace sahnee_bot.commands.CommandActions
                     customPrefix = new WarningBotPrefixSchema
                     {
                         _id = g.ToString(), Time = DateTime.Now, GuildId = guild.Id,
-                        CustomPrefix = tempNewPrefix[0]
+                        CustomPrefix2 = newPrefix
                     };
+
                     //add to the database
                     StaticDatabase.WarningPrefixCollection().Insert(customPrefix);
                 }
+                //modify a existing one
                 else
                 {
-                    customPrefix.CustomPrefix = tempNewPrefix[0];
+                    customPrefix.CustomPrefix2 = newPrefix;
                     customPrefix.Time = DateTime.Now;
+
                     //update in the database
                     StaticDatabase.WarningPrefixCollection().Update(customPrefix);
                 }
 
                 //send feedback to the user
                 await channel.SendMessageAsync(
-                    $"🙃 Your prefix has been changed! You may now use `{tempNewPrefix[0]}` as your new command prefix.");
+                    $"🙃 Your prefix has been changed! You may now use `{newPrefix}` as your new command prefix.");
             }
             catch (Exception e)
             {

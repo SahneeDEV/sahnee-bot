@@ -5,26 +5,28 @@ using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-using sahnee_bot.Configuration;
 using sahnee_bot.Embeds;
 using sahnee_bot.Logging;
 using sahnee_bot.Util;
 
-namespace sahnee_bot.Startup
+namespace sahnee_bot.JoinEvents.Actions
 {
     public class StartupTutorial
     {
         //Variables
         private static readonly Logger _logger = new Logger();
 
-        
-        public static async Task StartupTutorialAsync(SocketGuild guild)
+        /// <summary>
+        /// Displays the guild a tutorial with the most basic commands
+        /// </summary>
+        /// <param name="commandChannel">the channel to send to</param>
+        public static async Task StartupTutorialAsync(ITextChannel commandChannel)
         {
             try
             {
-                //Wait 5 Seconds
-                Thread.Sleep(5000);
-                await SendStartupTutorialToGuildAsync(guild);
+                //Wait 500 mills
+                Thread.Sleep(500);
+                await SendStartupTutorialToGuildAsync(commandChannel);
             }
             catch (Exception e)
             {
@@ -35,22 +37,19 @@ namespace sahnee_bot.Startup
         /// <summary>
         /// Sends the tutorial embed into the bot-commands channel
         /// </summary>
-        /// <param name="guild">the guild that just joined</param>
+        /// <param name="commandChannel">the channel to send to</param>
         /// <returns></returns>
-        private static async Task SendStartupTutorialToGuildAsync(IGuild guild)
+        private static async Task SendStartupTutorialToGuildAsync(ITextChannel commandChannel)
         {
             try
             {
-                //get all guild channels and filter the bot-commands channel out of them
-                IGuildChannel botCommandsChannel = await GetBotCommandsChannel.GetBotCommandsChannelAsync(guild);
                 //get the embed
                 TutorialEmbed embed = new TutorialEmbed();
                 //send the message
-                ISocketMessageChannel botCommandsMessageChannel = (ISocketMessageChannel)botCommandsChannel;
                 List<EmbedBuilder> embeds = embed.TutorialEmbedBuilder();
                 foreach (EmbedBuilder embed1 in embeds)
                 {
-                    await botCommandsMessageChannel.SendMessageAsync(null, false, embed1.Build());
+                    await commandChannel.SendMessageAsync(null, false, embed1.Build());
                 }
             }
             catch (Exception e)

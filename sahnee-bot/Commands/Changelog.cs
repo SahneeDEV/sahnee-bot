@@ -4,7 +4,7 @@ using Discord.Commands;
 using sahnee_bot.Configuration;
 using sahnee_bot.Logging;
 using sahnee_bot.RoleSystem;
-using sahnee_bot.Startup;
+using sahnee_bot.Startup.StartupActions;
 using sahnee_bot.Util;
 
 namespace sahnee_bot.commands

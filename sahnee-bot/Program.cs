@@ -1,18 +1,16 @@
-﻿using System;
-using System.ComponentModel.Design;
+﻿using System.ComponentModel.Design;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
-using sahnee_bot.Activity;
 using sahnee_bot.commands;
 using sahnee_bot.Configuration;
 using sahnee_bot.Database;
 using sahnee_bot.Jobs;
 using sahnee_bot.Jobs.JobTasks;
+using sahnee_bot.JoinEvents;
+using sahnee_bot.LeaveEvents;
 using sahnee_bot.Logging;
-using sahnee_bot.OtherAPI.DiscordBotList;
-using sahnee_bot.OtherAPI;
 using sahnee_bot.Queue;
 using sahnee_bot.Startup;
 using sahnee_bot.Util;
@@ -59,13 +57,8 @@ namespace sahnee_bot
             
             //Add Eventhandlers
             bot.Log += logger.Log;
-            bot.JoinedGuild += BroadcastLatestChangeLog.AddNewlyJoinedGuild;
-            bot.JoinedGuild += StartupTutorial.StartupTutorialAsync;
-            bot.JoinedGuild += CreateBotCommandsChannel.CreateBotCommandsChannelAsync;
-            bot.JoinedGuild += BotActivity.ChangeBotActivity;
-            bot.JoinedGuild += SendApiFeedback.SendApiFeedbackAsync;
-            bot.LeftGuild += BotActivity.ChangeBotActivity;
-            bot.LeftGuild += SendApiFeedback.SendApiFeedbackAsync;
+            bot.JoinedGuild += JoinProcedure.JoinProcedureAsync;
+            bot.LeftGuild += LeaveProcedure.LeaveProcedureAsync;
             await commandHandler.InstallCommandsAsync();
             
             //start the bot
@@ -81,25 +74,17 @@ namespace sahnee_bot
             //Jobs
             //WarningRolesCleanup job
             jobHandler.RegisterJob(new JobTimeSpanRepeat(configuration.WarningBot.WarningRoleCleanup), async () =>
-                {
-                    await CleanupWarningRoles.CleanupWarningRolesRun(bot);
-                });
+            {
+                await CleanupWarningRoles.CleanupWarningRolesRun(bot);
+            });
             //Database cleanup job
             jobHandler.RegisterJob(new JobTimeSpanRepeat(configuration.General.DatabaseCleanup), async () =>
             {
                 await ClearDatabaseLog.ClearDatabaseLogAsync();
             });
             
-            //Changelog Announce procedure
-            await BroadcastLatestChangeLog.BroadcastLatestChangeLogAsync(bot);
-            //set the activity
-            await BotActivity.ChangeBotActivity();
-            //migrate roles if necessary
-            await UpdateRoleSystem.UpdateRoleSystemAsync(bot.Guilds);
-
-            //Add all available APIs
-            SendApiFeedback.AddAvailableApi(new DiscordBotList());
-            await SendApiFeedback.SendApiFeedbackAsync(null);
+            //startup procedure
+            await StartupProcedure.StartupProcedureAsync(bot);
 
             // Block this task until the program is closed. <--- From the Discord.Net Guide
             await Task.Delay(-1);
