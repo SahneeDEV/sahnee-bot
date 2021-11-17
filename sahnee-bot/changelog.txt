@@ -1,4 +1,8 @@
-﻿Version 0.9.94:
+﻿Version 0.9.95:
++ Added a link to the [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/) in the `/help` command.
++ The Bot now mentions the [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/) in the tutorial.
+#%&
+Version 0.9.94:
 + Custom prefixes now can be any amount of characters long thus are not limited to one character anymore.
 + Added a feature to the `/warn` command - `/warn @Role <reason>`. You are now able to warn all users within a role.
 + Added a feature to the `/unwarn` command - `/unwarn @Role <optional: reason>`. You are now able to unwarn all users within a role.

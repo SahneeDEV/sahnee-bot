@@ -24,7 +24,8 @@ namespace sahnee_bot.Embeds
                              "Permissions are set as follows:\n" +
                              "`/addmodrole @RoleName` or `/addadminrole @RoleName`\n" +
                              "Serverowners will always be able to execute every command.\n" + 
-                             "If you want to get a full documentation of all commands visit our GitHub: [sahnee-bot](https://github.com/Sahnee-DE/sahnee-bot#2-commands)\n";
+                             "If you want to get a full documentation of all commands visit our GitHub: [sahnee-bot](https://github.com/Sahnee-DE/sahnee-bot#2-commands)\n" +
+                             "By using the sahnee-bot you agree to our [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/).";
             
             List<EmbedBuilder> embeds = embedGenerator.GenerateSahneeBotEmbed("Welcome to sahnee-bot",
                 "Thank you for using sahnee-bot!\n",

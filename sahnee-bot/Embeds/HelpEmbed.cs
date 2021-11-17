@@ -58,7 +58,9 @@ namespace sahnee_bot.Embeds
             
             List<EmbedBuilder> embeds = embedGenerator.GenerateSahneeBotEmbed("sahnee-bot help",
                 "Here we have a list of all available commands and their features.\n" +
-                "In this case we are using '/' as prefix, replace it if you've chosen another one.",
+                "In this case we are using '/' as prefix, replace it if you've chosen another one.\n" +
+                "By using the sahnee-bot you agree to our [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/)."
+                ,
                 "Commands:", content
                 , "Even more commands 😮");
             
