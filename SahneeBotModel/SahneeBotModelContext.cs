@@ -25,7 +25,7 @@ public class SahneeBotModelContext : DbContext
     
     //DBSets
     public DbSet<Warning> Warnings { get; set; }
-    public DbSet<Roles> Roles { get; set; }
+    public DbSet<Role> Roles { get; set; }
     public DbSet<UserState> UserStates { get; set; }
 
 

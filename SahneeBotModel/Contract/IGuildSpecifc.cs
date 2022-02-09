@@ -6,7 +6,7 @@
 public interface IGuildSpecific
 {
     /// <summary>
-    /// The guild ID of the warning.
+    /// The guild ID.
     /// </summary>
     ulong GuildId { get; set; }
 }
