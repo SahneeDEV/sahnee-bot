@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using SahneeBotModel.Models;
-using SahneeBotModel.Models.Warning;
 
 namespace SahneeBotModel;
 
