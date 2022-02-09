@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using SahneeBotModel.Contract;
 
 namespace SahneeBotModel.Models;
 
@@ -6,7 +7,7 @@ namespace SahneeBotModel.Models;
 /// Base class for all Database Objects
 /// Provides all child objects with the most basic things
 /// </summary>
-public class DatabaseObject
+public class DatabaseObject: ISnowflake
 {
     /// <summary>
     /// Public Key

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SahneeBotModel.Models;
 
 namespace SahneeBotModel;
 
@@ -24,7 +25,9 @@ public class SahneeBotModelContext : DbContext
     
     //DBSets
     
-    
+    public DbSet<UserState> UserStates { get; set; }
+
+
     /// <summary>
     /// Model edits
     /// </summary>
