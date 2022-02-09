@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SahneeBotModel.Models.Warning;
 
 namespace SahneeBotModel;
 
@@ -23,8 +24,8 @@ public class SahneeBotModelContext : DbContext
         => optionsBuilder.UseNpgsql(_configuration.GetConnectionString("SahneeBotModelContext"));
     
     //DBSets
-    
-    
+    public DbSet<Warning> Warnings { get; set; }
+
     /// <summary>
     /// Model edits
     /// </summary>
