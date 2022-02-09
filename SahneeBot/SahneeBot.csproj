@@ -21,4 +21,8 @@
       </Content>
     </ItemGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\SahneeBotController\SahneeBotController.csproj" />
+    </ItemGroup>
+
 </Project>
