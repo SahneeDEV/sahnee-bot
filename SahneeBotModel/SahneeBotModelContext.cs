@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using SahneeBotModel.Models.Warning;
+using SahneeBotModel.Models;
 
 namespace SahneeBotModel;
 
@@ -25,6 +25,9 @@ public class SahneeBotModelContext : DbContext
     
     //DBSets
     public DbSet<Warning> Warnings { get; set; }
+    public DbSet<Role> Roles { get; set; }
+    public DbSet<UserState> UserStates { get; set; }
+
 
     /// <summary>
     /// Model edits
