@@ -37,6 +37,7 @@ namespace SahneeBot
             ServiceCollection? services = new ServiceCollection();
 
             //add services
+            services.AddLogging();
             services.AddDbContext<SahneeBotModelContext>(options =>
             {
                 options.UseNpgsql()
