@@ -16,6 +16,7 @@ public class Class1
     private void test(SahneeBotModelContext sahneeBotModelContext)
     {
         Console.Write("Dependency Injection!");
+        
     }
     
 }
