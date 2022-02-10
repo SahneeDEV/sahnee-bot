@@ -3,7 +3,7 @@
 /// <summary>
 /// A warning or unwarning for the Sahnee bot.
 /// </summary>
-public interface IWarning: ISnowflake, IGuildSpecific
+public interface IWarning: ISnowflake, IGuildSpecific, IUserSpecific
 {
     /// <summary>
     /// The issue time of the warning.
@@ -12,11 +12,7 @@ public interface IWarning: ISnowflake, IGuildSpecific
     /// <summary>
     /// The user that issued the warning.
     /// </summary>
-    ulong From { get; set; }
-    /// <summary>
-    /// The user that the warning was issued to.
-    /// </summary>
-    ulong To { get; set; }
+    ulong IssuerUserId { get; set; }
     /// <summary>
     /// The reason the warning was issued for.
     /// </summary>

@@ -3,9 +3,9 @@ using SahneeBotModel.Contract;
 
 namespace SahneeBotModel.Models;
 
-public class UserState: IUserState
+public class GuildState: IGuildState
 {
     [Key, Required]
-    public ulong UserId { get; set; }
-    public DateTime? LastDataDeletion { get; set; }
+    public ulong GuildId { get; set; }
+    public string? BoundChannel { get; set; }
 }

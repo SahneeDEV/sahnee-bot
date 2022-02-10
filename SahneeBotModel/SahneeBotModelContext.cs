@@ -23,11 +23,26 @@ public class SahneeBotModelContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         => optionsBuilder.UseNpgsql(_configuration.GetConnectionString("SahneeBotModelContext"));
     
-    //DBSets
+    /// <summary>
+    /// All warnings.
+    /// </summary>
     public DbSet<Warning> Warnings { get; set; }
+    /// <summary>
+    /// All roles configured.
+    /// </summary>
     public DbSet<Role> Roles { get; set; }
+    /// <summary>
+    /// All user & guild specific state.
+    /// </summary>
+    public DbSet<UserGuildState> UserGuildStates { get; set; }
+    /// <summary>
+    /// All user specific state.
+    /// </summary>
     public DbSet<UserState> UserStates { get; set; }
-
+    /// <summary>
+    /// All guild specific state.
+    /// </summary>
+    public DbSet<GuildState> GuildStates { get; set; }
 
     /// <summary>
     /// Model edits

@@ -3,14 +3,10 @@
 /// <summary>
 /// Represents the state of a single user.
 /// </summary>
-public interface IUserState: IGuildSpecific
+public interface IUserState: IUserSpecific
 {
     /// <summary>
-    /// The user ID. Not a snowflake, the actual user ID.
+    /// When was the data last deleted? null if never.
     /// </summary>
-    ulong UserId { get; set; }
-    /// <summary>
-    /// The amount of warnings the user is on.
-    /// </summary>
-    uint WarningNumber { get; set; }
+    DateTime? LastDataDeletion { get; set; }
 }
