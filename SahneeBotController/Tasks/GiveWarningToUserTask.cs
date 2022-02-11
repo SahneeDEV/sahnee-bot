@@ -1,4 +1,7 @@
-﻿using SahneeBotModel;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using SahneeBotModel;
 using SahneeBotModel.Models;
 
 namespace SahneeBotController.Tasks;
@@ -8,20 +11,32 @@ namespace SahneeBotController.Tasks;
 /// </summary>
 public class GiveWarningToUserTask
 {
-    private readonly SahneeBotModelContext _sahneeBotModelContext;
-    
-    public GiveWarningToUserTask(SahneeBotModelContext sahneeBotModelContext)
+    private readonly IServiceProvider _provider;
+    private readonly ILogger<GiveWarningToUserTask> _logger;
+    private readonly IdGenerator _id;
+
+    public GiveWarningToUserTask(IServiceProvider provider, ILogger<GiveWarningToUserTask> logger, IdGenerator id)
     {
-        _sahneeBotModelContext = sahneeBotModelContext;
+        _provider = provider;
+        _logger = logger;
+        _id = id;
     }
 
-    public void Execute(ulong userId)
+    public async Task Execute(ulong guildId, ulong issuerUserId, ulong userId, string reason)
     {
+        using var scope = _provider.CreateScope();
+        var ctx = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
+        _logger.LogInformation("Execute warn task!");
         var warn = new Warning
         {
-            Reason = "bla",
-            UserId = userId
+            Id = _id.NextId(),
+            Number = 1,
+            Reason = reason,
+            UserId = userId,
+            GuildId = guildId,
+            IssuerUserId = issuerUserId
         };
-        _sahneeBotModelContext.Warnings.Add(warn);
+        await ctx.Warnings.AddAsync(warn);
+        await ctx.SaveChangesAsync();
     }
 }

@@ -5,9 +5,9 @@ namespace SahneeBotModel.Models;
 
 public class UserGuildState: IUserGuildState
 {
-    [Key, Required]
+    [Required]
     public ulong GuildId { get; set; }
-    [Key, Required]
+    [Required]
     public ulong UserId { get; set; }
     [Required]
     public uint WarningNumber { get; set; }

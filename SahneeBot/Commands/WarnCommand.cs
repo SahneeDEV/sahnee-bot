@@ -1,26 +1,45 @@
 ﻿using Discord;
-using Discord.WebSocket;
+using Discord.Interactions;
+using Microsoft.Extensions.Logging;
+using SahneeBotController.Tasks;
 
 namespace SahneeBot.Commands;
 
-public class WarnCommand: ICommand
+/// <summary>
+/// This command is used to warn users.
+/// </summary>
+public class WarnCommand: InteractionModuleBase<IInteractionContext>
 {
-    public SlashCommandBuilder? Build(IGuild? guild)
-    {
-        if (guild == null)
-        {
-            return null;
-        }
-        return new SlashCommandBuilder()
-            .WithName("warn")
-            .WithDescription("Warns the given user with an optional reason.")
-            .AddOption("user", ApplicationCommandOptionType.User, "The user to warn", true)
-            .AddOption("reason", ApplicationCommandOptionType.String, "The warning reason");
-    }
+    private readonly GiveWarningToUserTask _task;
+    private readonly ILogger<WarnCommand> _logger;
 
-    public async Task Execute(IGuild? guild, SocketSlashCommand command)
+    public WarnCommand(GiveWarningToUserTask task, ILogger<WarnCommand> logger)
     {
-        var opt = command.Data.Options.First(o => o.Name == "reason").Value;
-        await command.RespondAsync("Hello World " + opt);
+        _task = task;
+        _logger = logger;
+    }
+    
+    /// <summary>
+    /// The actual warn command.
+    /// </summary>
+    /// <param name="user">The user that is warned.</param>
+    /// <param name="reason">The warn reason.</param>
+    [SlashCommand("warn", "Warns a user")]
+    public async Task Warn(
+        [Summary(description: "the user to warn")]
+        IUser user,
+        [Summary(description: "the reason why the user was warned")]
+        string reason = ""
+        )
+    {
+        try
+        {
+            await _task.Execute(Context.Guild.Id, Context.User.Id, user.Id, reason);
+            await RespondAsync(reason);
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(EventIds.Command, exception, "Error in warn command");
+        }
     }
 }

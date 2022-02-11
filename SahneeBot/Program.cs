@@ -35,6 +35,7 @@ services.AddDbContext<SahneeBotModelContext>(options =>
         .EnableDetailedErrors();
 });
 services.AddSingleton<IConfiguration>(provider => configuration);
+services.AddSingleton(provider => new IdGenerator(1));
 services.AddSingleton<ICommandHandler, CommandHandler>();
 services.AddTransient<GiveWarningToUserTask>();
 
