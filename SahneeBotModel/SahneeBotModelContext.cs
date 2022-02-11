@@ -50,6 +50,11 @@ public class SahneeBotModelContext : DbContext
     /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<UserGuildState>().HasKey(userGuildState => new
+        {
+            userGuildState.UserId, 
+            userGuildState.GuildId
+        });
         base.OnModelCreating(modelBuilder);
     }
 }
