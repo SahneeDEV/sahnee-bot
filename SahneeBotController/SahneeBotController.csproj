@@ -10,8 +10,4 @@
       <ProjectReference Include="..\SahneeBotModel\SahneeBotModel.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <PackageReference Include="Discord.Net" Version="3.3.0" />
-    </ItemGroup>
-
 </Project>
