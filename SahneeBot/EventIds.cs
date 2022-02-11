@@ -19,4 +19,8 @@ public static class EventIds
     /// Discord API log events.
     /// </summary>
     public static readonly EventId Discord = new (3, "Discord");
+    /// <summary>
+    /// Migration log events.
+    /// </summary>
+    public static readonly EventId Migration = new (4, "Migration");
 }
