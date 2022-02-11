@@ -29,6 +29,7 @@ var host = CreateHostBuilder(args)
     .ConfigureServices(services =>
     {
         services.AddSingleton(provider => new IdGenerator(1));
+        services.AddSingleton<DiscordLogger>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
         services.AddTransient<GiveWarningToUserTask>();
         var discordConfig = new DiscordSocketConfig
@@ -43,6 +44,7 @@ var host = CreateHostBuilder(args)
 
 var bot = host.Services.GetRequiredService<DiscordSocketClient>();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
+var discordLogger = host.Services.GetRequiredService<DiscordLogger>();
 
 using (var scope = host.Services.CreateScope())
 {
@@ -59,54 +61,7 @@ using (var scope = host.Services.CreateScope())
     }
 }
 
-bot.Log += logMessage =>
-{
-    LogLevel level = LogLevel.None;
-    switch (logMessage.Severity)
-    {
-        case LogSeverity.Critical:
-        {
-            level = LogLevel.Critical;
-            break;
-        }
-        case LogSeverity.Debug:
-        {
-            level = LogLevel.Debug;
-            break;
-        }
-        case LogSeverity.Error:
-        {
-            level = LogLevel.Error;
-            break;
-        }
-        case LogSeverity.Info:
-        {
-            level = LogLevel.Information;
-            break;
-        }
-        case LogSeverity.Verbose:
-        {
-            level = LogLevel.Trace;
-            break;
-        }
-        case LogSeverity.Warning:
-        {
-            level = LogLevel.Warning;
-            break;
-        }
-    }
-
-    var message = string.IsNullOrEmpty(logMessage.Message) ? logMessage.Exception?.Message : logMessage.Message;
-    if (logMessage.Exception != null)
-    {
-        logger.Log(level, EventIds.Discord, logMessage.Exception, message + " (" + logMessage.Source +  ")");
-    }
-    else
-    {
-        logger.Log(level, EventIds.Discord, message + " (" + logMessage.Source +  ")");
-    }
-    return Task.CompletedTask;
-};
+bot.Log += discordLogger.Log;
 
 //login the bot and start
 var configuration = host.Services.GetRequiredService<IConfiguration>();
