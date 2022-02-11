@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using SahneeBotModel;
+using SahneeBotModel.Contract;
+using SahneeBotModel.Models;
 
 namespace SahneeBotController;
 
@@ -9,14 +11,5 @@ public class Class1
     {
         using var serviceScopoe = services.CreateScope();
         var provider = serviceScopoe.ServiceProvider;
-        
-        test(provider.GetRequiredService<SahneeBotModelContext>());
     }
-
-    private void test(SahneeBotModelContext sahneeBotModelContext)
-    {
-        Console.Write("Dependency Injection!");
-        
-    }
-    
 }
