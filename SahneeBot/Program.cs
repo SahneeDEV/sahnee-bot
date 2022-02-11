@@ -17,10 +17,15 @@ var configuration = new ConfigurationBuilder()
 var services = new ServiceCollection();
 
 // Add services
-services.AddLogging();
+services.AddLogging(options =>
+{
+    options
+        .AddConsole();
+});
 services.AddDbContext<SahneeBotModelContext>(options =>
 {
-    options.UseNpgsql()
+    options
+        .UseNpgsql()
         .LogTo(Console.WriteLine, LogLevel.Information)
         .EnableSensitiveDataLogging()
         .EnableDetailedErrors();
