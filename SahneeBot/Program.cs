@@ -1,4 +1,6 @@
 ﻿using Discord;
+using Discord.Commands;
+using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -41,7 +43,20 @@ var discordConfig = new DiscordSocketConfig()
     GatewayIntents = GatewayIntents.All,
     AlwaysDownloadUsers = true
 };
-var discordSocketClient = new DiscordSocketClient(discordConfig);
+var bot  = new DiscordSocketClient(discordConfig);
+
+
+//Add EventHandlers to the bot
+//bot.Log += 
+//bot.JoinedGuild += 
+//bot.LeftGuild += 
+//bot.SlashCommandExecuted += 
+
+
+
+//login the bot and start
+await bot.LoginAsync(TokenType.Bot, configuration["Discord:Token"]);
+await bot.StartAsync();
 
 // Block this task until the program is closed. <--- From the Discord.Net Guide
 await Task.Delay(-1);
