@@ -7,6 +7,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SahneeBot;
 using SahneeBot.Commands;
+using SahneeBot.Formatter;
+using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
@@ -28,10 +30,17 @@ static IHostBuilder CreateHostBuilder(string[] args)
 var host = CreateHostBuilder(args)
     .ConfigureServices(services =>
     {
-        services.AddSingleton(provider => new IdGenerator(1));
+        // SYSTEM
         services.AddSingleton<DiscordLogger>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
+        services.AddTransient<ITaskContext, SahneeBotTaskContext>();
+        // FORMATTER
+        services.AddTransient<WarningDiscordFormatter>();
+        // TASKS
         services.AddTransient<GiveWarningToUserTask>();
+        services.AddTransient<GetUserGuildStateTask>();
+        services.AddTransient<SendWarningMessageToUserTask, SahneeBotSendWarningMessageToUserTask>();
+        // DISCORD
         var discordConfig = new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.All,

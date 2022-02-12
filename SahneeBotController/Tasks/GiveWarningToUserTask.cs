@@ -1,7 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SahneeBotModel;
+using SahneeBotModel.Contract;
 using SahneeBotModel.Models;
 
 namespace SahneeBotController.Tasks;
@@ -9,34 +9,53 @@ namespace SahneeBotController.Tasks;
 /// <summary>
 /// Gives the given user a warning.
 /// </summary>
-public class GiveWarningToUserTask
+public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning>
 {
-    private readonly IServiceProvider _provider;
-    private readonly ILogger<GiveWarningToUserTask> _logger;
-    private readonly IdGenerator _id;
-
-    public GiveWarningToUserTask(IServiceProvider provider, ILogger<GiveWarningToUserTask> logger, IdGenerator id)
+    public class Args
     {
-        _provider = provider;
+        public readonly ulong GuildId;
+        public readonly ulong IssuerUserId;
+        public readonly ulong UserId;
+        public readonly string Reason;
+
+        public Args(string reason, ulong guildId, ulong userId, ulong issuerUserId)
+        {
+            Reason = reason;
+            GuildId = guildId;
+            UserId = userId;
+            IssuerUserId = issuerUserId;
+        }
+    }
+    
+    private readonly ILogger<GiveWarningToUserTask> _logger;
+    private readonly GetUserGuildStateTask _getUserGuildStateTask;
+    private readonly SendWarningMessageToUserTask _message;
+
+    public GiveWarningToUserTask(
+        ILogger<GiveWarningToUserTask> logger, GetUserGuildStateTask getUserGuildStateTask,
+        SendWarningMessageToUserTask message)
+    {
         _logger = logger;
-        _id = id;
+        _getUserGuildStateTask = getUserGuildStateTask;
+        _message = message;
     }
 
-    public async Task Execute(ulong guildId, ulong issuerUserId, ulong userId, string reason)
+    public async Task<IWarning> Execute(ITaskContext ctx, Args args)
     {
-        using var scope = _provider.CreateScope();
-        var ctx = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
-        _logger.LogInformation("Execute warn task!");
+        var userGuildState = await _getUserGuildStateTask.Execute(
+            ctx, 
+            new GetUserGuildStateTask.Args(args.GuildId, args.UserId));
         var warn = new Warning
         {
-            Id = _id.NextId(),
-            Number = 1,
-            Reason = reason,
-            UserId = userId,
-            GuildId = guildId,
-            IssuerUserId = issuerUserId
+            Number = ++userGuildState.WarningNumber,
+            Reason = args.Reason,
+            UserId = args.UserId,
+            GuildId = args.GuildId,
+            IssuerUserId = args.IssuerUserId
         };
-        await ctx.Warnings.AddAsync(warn);
-        await ctx.SaveChangesAsync();
+        _logger.LogDebug("Issuing warning {warning}", warn);
+        ctx.Model.Warnings.Add(warn);
+        await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn));
+        return warn;
     }
 }

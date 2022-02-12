@@ -14,4 +14,9 @@ public class DatabaseObject: ISnowflake
     /// </summary>
     [Key, Required]
     public long Id { get; set; }
+
+    public override string ToString()
+    {
+        return $"DatabaseObject({nameof(Id)}: {Id})";
+    }
 }

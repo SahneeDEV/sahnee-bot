@@ -11,4 +11,9 @@ public class Role : DatabaseObject, IRole
     public string RoleName { get; set; } = "";
     [Required]
     public RoleTypes RoleType { get; set; }
+
+    public override string ToString()
+    {
+        return $"Role({base.ToString()}, {nameof(GuildId)}: {GuildId}, {nameof(RoleName)}: {RoleName}, {nameof(RoleType)}: {RoleType})";
+    }
 }

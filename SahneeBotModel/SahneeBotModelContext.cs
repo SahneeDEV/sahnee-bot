@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SahneeBotModel.Contract;
 using SahneeBotModel.Models;
 
 namespace SahneeBotModel;
@@ -8,6 +9,7 @@ public class SahneeBotModelContext : DbContext
 {
     //Variables
     private readonly IConfiguration _configuration;
+    private readonly IdGenerator _id;
 
 
     /// <summary>
@@ -18,6 +20,8 @@ public class SahneeBotModelContext : DbContext
     public SahneeBotModelContext(DbContextOptions<SahneeBotModelContext> options, IConfiguration configuration) : base(options)
     {
         _configuration = configuration;
+        var machineId = long.Parse(configuration["MachineId"]);
+        _id = new IdGenerator(machineId);
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -56,5 +60,30 @@ public class SahneeBotModelContext : DbContext
             userGuildState.GuildId
         });
         base.OnModelCreating(modelBuilder);
+    }
+
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
+    {
+        SetSnowflakesInChanges();
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        SetSnowflakesInChanges();
+        return base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
+    }
+
+    private void SetSnowflakesInChanges()
+    {
+        /*var changedEntities = ChangeTracker.Entries();
+
+        foreach (var changedEntity in changedEntities)
+        {
+            if (changedEntity.Entity is ISnowflake snowflake && changedEntity.State == EntityState.Added)
+            {
+                snowflake.Id = _id.NextId();
+            }
+        }*/
     }
 }

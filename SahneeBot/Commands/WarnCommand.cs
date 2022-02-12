@@ -1,6 +1,8 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SahneeBot.Formatter;
 using SahneeBotController.Tasks;
 
 namespace SahneeBot.Commands;
@@ -10,13 +12,18 @@ namespace SahneeBot.Commands;
 /// </summary>
 public class WarnCommand: InteractionModuleBase<IInteractionContext>
 {
+    private readonly ITaskContext _ctx;
     private readonly GiveWarningToUserTask _task;
     private readonly ILogger<WarnCommand> _logger;
+    private readonly WarningDiscordFormatter _discordFormatter;
 
-    public WarnCommand(GiveWarningToUserTask task, ILogger<WarnCommand> logger)
+    public WarnCommand(
+        ITaskContext ctx, GiveWarningToUserTask task, ILogger<WarnCommand> logger, WarningDiscordFormatter discordFormatter)
     {
+        _ctx = ctx;
         _task = task;
         _logger = logger;
+        _discordFormatter = discordFormatter;
     }
     
     /// <summary>
@@ -29,13 +36,18 @@ public class WarnCommand: InteractionModuleBase<IInteractionContext>
         [Summary(description: "the user to warn")]
         IUser user,
         [Summary(description: "the reason why the user was warned")]
-        string reason = ""
+        string reason
         )
     {
         try
         {
-            await _task.Execute(Context.Guild.Id, Context.User.Id, user.Id, reason);
-            await RespondAsync(reason);
+            using (_ctx)
+            {
+                var warning = await _task.Execute(_ctx, new GiveWarningToUserTask.Args(
+                    reason, Context.Guild.Id, user.Id, Context.User.Id));
+                await _discordFormatter.FormatAndSend(warning, RespondAsync);
+                await _ctx.Model.SaveChangesAsync();
+            }
         }
         catch (Exception exception)
         {
