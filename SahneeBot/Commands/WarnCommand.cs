@@ -9,21 +9,15 @@ namespace SahneeBot.Commands;
 /// <summary>
 /// This command is used to warn users.
 /// </summary>
-public class WarnCommand: InteractionModuleBase<IInteractionContext>
+public class WarnCommand: CommandBase
 {
-    private readonly ITaskContext _ctx;
     private readonly GiveWarningToUserTask _task;
     private readonly ILogger<WarnCommand> _logger;
     private readonly WarningDiscordFormatter _discordFormatter;
 
-    public WarnCommand(
-        ITaskContext ctx, 
-        GiveWarningToUserTask task, 
-        ILogger<WarnCommand> logger, 
-        WarningDiscordFormatter discordFormatter
-    )
+    public WarnCommand(IServiceProvider serviceProvider, GiveWarningToUserTask task, ILogger<WarnCommand> logger, 
+        WarningDiscordFormatter discordFormatter): base(serviceProvider)
     {
-        _ctx = ctx;
         _task = task;
         _logger = logger;
         _discordFormatter = discordFormatter;
@@ -40,33 +34,18 @@ public class WarnCommand: InteractionModuleBase<IInteractionContext>
         IUser user,
         [Summary(description: "the reason why the user was warned")]
         string reason
-        )
+        ) => ExecuteAsync(async ctx => 
     {
+        var warning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(
+            reason, Context.Guild.Id, user.Id, Context.User.Id));
         try
         {
-            using (_ctx)
-            {
-                using (var transaction = await _ctx.Model.Database.BeginTransactionAsync())
-                {
-                    var warning = await _task.Execute(_ctx, new GiveWarningToUserTask.Args(
-                        reason, Context.Guild.Id, user.Id, Context.User.Id));
-                    try
-                    {
-                        await _discordFormatter.FormatAndSend(warning, RespondAsync);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogWarning(EventIds.Command, e, "Failed to send warning message: {Warning}", 
-                            warning);
-                    }
-
-                    await transaction.CommitAsync();
-                }
-            }
+            await _discordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
         }
-        catch (Exception exception)
+        catch (Exception e)
         {
-            _logger.LogError(EventIds.Command, exception, "Error in warn command");
+            _logger.LogWarning(EventIds.Command, e, "Failed to send warning message: {Warning}", 
+                warning);
         }
-    }
+    }, new CommandExecutionOptions(true));
 }

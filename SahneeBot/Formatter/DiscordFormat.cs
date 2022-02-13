@@ -91,6 +91,10 @@ public class DiscordFormat
         MessageComponent? components = null,
         Embed[]? embeds = null);
 
+    public delegate Task<IUserMessage> ModifyOriginalResponseAsyncDelegate(
+        Action<MessageProperties> func,
+        RequestOptions? options = null);
+
     public async Task Send(RespondAsyncDelegate del, SendOptions sendOptions = default)
     {
         await del(Text, Embeds, sendOptions.IsTts, sendOptions.Ephemeral, AllowedMentions, sendOptions.Request, 
@@ -99,5 +103,22 @@ public class DiscordFormat
     public async Task Send(SendMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
         await del(Text, sendOptions.IsTts, Embed, sendOptions.Request, AllowedMentions, Components, Embeds);
+    }
+    public Task Send(ModifyOriginalResponseAsyncDelegate del, SendOptions sendOptions = default)
+    {
+        del(properties =>
+        {
+            properties.Content = Opt(Text);
+            properties.Embed = Opt(Embed);
+            properties.Embeds = Opt(Embeds);
+            properties.AllowedMentions = Opt(AllowedMentions);
+            properties.Components = Opt(Components);
+        }, sendOptions.Request);
+        return Task.CompletedTask;
+    }
+
+    private static Optional<T> Opt<T>(T? value)
+    {
+        return value == null ? Optional<T>.Unspecified : new Optional<T>(value);
     }
 }

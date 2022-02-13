@@ -1,4 +1,6 @@
-﻿namespace SahneeBot.Formatter;
+﻿using Discord;
+
+namespace SahneeBot.Formatter;
 
 /// <summary>
 /// A formatter class for data.
@@ -26,12 +28,20 @@ public static class DiscordFormatterExtensions
     /// <param name="arg">The formatter argument.</param>
     /// <param name="del">The delegate.</param>
     /// <typeparam name="T">The data type to format.</typeparam>
-    public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, DiscordFormat.RespondAsyncDelegate del)
+    public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, 
+        DiscordFormat.RespondAsyncDelegate del)
     {
         var format = await discordFormatter.Format(arg);
         await format.Send(del);
     }
-    public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, DiscordFormat.SendMessageAsyncDelegate del)
+    public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, 
+        DiscordFormat.SendMessageAsyncDelegate del)
+    {
+        var format = await discordFormatter.Format(arg);
+        await format.Send(del);
+    }
+    public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, 
+        DiscordFormat.ModifyOriginalResponseAsyncDelegate del)
     {
         var format = await discordFormatter.Format(arg);
         await format.Send(del);
