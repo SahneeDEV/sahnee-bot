@@ -17,7 +17,11 @@ public class WarnCommand: InteractionModuleBase<IInteractionContext>
     private readonly WarningDiscordFormatter _discordFormatter;
 
     public WarnCommand(
-        ITaskContext ctx, GiveWarningToUserTask task, ILogger<WarnCommand> logger, WarningDiscordFormatter discordFormatter)
+        ITaskContext ctx, 
+        GiveWarningToUserTask task, 
+        ILogger<WarnCommand> logger, 
+        WarningDiscordFormatter discordFormatter
+    )
     {
         _ctx = ctx;
         _task = task;
