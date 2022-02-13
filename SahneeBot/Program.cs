@@ -45,6 +45,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<ICommandHandler, CommandHandler>();
         // FORMATTER
         services.AddTransient<WarningDiscordFormatter>();
+        services.AddTransient<UnwarningDiscordFormatter>();
         services.AddSingleton<DefaultFormatArguments>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
