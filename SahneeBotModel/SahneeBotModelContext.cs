@@ -77,7 +77,7 @@ public class SahneeBotModelContext : DbContext
     /// </summary>
     private void SetSnowflakesInChanges()
     { 
-        /*// Get all changes
+        // Get all changes
         var changedEntities = ChangeTracker.Entries();
         // Go through all changes
         foreach (var changedEntity in changedEntities)
@@ -87,6 +87,6 @@ public class SahneeBotModelContext : DbContext
             {
                 snowflake.Id = _id.NextId();
             }
-        }*/
+        }
     }
 }
