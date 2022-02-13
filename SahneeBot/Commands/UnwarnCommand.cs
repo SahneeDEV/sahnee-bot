@@ -9,19 +9,17 @@ namespace SahneeBot.Commands;
 /// <summary>
 /// This command is used to unwarn users.
 /// </summary>
-public class UnwarnCommand: InteractionModuleBase<IInteractionContext>
+public class UnwarnCommand: CommandBase
 {
-    private readonly ITaskContext _ctx;
     private readonly GiveUnwarningToUserTask _task;
     private readonly ILogger<UnwarnCommand> _logger;
     private readonly UnwarningDiscordFormatter _discordFormatter;
 
-    public UnwarnCommand(ITaskContext ctx, 
+    public UnwarnCommand(IServiceProvider serviceProvider,
         GiveUnwarningToUserTask task,
         ILogger<UnwarnCommand> logger, 
-        UnwarningDiscordFormatter discordFormatter)
+        UnwarningDiscordFormatter discordFormatter): base(serviceProvider)
     {
-        _ctx = ctx;
         _task = task;
         _logger = logger;
         _discordFormatter = discordFormatter;
@@ -32,31 +30,18 @@ public class UnwarnCommand: InteractionModuleBase<IInteractionContext>
         [Summary(description: "the user to unwarn")]
         IUser user,
         [Summary(description: "the reason why the user has been unwarned")]
-        string reason)
+        string reason) => ExecuteAsync(async ctx =>
     {
+        var unwarning = await _task.Execute(ctx, new GiveUnwarningToUserTask.Args(
+            reason, Context.Guild.Id, user.Id, Context.User.Id));
         try
         {
-            using (_ctx)
-            {
-                using (var transaction = await _ctx.Model.Database.BeginTransactionAsync())
-                {
-                    var unwarning = await _task.Execute(_ctx, new GiveUnwarningToUserTask.Args(
-                        reason, Context.Guild.Id, user.Id, Context.User.Id));
-                    try
-                    {
-                        await _discordFormatter.FormatAndSend(unwarning, RespondAsync);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogWarning(EventIds.Command, e, "Failed to send unwarning message: {Warning}", 
-                            unwarning);
-                    }
-                }
-            }
+            await _discordFormatter.FormatAndSend(unwarning, RespondAsync);
         }
-        catch (Exception exception)
+        catch (Exception e)
         {
-            _logger.LogError(EventIds.Command, exception, "Error in unwarn command");
+            _logger.LogWarning(EventIds.Command, e, "Failed to send unwarning message: {Warning}",
+                unwarning);
         }
-    }
+    }, new CommandExecutionOptions(true));
 }
