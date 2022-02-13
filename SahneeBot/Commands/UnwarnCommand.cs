@@ -26,7 +26,7 @@ public class UnwarnCommand: CommandBase
     }
 
     [SlashCommand("unwarn", "Unwarns a user. Removes one from the current warning count")]
-    public async Task Unwarn(
+    public Task Unwarn(
         [Summary(description: "the user to unwarn")]
         IUser user,
         [Summary(description: "the reason why the user has been unwarned")]
