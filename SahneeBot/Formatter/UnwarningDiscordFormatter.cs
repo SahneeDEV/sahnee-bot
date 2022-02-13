@@ -4,35 +4,35 @@ using SahneeBotModel.Contract;
 
 namespace SahneeBot.Formatter;
 
-public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
+public class UnwarningDiscordFormatter: IDiscordFormatter<IWarning>
 {
     private readonly DiscordSocketClient _bot;
     private readonly DefaultFormatArguments _defaultFormatArguments;
 
-    public WarningDiscordFormatter(DiscordSocketClient bot, DefaultFormatArguments defaultFormatArguments)
+    public UnwarningDiscordFormatter(DiscordSocketClient bot, DefaultFormatArguments defaultFormatArguments)
     {
         _bot = bot;
         _defaultFormatArguments = defaultFormatArguments;
     }
-    
+
     public Task<DiscordFormat> Format(IWarning arg)
     {
         var guild = _bot.GetGuild(arg.GuildId);
         var user = _bot.GetUser(arg.UserId);
         var embed = _defaultFormatArguments.GetEmbed();
-
-        embed.Title = $":thumbsdown: {user.Username} has been warned";
+        
+        embed.Title = $":heart: {user.Username} has been unwarned";
         embed.Fields = new List<EmbedFieldBuilder>
         {
             new()
             {
-                Name = "Warned",
+                Name = "Unwarned",
                 Value = $"<@{arg.UserId}>",
                 IsInline = true
             },
             new()
             {
-                Name = "Warned by",
+                Name = "Unwarned by",
                 Value = $"<@{arg.IssuerUserId}>",
                 IsInline = true
             },

@@ -34,7 +34,7 @@ public class WarnCommand: InteractionModuleBase<IInteractionContext>
     /// </summary>
     /// <param name="user">The user that is warned.</param>
     /// <param name="reason">The warn reason.</param>
-    [SlashCommand("warn", "Warns a user")]
+    [SlashCommand("warn", "Warns a user. Adds one to the current warning count")]
     public async Task Warn(
         [Summary(description: "the user to warn")]
         IUser user,
