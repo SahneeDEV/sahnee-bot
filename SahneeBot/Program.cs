@@ -44,11 +44,13 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<GuildQueue>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
         // FORMATTER
+        services.AddSingleton<DefaultFormatArguments>();
         services.AddTransient<WarningDiscordFormatter>();
         services.AddTransient<UnwarningDiscordFormatter>();
-        services.AddSingleton<DefaultFormatArguments>();
+        services.AddTransient<HelpDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
+        services.AddTransient<GiveUnwarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
         services.AddTransient<SendWarningMessageToUserTask, SahneeBotSendWarningMessageToUserTask>();
         services.AddTransient<SendUnwarningMessageToUserTask, SahneeBotSendUnwarningMessageToUserTask>();
