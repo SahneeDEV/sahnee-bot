@@ -22,9 +22,9 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
         var user = _bot.GetUser(arg.UserId);
         return Task.FromResult(new DiscordFormat
             {
-                Embed = new EmbedBuilder()
+                Embed = new EmbedBuilder
                 {
-                    Author = new EmbedAuthorBuilder()
+                    Author = new EmbedAuthorBuilder
                     {
                         Name = "SahneeBot",
                         Url = !string.IsNullOrWhiteSpace(_configuration["Url"])
@@ -36,33 +36,33 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
                     },
                     Color = new Color(243,9,131),
                     Title = $":thumbsdown: {user.Username} has been warned",
-                    Fields = new List<EmbedFieldBuilder>()
+                    Fields = new List<EmbedFieldBuilder>
                     {
-                        new EmbedFieldBuilder()
+                        new()
                         {
                             Name = "Warned",
                             Value = $"<@{arg.UserId}>",
                             IsInline = true
                         },
-                        new EmbedFieldBuilder()
+                        new()
                         {
                             Name = "Warned by",
                             Value = $"<@{arg.IssuerUserId}>",
                             IsInline = true
                         },
-                        new EmbedFieldBuilder()
+                        new()
                         {
                             Name = "Warning Number",
                             Value = $"{arg.Number}",
                             IsInline = true
                         },
-                        new EmbedFieldBuilder()
+                        new()
                         {
                             Name = "In Server",
                             Value = $"{guild.Name}",
                             IsInline = true
                         },
-                        new EmbedFieldBuilder()
+                        new()
                         {
                             Name = "Message",
                             Value = arg.Reason,
@@ -70,7 +70,7 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
                         }
                     },
                     Timestamp = arg.Time,
-                    Footer = new EmbedFooterBuilder()
+                    Footer = new EmbedFooterBuilder
                     {
                         Text = "proudly presented by sahnee.dev",
                         IconUrl = !string.IsNullOrWhiteSpace(_configuration["BotSettings:IconUrl"])
