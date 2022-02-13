@@ -8,19 +8,24 @@ namespace SahneeBot;
 public static class EventIds
 {
     /// <summary>
+    /// The base offset of all event IDs.
+    /// </summary>
+    private const int Base = 0;
+    
+    /// <summary>
     /// Logs related to the bot startup.
     /// </summary>
-    public static readonly EventId Startup = new(1, "Startup");
+    public static readonly EventId Startup = new(Base + 1, "Startup");
     /// <summary>
     /// Logs related to command handling.
     /// </summary>
-    public static readonly EventId Command = new(2, "Command");
+    public static readonly EventId Command = new(Base + 2, "Command");
     /// <summary>
     /// Discord API log events.
     /// </summary>
-    public static readonly EventId Discord = new (3, "Discord");
+    public static readonly EventId Discord = new (Base + 3, "Discord");
     /// <summary>
     /// Migration log events.
     /// </summary>
-    public static readonly EventId Migration = new (4, "Migration");
+    public static readonly EventId Migration = new (Base + 4, "Migration");
 }

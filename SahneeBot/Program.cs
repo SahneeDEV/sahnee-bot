@@ -11,6 +11,7 @@ using SahneeBot.Formatter;
 using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
+using EventIds = SahneeBot.EventIds;
 
 static IHostBuilder CreateHostBuilder(string[] args)
     => Host

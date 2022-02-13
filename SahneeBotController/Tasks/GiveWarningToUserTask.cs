@@ -9,11 +9,26 @@ namespace SahneeBotController.Tasks;
 /// </summary>
 public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning>
 {
+    /// <summary>
+    /// Arguments for issuing a warning.
+    /// </summary>
     public struct Args
     {
+        /// <summary>
+        /// The guild ID the warning was issued on.
+        /// </summary>
         public readonly ulong GuildId;
+        /// <summary>
+        /// The user ID that issued the warning.
+        /// </summary>
         public readonly ulong IssuerUserId;
+        /// <summary>
+        /// The user ID that received the warning.
+        /// </summary>
         public readonly ulong UserId;
+        /// <summary>
+        /// The reason of the warning.
+        /// </summary>
         public readonly string Reason;
 
         public Args(string reason, ulong guildId, ulong userId, ulong issuerUserId)
@@ -51,7 +66,7 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning>
             GuildId = args.GuildId,
             IssuerUserId = args.IssuerUserId
         };
-        _logger.LogDebug("Issuing warning {warning}", warn);
+        _logger.LogDebug(EventIds.Warning, "Issuing warning {warning}", warn);
         ctx.Model.Warnings.Add(warn);
         await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn));
         return warn;

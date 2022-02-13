@@ -5,13 +5,22 @@ using SahneeBotModel.Models;
 namespace SahneeBotController.Tasks;
 
 /// <summary>
-/// This task gets the amount of warnings of the given user.
+/// This task gets the state of a user on a single guild.
 /// </summary>
 public class GetUserGuildStateTask: ITask<GetUserGuildStateTask.Args, IUserGuildState>
 {
+    /// <summary>
+    /// Arguments for getting the user guild state.
+    /// </summary>
     public struct Args
     {
+        /// <summary>
+        /// The guild ID of the user.
+        /// </summary>
         public readonly ulong GuildId;
+        /// <summary>
+        /// The ID of the user.
+        /// </summary>
         public readonly ulong UserId;
 
         public Args(ulong guildId, ulong userId)

@@ -22,9 +22,6 @@ public class CommandHandler: ICommandHandler
         _logger = logger;
     }
     
-    /// <summary>
-    /// Installs the command handler into discord.
-    /// </summary>
     public async void Install()
     {
         _logger.LogInformation(EventIds.Startup, "Creating interaction handler...");

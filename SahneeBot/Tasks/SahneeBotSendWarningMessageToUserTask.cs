@@ -8,16 +8,16 @@ namespace SahneeBot.Tasks;
 
 public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
 {
-    private readonly GetUserGuildStateTask _getUserGuildStateTask;
+    private readonly GetUserGuildStateTask _userGuildState;
     private readonly DiscordSocketClient _bot;
     private readonly ILogger<SahneeBotSendWarningMessageToUserTask> _logger;
     private readonly WarningDiscordFormatter _discordFormatter;
 
     public SahneeBotSendWarningMessageToUserTask(
-        GetUserGuildStateTask getUserGuildStateTask, DiscordSocketClient bot, 
+        GetUserGuildStateTask userGuildState, DiscordSocketClient bot, 
         ILogger<SahneeBotSendWarningMessageToUserTask> logger, WarningDiscordFormatter discordFormatter)
     {
-        _getUserGuildStateTask = getUserGuildStateTask;
+        _userGuildState = userGuildState;
         _bot = bot;
         _logger = logger;
         _discordFormatter = discordFormatter;
@@ -26,7 +26,7 @@ public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
     public override async Task<bool> Execute(ITaskContext ctx, Args arg)
     {
         // Don't send a message if the user opted out.
-        var userGuildState = await _getUserGuildStateTask.Execute(
+        var userGuildState = await _userGuildState.Execute(
             ctx, 
             new GetUserGuildStateTask.Args(arg.Warning.GuildId, arg.Warning.UserId));
         if (userGuildState.MessageOptOut)
@@ -34,7 +34,7 @@ public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
             return false;
         }
         // Get the user, could be deleted
-        var user = await _bot.GetUserAsync(arg.Warning.UserId);
+        var user = await _bot.GetUserAsync(arg.RecipientId);
         if (user == null)
         {
             _logger.LogWarning(EventIds.Discord, 
