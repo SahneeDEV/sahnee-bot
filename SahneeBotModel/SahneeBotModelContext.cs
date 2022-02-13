@@ -16,11 +16,11 @@ public class SahneeBotModelContext : DbContext
     private readonly IConfiguration _configuration;
     private readonly IdGenerator _id;
 
-    public SahneeBotModelContext(DbContextOptions<SahneeBotModelContext> options, IConfiguration configuration) : base(options)
+    public SahneeBotModelContext(DbContextOptions<SahneeBotModelContext> options, IConfiguration configuration, 
+        IdGenerator id) : base(options)
     {
         _configuration = configuration;
-        var machineId = long.Parse(configuration["MachineId"]);
-        _id = new IdGenerator(machineId);
+        _id = id;
     }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

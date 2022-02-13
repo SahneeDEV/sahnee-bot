@@ -18,6 +18,14 @@ static IHostBuilder CreateHostBuilder(string[] args)
         .CreateDefaultBuilder(args)
         .ConfigureServices(services =>
         {
+            // ID GENERATOR
+            services.AddSingleton(provider =>
+            {
+                var cfg = provider.GetRequiredService<IConfiguration>();
+                var machineId = long.Parse(cfg["MachineId"]);
+                return new IdGenerator(machineId);
+            });
+            // MODEL
             services.AddDbContext<SahneeBotModelContext>(options =>
             {
                 options
