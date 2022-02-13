@@ -23,6 +23,6 @@ public class HelpCommand: CommandBase
     [SlashCommand("help", "Gives a details about the bot")]
     public Task Help() => ExecuteAsync(async ctx =>
     {
-        await _discordFormatter.FormatAndSend(new HelpDiscordFormatter.Args(), RespondAsync);
+        await _discordFormatter.FormatAndSend(new HelpDiscordFormatter.Args(), ModifyOriginalResponseAsync);
     });
 }
