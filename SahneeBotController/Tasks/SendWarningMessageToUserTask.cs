@@ -7,7 +7,7 @@ namespace SahneeBotController.Tasks;
 /// </summary>
 public abstract class SendWarningMessageToUserTask: ITask<SendWarningMessageToUserTask.Args, bool>
 {
-    public class Args
+    public struct Args
     {
         public readonly IWarning Warning;
 

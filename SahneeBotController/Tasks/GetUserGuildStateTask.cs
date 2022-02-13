@@ -9,7 +9,7 @@ namespace SahneeBotController.Tasks;
 /// </summary>
 public class GetUserGuildStateTask: ITask<GetUserGuildStateTask.Args, IUserGuildState>
 {
-    public class Args
+    public struct Args
     {
         public readonly ulong GuildId;
         public readonly ulong UserId;

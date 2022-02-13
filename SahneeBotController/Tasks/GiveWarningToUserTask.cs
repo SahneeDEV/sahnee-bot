@@ -9,7 +9,7 @@ namespace SahneeBotController.Tasks;
 /// </summary>
 public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning>
 {
-    public class Args
+    public struct Args
     {
         public readonly ulong GuildId;
         public readonly ulong IssuerUserId;
