@@ -93,7 +93,8 @@ public class DiscordFormat
 
     public async Task Send(RespondAsyncDelegate del, SendOptions sendOptions = default)
     {
-        await del(Text, Embeds, sendOptions.IsTts, sendOptions.Ephemeral, AllowedMentions, sendOptions.Request, Components, Embed);
+        await del(Text, Embeds, sendOptions.IsTts, sendOptions.Ephemeral, AllowedMentions, sendOptions.Request, 
+            Components, Embed);
     }
     public async Task Send(SendMessageAsyncDelegate del, SendOptions sendOptions = default)
     {

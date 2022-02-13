@@ -42,10 +42,22 @@ public class WarnCommand: InteractionModuleBase<IInteractionContext>
         {
             using (_ctx)
             {
-                var warning = await _task.Execute(_ctx, new GiveWarningToUserTask.Args(
-                    reason, Context.Guild.Id, user.Id, Context.User.Id));
-                await _discordFormatter.FormatAndSend(warning, RespondAsync);
-                await _ctx.Model.SaveChangesAsync();
+                using (var transaction = await _ctx.Model.Database.BeginTransactionAsync())
+                {
+                    var warning = await _task.Execute(_ctx, new GiveWarningToUserTask.Args(
+                        reason, Context.Guild.Id, user.Id, Context.User.Id));
+                    try
+                    {
+                        await _discordFormatter.FormatAndSend(warning, RespondAsync);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogWarning(EventIds.Command, e, "Failed to send warning message: {Warning}", 
+                            warning);
+                    }
+
+                    await transaction.CommitAsync();
+                }
             }
         }
         catch (Exception exception)

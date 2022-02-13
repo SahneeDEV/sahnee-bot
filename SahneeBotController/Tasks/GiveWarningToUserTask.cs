@@ -68,6 +68,7 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning>
         };
         _logger.LogDebug(EventIds.Warning, "Issuing warning {warning}", warn);
         ctx.Model.Warnings.Add(warn);
+        await ctx.Model.SaveChangesAsync();
         await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn));
         return warn;
     }

@@ -5,7 +5,7 @@ using SahneeBotModel.Models;
 namespace SahneeBotController.Tasks;
 
 /// <summary>
-/// This task gets the state of a user on a single guild.
+/// This task gets the state of a user on a single guild or creates it if it does not exist.
 /// </summary>
 public class GetUserGuildStateTask: ITask<GetUserGuildStateTask.Args, IUserGuildState>
 {
@@ -44,6 +44,7 @@ public class GetUserGuildStateTask: ITask<GetUserGuildStateTask.Args, IUserGuild
             UserId = args.UserId
         };
         ctx.Model.UserGuildStates.Add(userGuildState);
+        await ctx.Model.SaveChangesAsync();
         return userGuildState;
     }
 }

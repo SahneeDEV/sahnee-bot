@@ -16,11 +16,6 @@ public class SahneeBotModelContext : DbContext
     private readonly IConfiguration _configuration;
     private readonly IdGenerator _id;
 
-    /// <summary>
-    /// Default constructor for DI
-    /// </summary>
-    /// <param name="options"></param>
-    /// <param name="configuration"></param>
     public SahneeBotModelContext(DbContextOptions<SahneeBotModelContext> options, IConfiguration configuration) : base(options)
     {
         _configuration = configuration;
@@ -52,10 +47,6 @@ public class SahneeBotModelContext : DbContext
     /// </summary>
     public DbSet<GuildState> GuildStates { get; set; }
 
-    /// <summary>
-    /// Model edits
-    /// </summary>
-    /// <param name="modelBuilder"></param>
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         // Composite key for user guild state.
@@ -86,7 +77,7 @@ public class SahneeBotModelContext : DbContext
     /// </summary>
     private void SetSnowflakesInChanges()
     { 
-        // Get all changes
+        /*// Get all changes
         var changedEntities = ChangeTracker.Entries();
         // Go through all changes
         foreach (var changedEntity in changedEntities)
@@ -96,6 +87,6 @@ public class SahneeBotModelContext : DbContext
             {
                 snowflake.Id = _id.NextId();
             }
-        }
+        }*/
     }
 }
