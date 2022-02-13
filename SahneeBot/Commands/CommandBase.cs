@@ -89,24 +89,22 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         
         async Task ExecuteAsyncImpl()
         {
-            using (scope)
+            try
             {
-                try
-                {
-                    // Create context
-                    await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
-                    await using var transaction = await model.Database.BeginTransactionAsync();
-                    using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
-                    // Run command
-                    await del(ctx);
-                    // Commit transaction
-                    await transaction.CommitAsync();
-                }
-                catch (Exception exception)
-                {
-                    _logger.LogError(EventIds.Command, exception, "Error in {Command} command", Context.Interaction);
-                }
+                // Create context
+                await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
+                await using var transaction = await model.Database.BeginTransactionAsync();
+                using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
+                // Run command
+                await del(ctx);
+                // Commit transaction
+                await transaction.CommitAsync();
             }
+            catch (Exception exception)
+            {
+                _logger.LogError(EventIds.Command, exception, "Error in {Command} command", Context.Interaction);
+            }
+            scope.Dispose();
         }
 
         if (opts.PlaceInQueue)
@@ -114,6 +112,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             var guildId = Context.Guild?.Id;
             if (!guildId.HasValue)
             {
+                scope.Dispose();
                 throw new InvalidOperationException("Cannot place global commands in a guild queue");
             }
             _queue.Enqueue(guildId.Value, ExecuteAsyncImpl);
