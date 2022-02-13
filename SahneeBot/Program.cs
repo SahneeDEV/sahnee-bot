@@ -45,6 +45,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<ITaskContext, SahneeBotTaskContext>();
         // FORMATTER
         services.AddTransient<WarningDiscordFormatter>();
+        services.AddSingleton<DefaultFormatArguments>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
