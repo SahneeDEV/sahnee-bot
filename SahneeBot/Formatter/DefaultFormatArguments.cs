@@ -30,11 +30,11 @@ public class DefaultFormatArguments
         return new EmbedAuthorBuilder()
         {
             Name = _defaultName,
-            Url = !string.IsNullOrWhiteSpace(_configuration["Url"])
-                ? _configuration["Url"]
+            Url = !string.IsNullOrWhiteSpace(_configuration["BotSettings:Url"])
+                ? _configuration["BotSettings:Url"]
                 : _defaultWebsiteUrl,
             IconUrl = !string.IsNullOrWhiteSpace(_configuration["BotSettings:IconUrl"])
-                ? _configuration["IconUrl"]
+                ? _configuration["BotSettings:IconUrl"]
                 : _defaultIconUrl
         };
     }
@@ -49,7 +49,7 @@ public class DefaultFormatArguments
         {
             Text = _defaultFooterText,
             IconUrl = !string.IsNullOrWhiteSpace(_configuration["BotSettings:IconUrl"])
-                ? _configuration["IconUrl"]
+                ? _configuration["BotSettings:IconUrl"]
                 : _defaultIconUrl
         };
     }
