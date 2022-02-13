@@ -7,31 +7,22 @@ namespace SahneeBot.Commands;
 /// <summary>
 /// This command is used to give additional information about the bot.
 /// </summary>
-public class HelpCommand: InteractionModuleBase<IInteractionContext>
+public class HelpCommand: CommandBase
 {
    
     private readonly HelpDiscordFormatter _discordFormatter;
 
-    public HelpCommand(HelpDiscordFormatter discordFormatter)
+    public HelpCommand(HelpDiscordFormatter discordFormatter, IServiceProvider serviceProvider): base(serviceProvider)
     {
         _discordFormatter = discordFormatter;
     }
-    
+
     /// <summary>
     /// The actual help command.
     /// </summary>
     [SlashCommand("help", "Gives a details about the bot")]
-    public async Task Help()
+    public Task Help() => ExecuteAsync(async ctx =>
     {
-        
-        try
-        {
-            await _discordFormatter.FormatAndSend(new HelpDiscordFormatter.Args(), RespondAsync);
-        }
-        catch (Exception e)
-        {
-           // _logger.LogWarning(EventIds.Command, e, "Failed to send warning message: {Warning}", 
-           //     warning);
-        }
-    }
+        await _discordFormatter.FormatAndSend(new HelpDiscordFormatter.Args(), RespondAsync);
+    });
 }
