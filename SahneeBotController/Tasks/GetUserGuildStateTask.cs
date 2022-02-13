@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using SahneeBotModel;
 using SahneeBotModel.Contract;
 using SahneeBotModel.Models;
 
@@ -25,7 +23,8 @@ public class GetUserGuildStateTask: ITask<GetUserGuildStateTask.Args, IUserGuild
     
     public async Task<IUserGuildState> Execute(ITaskContext ctx, Args args)
     {
-        var userGuildState = await ctx.Model.UserGuildStates.FirstOrDefaultAsync(s => s.GuildId == args.GuildId && s.UserId == args.UserId);
+        var userGuildState = await ctx.Model.UserGuildStates
+            .FirstOrDefaultAsync(s => s.GuildId == args.GuildId && s.UserId == args.UserId);
         if (userGuildState != null)
         {
             return userGuildState;

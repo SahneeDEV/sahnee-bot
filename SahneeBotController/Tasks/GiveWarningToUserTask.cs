@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SahneeBotModel;
+﻿using Microsoft.Extensions.Logging;
 using SahneeBotModel.Contract;
 using SahneeBotModel.Models;
 

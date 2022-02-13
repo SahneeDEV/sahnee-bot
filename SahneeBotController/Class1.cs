@@ -1,7 +1,4 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using SahneeBotModel;
-using SahneeBotModel.Contract;
-using SahneeBotModel.Models;
 
 namespace SahneeBotController;
 

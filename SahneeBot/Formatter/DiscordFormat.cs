@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Interactions;
 
 namespace SahneeBot.Formatter;
 
@@ -11,7 +10,7 @@ public class DiscordFormat
     /// <summary>
     /// The text of the message.
     /// </summary>
-    public string? Text = null;
+    public string? Text;
     /// <summary>
     /// The embeds of the message.
     /// </summary>
@@ -21,17 +20,38 @@ public class DiscordFormat
     /// </summary>
     public AllowedMentions? AllowedMentions = null;
     /// <summary>
-    /// The options of the request.
-    /// </summary>
-    public RequestOptions? Options = null;
-    /// <summary>
     /// The message components.
     /// </summary>
     public MessageComponent? Components = null;
     /// <summary>
     /// A single embed of the message. Alias for creating an Embed array with a single element.
     /// </summary>
-    public Embed? Embed = null;
+    public Embed? Embed;
+
+    /// <summary>
+    /// Creates an empty format.
+    /// </summary>
+    public DiscordFormat()
+    {
+    }
+
+    /// <summary>
+    /// Creates a format with the given text.
+    /// </summary>
+    /// <param name="text">The text.</param>
+    public DiscordFormat(string text)
+    {
+        Text = text;
+    }
+
+    /// <summary>
+    /// Creates a format with the given embed.
+    /// </summary>
+    /// <param name="embed">The embed.</param>
+    public DiscordFormat(Embed embed)
+    {
+        Embed = embed;
+    }
 
     /// <summary>
     /// Options for sending the message.
@@ -46,6 +66,10 @@ public class DiscordFormat
         /// Ready the message?
         /// </summary>
         public bool IsTts = false;
+        /// <summary>
+        /// The options of the request.
+        /// </summary>
+        public RequestOptions? Request = null;
     }
 
     public delegate Task RespondAsyncDelegate(
@@ -69,10 +93,10 @@ public class DiscordFormat
 
     public async Task Send(RespondAsyncDelegate del, SendOptions sendOptions = default)
     {
-        await del(Text, Embeds, sendOptions.IsTts, sendOptions.Ephemeral, AllowedMentions, Options, Components, Embed);
+        await del(Text, Embeds, sendOptions.IsTts, sendOptions.Ephemeral, AllowedMentions, sendOptions.Request, Components, Embed);
     }
     public async Task Send(SendMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
-        await del(Text, sendOptions.IsTts, Embed, Options, AllowedMentions, Components, Embeds);
+        await del(Text, sendOptions.IsTts, Embed, sendOptions.Request, AllowedMentions, Components, Embeds);
     }
 }

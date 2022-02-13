@@ -9,7 +9,7 @@ public abstract class SendWarningMessageToUserTask: ITask<SendWarningMessageToUs
 {
     public class Args
     {
-        public IWarning Warning;
+        public readonly IWarning Warning;
 
         public Args(IWarning warning)
         {
