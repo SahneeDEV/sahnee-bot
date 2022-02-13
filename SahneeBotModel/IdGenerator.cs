@@ -5,68 +5,67 @@
 /// </summary>
 public class IdGenerator
 {
-    //Variables
-    private static long workerId;
-    private static long twepoch = 1643414400000L; // Custom Epoch (Sat, 29 Jan 2022 00:00:00 UTC/GMT+1)
-    private static long sequence = 0L;
-    private static int workerIdBits = 4;
-    public static long maxWorkerId = -1L ^ -1L << workerIdBits;
-    private static int sequenceBits = 10;
-    private static int workerIdShift = sequenceBits;
-    private static int timestampLeftShift = sequenceBits + workerIdBits;
-    public static long sequenceMask = -1L ^ -1L << sequenceBits;
-    private long lastTimestamp = -1L;
-
-
+    private const long TwEpoch = 1643414400000L; // Custom Epoch (Sat, 29 Jan 2022 00:00:00 UTC/GMT+1)
+    private const int WorkerIdBits = 4;
+    private const long MaxWorkerId = -1L ^ -1L << WorkerIdBits;
+    private const int SequenceBits = 10;
+    private const int WorkerIdShift = SequenceBits;
+    private const int TimestampLeftShift = SequenceBits + WorkerIdBits;
+    private const long SequenceMask = -1L ^ -1L << SequenceBits;
+    private static readonly DateTime Utc1970 = new(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+    private readonly long _workerId;
+    private long _sequence;
+    private long _lastTimestamp = -1L;
+    
     /// <summary>
-    /// Constructor
-    /// <param name="workerId">Id of the current worker. Gathered from appsettings.json</param>
+    /// Creates a new ID generator.
     /// </summary>
+    /// <param name="workerId">Id of the current worker.</param>
     public IdGenerator(long workerId)
     {
-        if (workerId > maxWorkerId || workerId < 0)
+        if (workerId > MaxWorkerId || workerId < 0)
             throw new Exception($"worker Id can't be greater than {workerId} or less than 0 ");
-        IdGenerator.workerId = workerId;
+        _workerId = workerId;
     }
 
     /// <summary>
     /// Generate the next snowflake ID
     /// </summary>
-    /// <returns></returns>
-    /// <exception cref="Exception"></exception>
+    /// <returns>The ID.</returns>
+    /// <exception cref="Exception">Failed to generate the ID.</exception>
     public long NextId()
     {
         lock (this)
         {
-            long timestamp = timeGen();
-            if (this.lastTimestamp == timestamp)
+            var timestamp = TimeGen();
+            if (_lastTimestamp == timestamp)
             {
                 //generated in the same microsecond ID
-                IdGenerator.sequence = (IdGenerator.sequence + 1) & IdGenerator.sequenceMask;
-                if (IdGenerator.sequence == 0)
+                _sequence = (_sequence + 1) & SequenceMask;
+                if (_sequence == 0)
                 {
                     //Generated in one microsecond ID count reached maximum, waiting for next microsecond
-                    timestamp = tillNextMillis(this.lastTimestamp);
+                    timestamp = TillNextMillis(_lastTimestamp);
                 }
             }
             else
             {
                 //generated in different microseconds ID
-                IdGenerator.sequence = 0; //Count clear
+                _sequence = 0; //Count clear
             }
 
-            if (timestamp < lastTimestamp)
+            if (timestamp < _lastTimestamp)
             {
                 //If the current timestamp is more than the last one generated ID The timestamp is small
                 //, throwing an exception because there is no guarantee that it will be generated
                 //now ID No previous build
                 throw new Exception("Clocked moved backwards! Refusing to generate id for " +
-                                    $"{ this.lastTimestamp - timestamp}");
+                                    $"{_lastTimestamp - timestamp}");
             }
 
-            this.lastTimestamp = timestamp; //Save current timestamp as last generated ID Timestamp
-            long nextId = (timestamp - twepoch << timestampLeftShift) 
-                          | IdGenerator.workerId << IdGenerator.workerIdShift | IdGenerator.sequence;
+            _lastTimestamp = timestamp; //Save current timestamp as last generated ID Timestamp
+            var nextId = (timestamp - TwEpoch << TimestampLeftShift) 
+                         | _workerId << WorkerIdShift | _sequence;
             return nextId;
         }
     }
@@ -74,14 +73,14 @@ public class IdGenerator
     /// <summary>
     /// Get the next microsecond timestamp
     /// </summary>
-    /// <param name="lastTimestamp"></param>
-    /// <returns></returns>
-    private long tillNextMillis(long lastTimestamp)
+    /// <param name="lastTimestamp">The last timestamp as long.</param>
+    /// <returns>The new timestamp as long.</returns>
+    private static long TillNextMillis(long lastTimestamp)
     {
-        long timestamp = timeGen();
+        var timestamp = TimeGen();
         while (timestamp <= lastTimestamp)
         {
-            timestamp = timeGen();
+            timestamp = TimeGen();
         }
 
         return timestamp;
@@ -91,10 +90,8 @@ public class IdGenerator
     /// Generate the current timestamp
     /// </summary>
     /// <returns>the current timestamp as long</returns>
-    private long timeGen()
+    private static long TimeGen()
     {
-        return (long)(DateTime.UtcNow - 
-                      new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc))
-            .TotalMilliseconds;
+        return (long)(DateTime.UtcNow - Utc1970).TotalMilliseconds;
     }
 }
