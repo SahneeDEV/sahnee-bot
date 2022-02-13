@@ -41,8 +41,8 @@ var host = CreateHostBuilder(args)
     {
         // SYSTEM
         services.AddSingleton<DiscordLogger>();
+        services.AddSingleton<GuildQueue>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
-        services.AddTransient<ITaskContext, SahneeBotTaskContext>();
         // FORMATTER
         services.AddTransient<WarningDiscordFormatter>();
         // TASKS
@@ -74,7 +74,7 @@ using (var scope = host.Services.CreateScope())
     }
     catch (Exception error)
     {
-        logger.LogError(EventIds.Migration, error, "Failed to run migrations.");
+        logger.LogError(EventIds.Migration, error, "Failed to run migrations");
         return;
     }
 }
@@ -83,9 +83,9 @@ bot.Log += discordLogger.Log;
 
 //login the bot and start
 var configuration = host.Services.GetRequiredService<IConfiguration>();
-logger.LogInformation(EventIds.Startup, "Logging into discord API...");
+logger.LogInformation(EventIds.Startup, "Logging into discord API");
 await bot.LoginAsync(TokenType.Bot, configuration["Discord:Token"]);
-logger.LogInformation(EventIds.Startup, "Starting bot...");
+logger.LogInformation(EventIds.Startup, "Starting bot");
 await bot.StartAsync();
 
 var commandHandler = host.Services.GetRequiredService<ICommandHandler>();

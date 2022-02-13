@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.Extensions.DependencyInjection;
 using SahneeBotModel;
 
 namespace SahneeBotController.Tasks;
@@ -20,4 +21,8 @@ public interface ITaskContext: IDisposable
     /// The db context of the task.
     /// </summary>
     SahneeBotModelContext Model { get; }
+    /// <summary>
+    /// The database transaction.
+    /// </summary>
+    IDbContextTransaction? Transaction { get; }
 }
