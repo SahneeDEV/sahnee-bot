@@ -29,7 +29,7 @@ public class WarnCommand: CommandBase
     /// <param name="user">The user that is warned.</param>
     /// <param name="reason">The warn reason.</param>
     [SlashCommand("warn", "Warns a user. Adds one to the current warning count")]
-    public async Task Warn(
+    public Task Warn(
         [Summary(description: "the user to warn")]
         IUser user,
         [Summary(description: "the reason why the user was warned")]
