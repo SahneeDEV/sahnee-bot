@@ -36,7 +36,7 @@ public class UnwarnCommand: CommandBase
             reason, Context.Guild.Id, user.Id, Context.User.Id));
         try
         {
-            await _discordFormatter.FormatAndSend(unwarning, RespondAsync);
+            await _discordFormatter.FormatAndSend(unwarning, ModifyOriginalResponseAsync);
         }
         catch (Exception e)
         {
