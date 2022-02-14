@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using SahneeBotModel;
 using SahneeBotModel.Contract;
 using SahneeBotModel.Models;
 
@@ -7,38 +8,12 @@ namespace SahneeBotController.Tasks;
 /// <summary>
 /// Gives the given user a warning.
 /// </summary>
-public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning>
+public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning?>
 {
     /// <summary>
     /// Arguments for issuing a warning.
     /// </summary>
-    public struct Args
-    {
-        /// <summary>
-        /// The guild ID the warning was issued on.
-        /// </summary>
-        public readonly ulong GuildId;
-        /// <summary>
-        /// The user ID that issued the warning.
-        /// </summary>
-        public readonly ulong IssuerUserId;
-        /// <summary>
-        /// The user ID that received the warning.
-        /// </summary>
-        public readonly ulong UserId;
-        /// <summary>
-        /// The reason of the warning.
-        /// </summary>
-        public readonly string Reason;
-
-        public Args(string reason, ulong guildId, ulong userId, ulong issuerUserId)
-        {
-            Reason = reason;
-            GuildId = guildId;
-            UserId = userId;
-            IssuerUserId = issuerUserId;
-        }
-    }
+    public record struct Args(bool Unwarn, ulong GuildId, ulong IssuerUserId, ulong UserId, string Reason);
     
     private readonly ILogger<GiveWarningToUserTask> _logger;
     private readonly GetUserGuildStateTask _getUserGuildStateTask;
@@ -53,23 +28,28 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning>
         _message = message;
     }
 
-    public async Task<IWarning> Execute(ITaskContext ctx, Args args)
+    public async Task<IWarning?> Execute(ITaskContext ctx, Args arg)
     {
         var userGuildState = await _getUserGuildStateTask.Execute(
             ctx, 
-            new GetUserGuildStateTask.Args(args.GuildId, args.UserId));
+            new GetUserGuildStateTask.Args(arg.GuildId, arg.UserId));
+        if (arg.Unwarn && userGuildState.WarningNumber < 1)
+        {
+            return null;
+        }
         var warn = new Warning
         {
-            Number = ++userGuildState.WarningNumber,
-            Reason = args.Reason,
-            UserId = args.UserId,
-            GuildId = args.GuildId,
-            IssuerUserId = args.IssuerUserId
+            Number = arg.Unwarn ? --userGuildState.WarningNumber : ++userGuildState.WarningNumber,
+            Reason = arg.Reason,
+            UserId = arg.UserId,
+            GuildId = arg.GuildId,
+            IssuerUserId = arg.IssuerUserId,
+            Type = arg.Unwarn ? WarningType.Unwarning : WarningType.Warning
         };
-        _logger.LogDebug(EventIds.Warning, "Issuing warning {warning}", warn);
+        _logger.LogDebug(EventIds.Warning, "Issuing warning {Warning}", warn);
         ctx.Model.Warnings.Add(warn);
         await ctx.Model.SaveChangesAsync();
-        await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn));
+        await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn, warn.UserId));
         return warn;
     }
 }

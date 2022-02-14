@@ -14,6 +14,7 @@ public class Role : DatabaseObject, IRole
 
     public override string ToString()
     {
-        return $"Role({base.ToString()}, {nameof(GuildId)}: {GuildId}, {nameof(RoleName)}: {RoleName}, {nameof(RoleType)}: {RoleType})";
+        return $"Role({base.ToString()}, {nameof(GuildId)}: {GuildId}, {nameof(RoleName)}: {RoleName}, " +
+               $"{nameof(RoleType)}: {RoleType})";
     }
 }

@@ -21,4 +21,8 @@ public interface IWarning: ISnowflake, IGuildSpecific, IUserSpecific
     /// The number of warnings the user was on after this warning.
     /// </summary>
     ulong Number { get; set; }
+    /// <summary>
+    /// The type of the warning.
+    /// </summary>
+    WarningType Type { get;set; }
 }

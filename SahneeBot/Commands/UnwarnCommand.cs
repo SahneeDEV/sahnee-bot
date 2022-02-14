@@ -11,21 +11,25 @@ namespace SahneeBot.Commands;
 /// </summary>
 public class UnwarnCommand: CommandBase
 {
-    private readonly GiveUnwarningToUserTask _task;
+    private readonly GiveWarningToUserTask _task;
     private readonly ILogger<UnwarnCommand> _logger;
-    private readonly UnwarningDiscordFormatter _discordFormatter;
     private readonly ModifyUserWarningGroupTask _modifyUserWarningGroupTask;
+    private readonly WarningDiscordFormatter _discordFormatter;
+    private readonly CannotUnwarnDiscordFormatter _cannotUnwarnDiscordFormatter;
 
     public UnwarnCommand(IServiceProvider serviceProvider,
-        GiveUnwarningToUserTask task,
+        GiveWarningToUserTask task,
         ILogger<UnwarnCommand> logger, 
-        UnwarningDiscordFormatter discordFormatter, ModifyUserWarningGroupTask modifyUserWarningGroupTask
+        WarningDiscordFormatter discordFormatter,
+        ModifyUserWarningGroupTask modifyUserWarningGroupTask,
+        CannotUnwarnDiscordFormatter cannotUnwarnDiscordFormatter
         ): base(serviceProvider)
     {
         _task = task;
         _logger = logger;
         _discordFormatter = discordFormatter;
         _modifyUserWarningGroupTask = modifyUserWarningGroupTask;
+        _cannotUnwarnDiscordFormatter = cannotUnwarnDiscordFormatter;
     }
 
     [SlashCommand("unwarn", "Unwarns a user. Removes one from the current warning count")]
@@ -35,18 +39,25 @@ public class UnwarnCommand: CommandBase
         [Summary(description: "the reason why the user has been unwarned")]
         string reason) => ExecuteAsync(async ctx =>
     {
-        var unwarning = await _task.Execute(ctx, new GiveUnwarningToUserTask.Args(
-            reason, Context.Guild.Id, user.Id, Context.User.Id));
+        var unwarning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(true, Context.Guild.Id, 
+            Context.User.Id, user.Id, reason));
         try
         {
-            await _modifyUserWarningGroupTask.Execute(ctx, 
-                new ModifyUserWarningGroupTask.Args(unwarning.Number, unwarning.UserId,
-                    unwarning.GuildId));
-            await _discordFormatter.FormatAndSend(unwarning, ModifyOriginalResponseAsync);
+            if (unwarning == null)
+            {
+                await _cannotUnwarnDiscordFormatter.FormatAndSend(user, ModifyOriginalResponseAsync);
+            }
+            else
+            {
+                await _modifyUserWarningGroupTask.Execute(ctx, 
+                    new ModifyUserWarningGroupTask.Args(unwarning.Number, unwarning.UserId,
+                        unwarning.GuildId));
+                await _discordFormatter.FormatAndSend(unwarning, ModifyOriginalResponseAsync);
+            }
         }
         catch (Exception e)
         {
-            _logger.LogWarning(EventIds.Command, e, "Failed to send unwarning message: {Warning}",
+            _logger.LogWarning(EventIds.Command, e, "Failed to send unwarning message: {Unwarning}",
                 unwarning);
         }
     }, new CommandExecutionOptions(true));
