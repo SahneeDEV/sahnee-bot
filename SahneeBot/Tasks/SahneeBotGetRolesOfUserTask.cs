@@ -8,7 +8,10 @@ namespace SahneeBot.Tasks;
 public class SahneeBotGetRolesOfUserTask: GetRolesOfUserTask
 {
     private readonly DiscordSocketClient _bot;
-    
+    private static readonly RoleTypes[] None = Array.Empty<RoleTypes>();
+    private static readonly RoleTypes[] Admin = { RoleTypes.Administrator, RoleTypes.Moderator };
+    private static readonly RoleTypes[] Moderator = { RoleTypes.Moderator };
+
     public SahneeBotGetRolesOfUserTask(DiscordSocketClient bot)
     {
         _bot = bot;
@@ -21,7 +24,17 @@ public class SahneeBotGetRolesOfUserTask: GetRolesOfUserTask
         var user = guild?.GetUser(userId);
         if (user == null)
         {
-            return Array.Empty<RoleTypes>();
+            return None;
+        }
+
+        if (user.GuildPermissions.Administrator)
+        {
+            return Admin;
+        }
+
+        if (user.GuildPermissions.BanMembers)
+        {
+            return Moderator;
         }
 
         var userRolesNames = user.Roles.Select(r => r.Name);
@@ -29,6 +42,17 @@ public class SahneeBotGetRolesOfUserTask: GetRolesOfUserTask
             .Where(r => r.GuildId == guildId && userRolesNames.Contains(r.RoleName))
             .Select(r => r.RoleType)
             .ToListAsync();
-        return roles;
+
+        if (roles.Contains(RoleTypes.Administrator))
+        {
+            return Admin;
+        }
+        
+        if (roles.Contains(RoleTypes.Moderator))
+        {
+            return Moderator;
+        }
+        
+        return None;
     }
 }

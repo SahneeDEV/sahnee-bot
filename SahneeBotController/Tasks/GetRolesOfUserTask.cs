@@ -25,6 +25,10 @@ public abstract class GetRolesOfUserTask: ITask<GetRolesOfUserTask.Args, IEnumer
     /// <returns>Does the guild user have the role?</returns>
     public async Task<bool> HasRoleAsync(ITaskContext ctx, Args arg, RoleTypes role)
     {
+        if (role == RoleTypes.None)
+        {
+            return true;
+        }
         var roles = await Execute(ctx, arg);
         return roles.Contains(role);
     }

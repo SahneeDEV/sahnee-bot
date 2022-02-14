@@ -81,7 +81,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                 await using var transaction = await model.Database.BeginTransactionAsync();
                 using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
                 // Check permission
-                if (opts.RequiredRole.HasValue)
+                if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleTypes.None)
                 {
                     var role = opts.RequiredRole.Value;
                     if (Context.Guild == null)
