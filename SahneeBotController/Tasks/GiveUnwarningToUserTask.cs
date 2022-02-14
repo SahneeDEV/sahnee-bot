@@ -55,9 +55,11 @@ public class GiveUnwarningToUserTask: ITask<GiveUnwarningToUserTask.Args, IWarni
         var userGuildState = await _getUserGuildStateTask.Execute(
             ctx, 
             new GetUserGuildStateTask.Args(args.GuildId, args.UserId));
+        //check if the user already has a warning amount higher than 0 if not, just keep it at the current count
         var warn = new Warning
         {
-            Number = --userGuildState.WarningNumber,
+            Number = userGuildState.WarningNumber > 0?
+            --userGuildState.WarningNumber : userGuildState.WarningNumber,
             Reason = args.Reason,
             UserId = args.UserId,
             GuildId = args.GuildId,

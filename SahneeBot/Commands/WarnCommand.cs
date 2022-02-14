@@ -14,13 +14,16 @@ public class WarnCommand: CommandBase
     private readonly GiveWarningToUserTask _task;
     private readonly ILogger<WarnCommand> _logger;
     private readonly WarningDiscordFormatter _discordFormatter;
+    private readonly ModifyUserWarningGroupTask _modifyUserWarningGroupTask;
 
     public WarnCommand(IServiceProvider serviceProvider, GiveWarningToUserTask task, ILogger<WarnCommand> logger, 
-        WarningDiscordFormatter discordFormatter): base(serviceProvider)
+        WarningDiscordFormatter discordFormatter,
+        ModifyUserWarningGroupTask modifyUserWarningGroupTask): base(serviceProvider)
     {
         _task = task;
         _logger = logger;
         _discordFormatter = discordFormatter;
+        _modifyUserWarningGroupTask = modifyUserWarningGroupTask;
     }
     
     /// <summary>
@@ -40,6 +43,9 @@ public class WarnCommand: CommandBase
             reason, Context.Guild.Id, user.Id, Context.User.Id));
         try
         {
+            await _modifyUserWarningGroupTask.Execute(ctx, 
+                new ModifyUserWarningGroupTask.Args(warning.Number, warning.UserId,
+                    warning.GuildId));
             await _discordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
         }
         catch (Exception e)
