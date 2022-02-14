@@ -3,6 +3,7 @@ using Discord.Interactions;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBotController.Tasks;
+using SahneeBotModel;
 
 namespace SahneeBot.Commands;
 
@@ -57,5 +58,9 @@ public class WarnCommand: CommandBase
             _logger.LogWarning(EventIds.Command, e, "Failed to send warning message: {Warning}", 
                 warning);
         }
-    }, new CommandExecutionOptions(true));
+    }, new CommandExecutionOptions
+    {
+        PlaceInQueue = true,
+        RequiredRole = RoleTypes.Moderator
+    });
 }

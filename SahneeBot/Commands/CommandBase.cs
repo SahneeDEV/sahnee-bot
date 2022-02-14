@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SahneeBot.Formatter;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
@@ -21,6 +22,8 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     
     private readonly ILogger<CommandBase> _logger;
     private readonly GuildQueue _queue;
+    private readonly GetRolesOfUserTask _roles;
+    private readonly MissingPermissionDiscordFormatter _missingPermFmt;
 
     /// <summary>
     /// Creates a new command base class.
@@ -32,49 +35,31 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         // We resolve all further classes manually instead of injection to keep the ctor simple for inheritance.
         _logger = serviceProvider.GetRequiredService<ILogger<CommandBase>>();
         _queue = serviceProvider.GetRequiredService<GuildQueue>();
+        _roles = serviceProvider.GetRequiredService<GetRolesOfUserTask>();
+        _missingPermFmt = serviceProvider.GetRequiredService<MissingPermissionDiscordFormatter>();
     }
     
     /// <summary>
     /// Options for executing a command.
     /// </summary>
-    public struct CommandExecutionOptions
+    public record struct CommandExecutionOptions
     {
         /// <summary>
         /// Should the command be placed in the guild queue?
         /// </summary>
-        public readonly bool PlaceInQueue;
+        public readonly bool PlaceInQueue { get; init; }
         /// <summary>
         /// Is the defer response ephemeral?
         /// </summary>
-        public readonly bool DeferEphemeral;
+        public readonly bool DeferEphemeral { get; init; }
         /// <summary>
         /// The request options of the defer response
         /// </summary>
-        public readonly RequestOptions? DeferRequest;
-
+        public readonly RequestOptions? DeferRequest { get; init; }
         /// <summary>
-        /// Creates command execution options.
+        /// The role require for this command.
         /// </summary>
-        /// <param name="placeInQueue">Place the command in the guild queue?</param>
-        /// <param name="deferEphemeral">Set ephemeral in the defer response?</param>
-        /// <param name="deferRequest">The request options of the defer response</param>
-        public CommandExecutionOptions(bool placeInQueue, bool deferEphemeral, RequestOptions? deferRequest = null)
-        {
-            PlaceInQueue = placeInQueue;
-            DeferEphemeral = deferEphemeral;
-            DeferRequest = deferRequest;
-        }
-
-        /// <summary>
-        /// Creates command execution options.
-        /// </summary>
-        /// <param name="placeInQueue">Place the command in the guild queue?</param>
-        public CommandExecutionOptions(bool placeInQueue)
-        {
-            PlaceInQueue = placeInQueue;
-            DeferEphemeral = false;
-            DeferRequest = null;
-        }
+        public readonly RoleTypes? RequiredRole { get; init; }
     }
     
     /// <summary>
@@ -95,6 +80,26 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                 await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
                 await using var transaction = await model.Database.BeginTransactionAsync();
                 using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
+                // Check permission
+                if (opts.RequiredRole.HasValue)
+                {
+                    var role = opts.RequiredRole.Value;
+                    if (Context.Guild == null)
+                    {
+                        throw new InvalidOperationException("Cannot check guild permission in a global command");
+                    }
+                    var allowed = await _roles.HasRoleAsync(ctx, new GetRolesOfUserTask.Args(Context.Guild.Id, 
+                            Context.User.Id), role);
+                    if (!allowed)
+                    {
+                        await _missingPermFmt.FormatAndSend(new MissingPermissionDiscordFormatter.Args(role),
+                            ModifyOriginalResponseAsync);
+#pragma warning disable CS4014
+                        Task.Delay(5000).ContinueWith(task => DeleteOriginalResponseAsync());
+#pragma warning restore CS4014
+                        return;
+                    }
+                }
                 // Run command
                 await del(ctx);
                 // Commit transaction
