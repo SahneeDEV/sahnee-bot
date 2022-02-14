@@ -9,4 +9,9 @@ public interface IGuildState: IGuildSpecific
     /// The channel the bot is bound to.
     /// </summary>
     public string? BoundChannel { get; set; }
+
+    /// <summary>
+    /// If roles will be set on the server for the warning count
+    /// </summary>
+    public bool SetRoles { get; set; }
 }

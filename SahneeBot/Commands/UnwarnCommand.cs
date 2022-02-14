@@ -13,6 +13,7 @@ public class UnwarnCommand: CommandBase
 {
     private readonly GiveWarningToUserTask _task;
     private readonly ILogger<UnwarnCommand> _logger;
+    private readonly ModifyUserWarningGroupTask _modifyUserWarningGroupTask;
     private readonly WarningDiscordFormatter _discordFormatter;
     private readonly CannotUnwarnDiscordFormatter _cannotUnwarnDiscordFormatter;
 
@@ -20,11 +21,14 @@ public class UnwarnCommand: CommandBase
         GiveWarningToUserTask task,
         ILogger<UnwarnCommand> logger, 
         WarningDiscordFormatter discordFormatter,
-        CannotUnwarnDiscordFormatter cannotUnwarnDiscordFormatter): base(serviceProvider)
+        ModifyUserWarningGroupTask modifyUserWarningGroupTask,
+        CannotUnwarnDiscordFormatter cannotUnwarnDiscordFormatter
+        ): base(serviceProvider)
     {
         _task = task;
         _logger = logger;
         _discordFormatter = discordFormatter;
+        _modifyUserWarningGroupTask = modifyUserWarningGroupTask;
         _cannotUnwarnDiscordFormatter = cannotUnwarnDiscordFormatter;
     }
 
@@ -45,6 +49,9 @@ public class UnwarnCommand: CommandBase
             }
             else
             {
+                await _modifyUserWarningGroupTask.Execute(ctx, 
+                    new ModifyUserWarningGroupTask.Args(unwarning.Number, unwarning.UserId,
+                        unwarning.GuildId));
                 await _discordFormatter.FormatAndSend(unwarning, ModifyOriginalResponseAsync);
             }
         }

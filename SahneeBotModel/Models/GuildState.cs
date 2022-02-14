@@ -9,8 +9,11 @@ public class GuildState: IGuildState
     public ulong GuildId { get; set; }
     public string? BoundChannel { get; set; }
 
+    public bool SetRoles { get; set; } = true;
+
     public override string ToString()
     {
-        return $"GuildState({nameof(GuildId)}: {GuildId}, {nameof(BoundChannel)}: {BoundChannel})";
+        return $"GuildState({nameof(GuildId)}: {GuildId}, {nameof(BoundChannel)}: {BoundChannel}" +
+               $", {nameof(SetRoles)}: {SetRoles})";
     }
 }
