@@ -36,10 +36,14 @@ public class WarnCommand: CommandBase
         string reason
         ) => ExecuteAsync(async ctx => 
     {
-        var warning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(
-            reason, Context.Guild.Id, user.Id, Context.User.Id));
+        var warning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(false, Context.Guild.Id, 
+            Context.User.Id, user.Id, reason));
         try
         {
+            if (warning == null)
+            {
+                throw new Exception("Warning is null");
+            }
             await _discordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
         }
         catch (Exception e)

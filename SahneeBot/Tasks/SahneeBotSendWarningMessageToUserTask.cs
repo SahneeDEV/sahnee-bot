@@ -38,7 +38,7 @@ public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
         if (user == null)
         {
             _logger.LogWarning(EventIds.Discord, 
-                "Failed to deliver warning message for warning {warning}: Could not get the user", 
+                "Failed to deliver warning message for warning {Warning}: Could not get the user", 
                 arg.Warning);
             return false;
         }
@@ -57,7 +57,7 @@ public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
         {
             _logger.LogWarning(EventIds.Discord,
                 e,
-                "Failed to deliver warning message for warning {warning}", 
+                "Failed to deliver warning message for warning {Warning}", 
                 arg.Warning);
             return false;
         }

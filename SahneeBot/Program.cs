@@ -46,14 +46,12 @@ var host = CreateHostBuilder(args)
         // FORMATTER
         services.AddSingleton<DefaultFormatArguments>();
         services.AddTransient<WarningDiscordFormatter>();
-        services.AddTransient<UnwarningDiscordFormatter>();
+        services.AddTransient<CannotUnwarnDiscordFormatter>();
         services.AddTransient<HelpDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
-        services.AddTransient<GiveUnwarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
         services.AddTransient<SendWarningMessageToUserTask, SahneeBotSendWarningMessageToUserTask>();
-        services.AddTransient<SendUnwarningMessageToUserTask, SahneeBotSendUnwarningMessageToUserTask>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {

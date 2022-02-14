@@ -12,36 +12,21 @@ public class GetUserGuildStateTask: ITask<GetUserGuildStateTask.Args, IUserGuild
     /// <summary>
     /// Arguments for getting the user guild state.
     /// </summary>
-    public struct Args
-    {
-        /// <summary>
-        /// The guild ID of the user.
-        /// </summary>
-        public readonly ulong GuildId;
-        /// <summary>
-        /// The ID of the user.
-        /// </summary>
-        public readonly ulong UserId;
-
-        public Args(ulong guildId, ulong userId)
-        {
-            GuildId = guildId;
-            UserId = userId;
-        }
-    }
+    public record struct Args(ulong GuildId, ulong UserId);
     
-    public async Task<IUserGuildState> Execute(ITaskContext ctx, Args args)
+    public async Task<IUserGuildState> Execute(ITaskContext ctx, Args arg)
     {
+        var (guildId, userId) = arg;
         var userGuildState = await ctx.Model.UserGuildStates
-            .FirstOrDefaultAsync(s => s.GuildId == args.GuildId && s.UserId == args.UserId);
+            .FirstOrDefaultAsync(s => s.GuildId == guildId && s.UserId == userId);
         if (userGuildState != null)
         {
             return userGuildState;
         }
         userGuildState = new UserGuildState
         {
-            GuildId = args.GuildId,
-            UserId = args.UserId
+            GuildId = guildId,
+            UserId = userId
         };
         ctx.Model.UserGuildStates.Add(userGuildState);
         await ctx.Model.SaveChangesAsync();

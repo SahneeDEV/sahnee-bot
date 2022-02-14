@@ -10,23 +10,7 @@ public abstract class SendWarningMessageToUserTask: ITask<SendWarningMessageToUs
     /// <summary>
     /// Arguments for sending the message.
     /// </summary>
-    public struct Args
-    {
-        /// <summary>
-        /// The warning to send.
-        /// </summary>
-        public readonly IWarning Warning;
-        /// <summary>
-        /// The user ID that will get the message.
-        /// </summary>
-        public readonly ulong RecipientId;
-
-        public Args(IWarning warning)
-        {
-            Warning = warning;
-            RecipientId = warning.UserId;
-        }
-    }
+    public record struct Args(IWarning Warning, ulong RecipientId);
 
     public abstract Task<bool> Execute(ITaskContext ctx, Args arg);
 }

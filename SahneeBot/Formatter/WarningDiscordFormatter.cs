@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.WebSocket;
+using SahneeBotModel;
 using SahneeBotModel.Contract;
 
 namespace SahneeBot.Formatter;
@@ -7,33 +8,36 @@ namespace SahneeBot.Formatter;
 public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
 {
     private readonly DiscordSocketClient _bot;
-    private readonly DefaultFormatArguments _defaultFormatArguments;
+    private readonly DefaultFormatArguments _fmt;
 
-    public WarningDiscordFormatter(DiscordSocketClient bot, DefaultFormatArguments defaultFormatArguments)
+    public WarningDiscordFormatter(DiscordSocketClient bot, DefaultFormatArguments fmt)
     {
         _bot = bot;
-        _defaultFormatArguments = defaultFormatArguments;
+        _fmt = fmt;
     }
     
-    public Task<DiscordFormat> Format(IWarning arg)
+    public async Task<DiscordFormat> Format(IWarning arg)
     {
         var guild = _bot.GetGuild(arg.GuildId);
-        var user = _bot.GetUser(arg.UserId);
-        var embed = _defaultFormatArguments.GetEmbed();
+        var user = await _bot.GetUserAsync(arg.UserId);
+        var embed = _fmt.GetEmbed();
+        var unwarn = arg.Type == WarningType.Unwarning;
 
-        embed.Title = $":thumbsdown: {user.Username} has been warned";
+        embed.Title = unwarn
+            ? $":heart: {user.Username} has been unwarned"
+            : $":thumbsdown: {user.Username} has been warned";
         embed.Fields = new List<EmbedFieldBuilder>
         {
             new()
             {
-                Name = "Warned",
-                Value = $"<@{arg.UserId}>",
+                Name = unwarn ? "Unwarned" : "Warned",
+                Value = _fmt.GetMention(arg.UserId),
                 IsInline = true
             },
             new()
             {
-                Name = "Warned by",
-                Value = $"<@{arg.IssuerUserId}>",
+                Name = unwarn ? "Unwarned by" : "Warned by",
+                Value = _fmt.GetMention(arg.IssuerUserId),
                 IsInline = true
             },
             new()
@@ -57,6 +61,6 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
         };
         embed.Timestamp = arg.Time;
 
-        return Task.FromResult(new DiscordFormat(embed.Build()));
+        return new DiscordFormat(embed.Build());
     }
 }

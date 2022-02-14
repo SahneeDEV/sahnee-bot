@@ -13,6 +13,8 @@ public class UserGuildState: IUserGuildState
 
     public override string ToString()
     {
-        return $"UserGuildState({nameof(GuildId)}: {GuildId}, {nameof(UserId)}: {UserId}, {nameof(WarningNumber)}: {WarningNumber}, {nameof(MessageOptOut)}: {MessageOptOut}, {nameof(HasReceivedOptOutHint)}: {HasReceivedOptOutHint})";
+        return $"UserGuildState({nameof(GuildId)}: {GuildId}, {nameof(UserId)}: {UserId}, " +
+               $"{nameof(WarningNumber)}: {WarningNumber}, {nameof(MessageOptOut)}: {MessageOptOut}, " +
+               $"{nameof(HasReceivedOptOutHint)}: {HasReceivedOptOutHint})";
     }
 }

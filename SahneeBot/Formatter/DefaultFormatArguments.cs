@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Diagnostics.CodeAnalysis;
+using Discord;
 using Microsoft.Extensions.Configuration;
 
 namespace SahneeBot.Formatter;
@@ -61,6 +62,22 @@ public class DefaultFormatArguments
     public Color GetColor()
     {
         return _color;
+    }
+
+    /// <summary>
+    /// Mentions the given user.
+    /// </summary>
+    /// <param name="user">The user.</param>
+    /// <returns>The mention.</returns>
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public string GetMention(IUser user)
+    {
+        return user.Mention;
+    }
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public string GetMention(ulong userId)
+    {
+        return "<@" + userId + ">";
     }
 
     /// <summary>
