@@ -49,10 +49,13 @@ var host = CreateHostBuilder(args)
         services.AddTransient<CannotUnwarnDiscordFormatter>();
         services.AddTransient<HelpDiscordFormatter>();
         services.AddTransient<MissingPermissionDiscordFormatter>();
+        services.AddTransient<RoleDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
         services.AddTransient<GetGuildStateTask>();
+        services.AddTransient<AddRoleTask>();
+        services.AddTransient<RemoveRoleTask>();
         services.AddTransient<SendWarningMessageToUserTask, SahneeBotSendWarningMessageToUserTask>();
         services.AddTransient<ModifyUserWarningGroupTask, SahneeBotModifyWarningGroupTask>();
         services.AddTransient<GetRolesOfUserTask, SahneeBotGetRolesOfUserTask>();
