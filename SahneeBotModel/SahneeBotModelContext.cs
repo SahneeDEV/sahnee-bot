@@ -55,6 +55,12 @@ public class SahneeBotModelContext : DbContext
             userGuildState.UserId, 
             userGuildState.GuildId
         });
+        // Composite key for role.
+        modelBuilder.Entity<Role>().HasKey(userGuildState => new
+        {
+            userGuildState.RoleId, 
+            userGuildState.GuildId
+        });
         base.OnModelCreating(modelBuilder);
     }
 

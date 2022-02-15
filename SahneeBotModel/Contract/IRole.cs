@@ -3,14 +3,14 @@
 /// <summary>
 /// A role for the bot.
 /// </summary>
-public interface IRole: ISnowflake, IGuildSpecific
+public interface IRole: IGuildSpecific
 {
     /// <summary>
     /// The name of the Role
     /// </summary>
-    public string RoleName { get; set; }
+    public ulong RoleId { get; set; }
     /// <summary>
     /// The type of the Role
     /// </summary>
-    public RoleTypes RoleType { get; set; }
+    public RoleType RoleType { get; set; }
 }

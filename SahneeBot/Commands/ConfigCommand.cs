@@ -13,55 +13,82 @@ public class ConfigCommand : CommandBase
     {
     }
     
-    [Group("roles", "Configure the permission system")]
+    [Group("sahnee-permission", "Configure the permission system")]
     public class PermissionCommand : CommandBase
     {
+        /// <summary>
+        /// Permissions to discord client can interact with. Backing numbers must match with the RoleType enum.
+        /// </summary>
+        public enum SahneePermission
+        {
+            Moderator = 0b10,
+            Administrator = 0b01
+        }
+        
         private readonly AddRoleTask _addRoleTask;
         private readonly RemoveRoleTask _removeRoleTask;
-        private readonly RoleDiscordFormatter _roleFmt;
+        private readonly RoleChangedDiscordFormatter _roleChangedFmt;
 
         public PermissionCommand(
             IServiceProvider serviceProvider, 
             AddRoleTask addRoleTask, 
             RemoveRoleTask removeRoleTask,
-            RoleDiscordFormatter roleFmt
+            RoleChangedDiscordFormatter roleChangedFmt
             ) : base(serviceProvider)
         {
             _addRoleTask = addRoleTask;
             _removeRoleTask = removeRoleTask;
-            _roleFmt = roleFmt;
+            _roleChangedFmt = roleChangedFmt;
         }
 
-        [SlashCommand("add", "Adds a role")]
+        /// <summary>
+        /// Adds a role type to a discord role.
+        /// </summary>
+        /// <param name="role">The discord role.</param>
+        /// <param name="sahneePermission">The sahnee permission enum.</param>
+        /// <returns>Once the role has been added</returns>
+        [SlashCommand("add", "Adds a sahnee permission to a role")]
         public Task CommandAdd(
-            [Summary(description: "The role to add")] IRole role,
-            [Summary(description: "The role type to add")] RoleTypes roleType
-        ) => ExecuteAsync(async ctx =>
+            [Summary(description: "The role to add the sahnee permission to")]
+            IRole role,
+            [Summary(description: "The sahnee permission to add")]
+            SahneePermission sahneePermission
+            ) => ExecuteAsync(async ctx =>
         {
-            var warnRole = await _addRoleTask.Execute(ctx, new AddRoleTask.Args(Context.Guild.Id, role.Name, 
+            var roleType = (RoleType)sahneePermission;
+            var warnRole = await _addRoleTask.Execute(ctx, new AddRoleTask.Args(Context.Guild.Id, role.Id, 
                 roleType));
-            await _roleFmt.FormatAndSend(warnRole, ModifyOriginalResponseAsync);
+            await _roleChangedFmt.FormatAndSend(new RoleChangedDiscordFormatter.Args(warnRole, roleType, true), 
+                ModifyOriginalResponseAsync);
         }, new CommandExecutionOptions
         {
             PlaceInQueue = true,
-            RequiredRole = RoleTypes.Administrator
+            RequiredRole = RoleType.Administrator
         });
-
-        [SlashCommand("remove", "Removes a role")]
+    
+        /// <summary>
+        /// Removes a role type from a discord role.
+        /// </summary>
+        /// <param name="role">The discord role.</param>
+        /// <param name="sahneePermission">The sahnee permission or null. If null all role types will be removed</param>
+        /// <returns>Once the role has been removed.</returns>
+        [SlashCommand("remove", "Removes a (or all) sahnee permission(s) from a role")]
         public Task CommandRemove(
-            [Summary(description: "The role to remove")] IRole role
-        ) => ExecuteAsync(async ctx =>
+            [Summary(description: "The role to remove the sahnee permission from")] 
+            IRole role,
+            [Summary(description: "The sahnee permission to remove - if not specified, all sahnee permissions will be removed")]
+            SahneePermission? sahneePermission = null
+            ) => ExecuteAsync(async ctx =>
         {
-            var warnRole = await _removeRoleTask.Execute(ctx, new RemoveRoleTask.Args(Context.Guild.Id, role.Name));
-            if (warnRole == null)
-            {
-                
-            }
-            await _roleFmt.FormatAndSend(warnRole, ModifyOriginalResponseAsync);
+            RoleType? roleType = sahneePermission == null ? null : (RoleType)sahneePermission.Value;
+            var warnRole = await _removeRoleTask.Execute(ctx, new RemoveRoleTask.Args(Context.Guild.Id, 
+                role.Id, roleType));
+            await _roleChangedFmt.FormatAndSend(new RoleChangedDiscordFormatter.Args(warnRole, roleType, 
+                false), ModifyOriginalResponseAsync);
         }, new CommandExecutionOptions
         {
             PlaceInQueue = true,
-            RequiredRole = RoleTypes.Administrator
+            RequiredRole = RoleType.Administrator
         });
     }
 }

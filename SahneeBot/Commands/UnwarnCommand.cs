@@ -64,6 +64,6 @@ public class UnwarnCommand: CommandBase
     }, new CommandExecutionOptions
     {
         PlaceInQueue = true,
-        RequiredRole = RoleTypes.Moderator
+        RequiredRole = RoleType.Moderator
     });
 }

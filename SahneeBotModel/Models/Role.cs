@@ -3,18 +3,18 @@ using SahneeBotModel.Contract;
 
 namespace SahneeBotModel.Models;
 
-public class Role : DatabaseObject, IRole
+public class Role : IRole
 {
     [Required]
     public ulong GuildId { get; set; }
     [Required]
-    public string RoleName { get; set; } = "";
+    public ulong RoleId { get; set; }
     [Required]
-    public RoleTypes RoleType { get; set; }
+    public RoleType RoleType { get; set; }
 
     public override string ToString()
     {
-        return $"Role({base.ToString()}, {nameof(GuildId)}: {GuildId}, {nameof(RoleName)}: {RoleName}, " +
+        return $"Role({base.ToString()}, {nameof(GuildId)}: {GuildId}, {nameof(RoleId)}: {RoleId}, " +
                $"{nameof(RoleType)}: {RoleType})";
     }
 }

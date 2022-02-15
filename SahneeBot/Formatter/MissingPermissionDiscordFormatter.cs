@@ -11,7 +11,7 @@ public class MissingPermissionDiscordFormatter: IDiscordFormatter<MissingPermiss
     /// Arguments for sending the missing permission hint.
     /// </summary>
     /// <param name="MissingRole">The role that is required.</param>
-    public record struct Args(RoleTypes MissingRole);
+    public record struct Args(RoleType MissingRole);
 
     public Task<DiscordFormat> Format(Args arg)
     {

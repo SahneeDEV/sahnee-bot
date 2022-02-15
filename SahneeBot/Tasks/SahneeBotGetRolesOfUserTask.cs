@@ -8,16 +8,16 @@ namespace SahneeBot.Tasks;
 public class SahneeBotGetRolesOfUserTask: GetRolesOfUserTask
 {
     private readonly DiscordSocketClient _bot;
-    private static readonly RoleTypes[] None = Array.Empty<RoleTypes>();
-    private static readonly RoleTypes[] Admin = { RoleTypes.Administrator, RoleTypes.Moderator };
-    private static readonly RoleTypes[] Moderator = { RoleTypes.Moderator };
+    private static readonly RoleType[] None = Array.Empty<RoleType>();
+    private static readonly RoleType[] Admin = { RoleType.Administrator, RoleType.Moderator };
+    private static readonly RoleType[] Moderator = { RoleType.Moderator };
 
     public SahneeBotGetRolesOfUserTask(DiscordSocketClient bot)
     {
         _bot = bot;
     }
     
-    public override async Task<IEnumerable<RoleTypes>> Execute(ITaskContext ctx, Args arg)
+    public override async Task<IEnumerable<RoleType>> Execute(ITaskContext ctx, Args arg)
     {
         var (guildId, userId) = arg;
         var guild = _bot.GetGuild(guildId);
@@ -37,18 +37,18 @@ public class SahneeBotGetRolesOfUserTask: GetRolesOfUserTask
             return Moderator;
         }
 
-        var userRolesNames = user.Roles.Select(r => r.Name);
+        var userRolesIds = user.Roles.Select(r => r.Id);
         var roles = await ctx.Model.Roles
-            .Where(r => r.GuildId == guildId && userRolesNames.Contains(r.RoleName))
+            .Where(r => r.GuildId == guildId && userRolesIds.Contains(r.RoleId))
             .Select(r => r.RoleType)
             .ToListAsync();
 
-        if (roles.Contains(RoleTypes.Administrator))
+        if (roles.Any(role => (role & RoleType.Administrator) == RoleType.Administrator))
         {
             return Admin;
         }
         
-        if (roles.Contains(RoleTypes.Moderator))
+        if (roles.Any(role => (role & RoleType.Moderator) == RoleType.Moderator))
         {
             return Moderator;
         }

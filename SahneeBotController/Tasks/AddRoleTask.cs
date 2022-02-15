@@ -10,19 +10,24 @@ namespace SahneeBotController.Tasks;
 /// </summary>
 public class AddRoleTask: ITask<AddRoleTask.Args, IRole>
 {
-    public record struct Args(ulong GuildId, string Name, RoleTypes Type);
+    public record struct Args(ulong GuildId, ulong RoleId, RoleType Type);
 
     public async Task<IRole> Execute(ITaskContext ctx, Args arg)
     {
-        var (guildId, name, roleTypes) = arg;
-        var role = await ctx.Model.Roles.Where(r => r.GuildId == guildId && r.RoleName == name)
+        if (arg.Type == RoleType.None)
+        {
+            throw new InvalidOperationException("Cannot add the \"None\" role type to a role");
+        }
+        var (guildId, roleId, roleTypes) = arg;
+        var role = await ctx.Model.Roles
+            .Where(r => r.GuildId == guildId && r.RoleId == roleId)
             .FirstOrDefaultAsync();
         if (role == null)
         {
             role = new Role
             {
                 GuildId = guildId,
-                RoleName = name,
+                RoleId = roleId,
                 RoleType = roleTypes
             };
             ctx.Model.Roles.Add(role);
@@ -35,7 +40,7 @@ public class AddRoleTask: ITask<AddRoleTask.Args, IRole>
             return role;
         }
         
-        role.RoleType = roleTypes;
+        role.RoleType |= roleTypes;
         await ctx.Model.SaveChangesAsync();
         return role;
     }

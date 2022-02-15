@@ -59,7 +59,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         /// <summary>
         /// The role require for this command.
         /// </summary>
-        public readonly RoleTypes? RequiredRole { get; init; }
+        public readonly RoleType? RequiredRole { get; init; }
     }
     
     /// <summary>
@@ -81,7 +81,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                 await using var transaction = await model.Database.BeginTransactionAsync();
                 using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
                 // Check permission
-                if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleTypes.None)
+                if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleType.None)
                 {
                     var role = opts.RequiredRole.Value;
                     if (Context.Guild == null)

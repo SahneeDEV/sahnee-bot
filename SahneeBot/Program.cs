@@ -49,7 +49,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<CannotUnwarnDiscordFormatter>();
         services.AddTransient<HelpDiscordFormatter>();
         services.AddTransient<MissingPermissionDiscordFormatter>();
-        services.AddTransient<RoleDiscordFormatter>();
+        services.AddTransient<RoleChangedDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();

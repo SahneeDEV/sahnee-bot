@@ -4,18 +4,18 @@
 /// A role type.
 /// </summary>
 [Flags]
-public enum RoleTypes
+public enum RoleType
 {
     /// <summary>
     /// No role.
     /// </summary>
-    None = 0,
-    /// <summary>
-    /// Admin privileges.
-    /// </summary>
-    Administrator = 1,
+    None = 0b00,
     /// <summary>
     /// Moderator privileges.
     /// </summary>
-    Moderator = 2
+    Moderator = 0b10,
+    /// <summary>
+    /// Admin privileges.
+    /// </summary>
+    Administrator = 0b01
 }
