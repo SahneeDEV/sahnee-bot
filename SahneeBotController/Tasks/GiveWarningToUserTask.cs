@@ -18,14 +18,16 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning?>
     private readonly ILogger<GiveWarningToUserTask> _logger;
     private readonly GetUserGuildStateTask _getUserGuildStateTask;
     private readonly SendWarningMessageToUserTask _message;
+    private readonly ModifyUserWarningGroupTask _modifyUserWarningGroupTask;
 
     public GiveWarningToUserTask(
         ILogger<GiveWarningToUserTask> logger, GetUserGuildStateTask getUserGuildStateTask,
-        SendWarningMessageToUserTask message)
+        SendWarningMessageToUserTask message, ModifyUserWarningGroupTask modifyUserWarningGroupTask)
     {
         _logger = logger;
         _getUserGuildStateTask = getUserGuildStateTask;
         _message = message;
+        _modifyUserWarningGroupTask = modifyUserWarningGroupTask;
     }
 
     public async Task<IWarning?> Execute(ITaskContext ctx, Args arg)
@@ -49,6 +51,9 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning?>
         _logger.LogDebug(EventIds.Warning, "Issuing warning {Warning}", warn);
         ctx.Model.Warnings.Add(warn);
         await ctx.Model.SaveChangesAsync();
+        await _modifyUserWarningGroupTask.Execute(ctx, 
+            new ModifyUserWarningGroupTask.Args(warn.Number, warn.UserId,
+                warn.GuildId));
         await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn, warn.UserId));
         return warn;
     }
