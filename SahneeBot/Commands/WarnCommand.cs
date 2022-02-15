@@ -48,9 +48,6 @@ public class WarnCommand: CommandBase
             {
                 throw new Exception("Warning is null");
             }
-            await _modifyUserWarningGroupTask.Execute(ctx, 
-                new ModifyUserWarningGroupTask.Args(warning.Number, warning.UserId,
-                    warning.GuildId));
             await _discordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
         }
         catch (Exception e)
