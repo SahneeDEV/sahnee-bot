@@ -52,4 +52,59 @@ public static class DiscordFormatterExtensions
         var format = await discordFormatter.Format(arg);
         await format.Send(del);
     }
+
+    /// <summary>
+    /// Formats and sends many messages. Use this method when wanting to join multiple messages together.
+    /// </summary>
+    /// <param name="discordFormatter">The discord formatter to use.</param>
+    /// <param name="args">The arguments to format and send.</param>
+    /// <param name="delFirst">The delegate to send the first message.</param>
+    /// <param name="delOther">The delegate to send all other messages.</param>
+    /// <returns>Were any messages sent?</returns>
+    /// <typeparam name="T">The data type.</typeparam>
+    public static async Task<bool> FormatAndSendMany<T>(this IDiscordFormatter<T> discordFormatter, IEnumerable<T> args,
+        DiscordFormat.ModifyOriginalResponseAsyncDelegate delFirst,
+        DiscordFormat.SendChannelMessageAsyncDelegate delOther)
+    {
+        var sentAny = false;
+        var formats = await Task.WhenAll(args.Select(discordFormatter.Format));
+        var joinedFormats = DiscordFormat.Join(formats);
+        foreach (var format in joinedFormats)
+        {
+            if (!sentAny)
+            {
+                await format.Send(delFirst);
+                sentAny = true;
+            }
+            else
+            {
+                await format.Send(delOther);
+            }
+        }
+
+        return sentAny;
+    }
+    
+    /// <summary>
+    /// Formats and sends many messages. Use this method when wanting to join multiple messages together.
+    /// </summary>
+    /// <param name="discordFormatter">The discord formatter to use.</param>
+    /// <param name="args">The arguments to format and send.</param>
+    /// <param name="del">The delegate to send the messages.</param>
+    /// <returns>Were any messages sent?</returns>
+    /// <typeparam name="T">The data type.</typeparam>
+    public static async Task<bool> FormatAndSendMany<T>(this IDiscordFormatter<T> discordFormatter, IEnumerable<T> args,
+        DiscordFormat.SendChannelMessageAsyncDelegate del)
+    {
+        var formats = await Task.WhenAll(args.Select(discordFormatter.Format));
+        var joinedFormats = DiscordFormat.Join(formats);
+        var sentAny = false;
+        foreach (var format in joinedFormats)
+        {
+            await format.Send(del);
+            sentAny = true;
+        }
+
+        return sentAny;
+    }
 }

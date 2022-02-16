@@ -84,23 +84,9 @@ public class ReportCommand : CommandBase
     ) => ExecuteAsync(async ctx =>
     {
         var warnings = (await _getRandomWarningsTask.Execute(ctx, 
-            new GetRandomWarningsTask.Args(Context.Guild.Id, user?.Id, amount))).ToArray();
-        if (warnings.Length > 0)
-        {
-            for (var i = 0; i < warnings.Length; i++)
-            {
-                var warning = warnings[i];
-                if (i == 0)
-                {
-                    await _warningDiscordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
-                }
-                else
-                {
-                    await _warningDiscordFormatter.FormatAndSend(warning, SendChannelMessageAsync);
-                }
-            }
-        }
-        else
+            new GetRandomWarningsTask.Args(Context.Guild.Id, user?.Id, amount)));
+        if (!await _warningDiscordFormatter.FormatAndSendMany(warnings, ModifyOriginalResponseAsync, 
+                SendChannelMessageAsync))
         {
             await _noWarningFoundDiscordFormatter.FormatAndSend(
                 new NoWarningFoundDiscordFormatter.Args(Context.Guild.Id, user?.Id), ModifyOriginalResponseAsync);
