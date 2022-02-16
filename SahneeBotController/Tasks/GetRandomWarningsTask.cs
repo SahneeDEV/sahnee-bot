@@ -18,12 +18,13 @@ public class GetRandomWarningsTask : ITask<GetRandomWarningsTask.Args, IEnumerab
     public async Task<IEnumerable<IWarning>> Execute(ITaskContext ctx, Args arg)
     {
         var (guildId, userId, count) = arg;
-        var total = await ctx.Model.Warnings.CountAsync();
+        var total = await ctx.Model.Warnings.CountAsync(w => w.GuildId == guildId 
+                                                             && (!userId.HasValue || w.UserId == userId.Value));
         var rnd = new Random();
-        var toSkip = rnd.Next(0, total);
+        var toSkip = rnd.Next(0, Math.Max(0, total - count));
         return await ctx.Model.Warnings
-            .Skip(toSkip)
             .Where(w => w.GuildId == guildId && (!userId.HasValue || w.UserId == userId.Value))
+            .Skip(toSkip)
             .Take(count)
             .ToListAsync<IWarning>();
     }
