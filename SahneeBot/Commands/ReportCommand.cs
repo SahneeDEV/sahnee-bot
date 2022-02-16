@@ -7,28 +7,32 @@ using SahneeBotController.Tasks;
 namespace SahneeBot.Commands;
 
 /// <summary>
-/// This command is used to get all Warnings of the current day of all users
+/// This command group contains all warning report commands.
 /// </summary>
-public class WarningsTodayCommand: CommandBase
+[Group("warnings", "Generates reports about warnings on this Server")]
+public class ReportCommand : CommandBase
 {
     private readonly GetWarningsCreated _task;
-    private readonly ILogger<WarningsTodayCommand> _logger;
+    private readonly GetRandomWarningTask _getRandomWarningTask;
+    private readonly NoWarningFoundDiscordFormatter _noWarningFoundDiscordFormatter;
     private readonly WarningDiscordFormatter _warningDiscordFormatter;
 
-    public WarningsTodayCommand(
+    public ReportCommand(
         IServiceProvider serviceProvider, 
         GetWarningsCreated task, 
-        ILogger<WarningsTodayCommand> logger,
+        GetRandomWarningTask getRandomWarningTask,
+        NoWarningFoundDiscordFormatter noWarningFoundDiscordFormatter,
         WarningDiscordFormatter warningWarningDiscordFormatter
     ) : base(serviceProvider)
     {
         _task = task;
-        _logger = logger;
+        _getRandomWarningTask = getRandomWarningTask;
+        _noWarningFoundDiscordFormatter = noWarningFoundDiscordFormatter;
         _warningDiscordFormatter = warningWarningDiscordFormatter;
     }
 
-    [SlashCommand("warnings-today", "Gets all warnings, were created today")]
-    public Task WarningsToday() => ExecuteAsync(async ctx =>
+    [SlashCommand("today", "Gets all warnings, were created today")]
+    public Task TodayCommand() => ExecuteAsync(async ctx =>
     {
         var end = DateTime.UtcNow;
         var start = end - TimeSpan.FromHours(24);
@@ -67,6 +71,25 @@ public class WarningsTodayCommand: CommandBase
             {
                 await discordFormat.Send(RespondAsync);
             }
+        }
+    });
+
+    [SlashCommand("random", "Gets a random warning on this Server")]
+    public Task RandomCommand(
+        [Summary(description: "If specified, gets a random warning of the given user on this Server")]
+        IUser? user = null
+    ) => ExecuteAsync(async ctx =>
+    {
+        var warning = await _getRandomWarningTask.Execute(ctx, new GetRandomWarningTask.Args(Context.Guild.Id,
+            user?.Id));
+        if (warning != null)
+        {
+            await _warningDiscordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
+        }
+        else
+        {
+            await _noWarningFoundDiscordFormatter.FormatAndSend(
+                new NoWarningFoundDiscordFormatter.Args(Context.Guild.Id, user?.Id), ModifyOriginalResponseAsync);
         }
     });
 }
