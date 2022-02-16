@@ -138,4 +138,68 @@ public class DiscordFormat
     {
         return value == null ? Optional<T>.Unspecified : new Optional<T>(value);
     }
+
+    /// <summary>
+    /// Joins the given formats together.
+    /// </summary>
+    /// <param name="formats">The formats.</param>
+    /// <returns>The joined formats.</returns>
+    public static IEnumerable<DiscordFormat> Join(IEnumerable<DiscordFormat> formats)
+    {
+        var result = new List<DiscordFormat> { new() };
+        var hasAny = false;
+        foreach (var format in formats)
+        {
+            // Text
+            if (!string.IsNullOrWhiteSpace(format.Text))
+            {
+                var newText = (result.Last().Text ?? "") + format.Text;
+                if (newText.Length > 2000)
+                {
+                    result.Add(new DiscordFormat());
+                    result.Last().Text = format.Text;
+                }
+                else
+                {
+                    result.Last().Text = newText;
+                }
+                hasAny = true;
+            }
+            // Embeds
+            var embeds = format.Embeds;
+            if (format.Embed != null)
+            {
+                embeds = new[] { format.Embed };
+            }
+            if (embeds != null)
+            {
+                var oldEmbeds = result.Last().Embeds;
+                var newEmbeds = oldEmbeds != null 
+                    ? oldEmbeds.Concat(embeds).ToArray() 
+                    : embeds;
+                if (newEmbeds.Length > 25)
+                {
+                    result.Add(new DiscordFormat());
+                    result.Last().Embeds = embeds;
+                }
+                else
+                {
+                    result.Last().Embeds = newEmbeds;
+                }
+                hasAny = true;
+            }
+            // AllowedMentions
+            if (format.AllowedMentions != null)
+            {
+                throw new InvalidOperationException("Cannot (yet) join DiscordFormats with AllowedMentions.");
+            }
+            // Components
+            if (format.Components != null)
+            {
+                throw new InvalidOperationException("Cannot (yet) join DiscordFormats with Components.");
+            }
+        }
+
+        return hasAny ? result : Array.Empty<DiscordFormat>();
+    }
 }
