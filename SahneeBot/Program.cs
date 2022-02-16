@@ -51,6 +51,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<MissingPermissionDiscordFormatter>();
         services.AddTransient<RoleDiscordFormatter>();
         services.AddTransient<RoleChangedDiscordFormatter>();
+        services.AddTransient<NoWarningFoundDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -61,6 +62,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<ModifyUserWarningGroupTask, SahneeBotModifyWarningGroupTask>();
         services.AddTransient<GetRolesOfUserTask, SahneeBotGetRolesOfUserTask>();
         services.AddTransient<GetRolesOfGuildTask>();
+        services.AddTransient<GetRandomWarningTask>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {
