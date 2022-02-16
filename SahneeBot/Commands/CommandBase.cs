@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Text;
+using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
@@ -112,8 +113,9 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             {
                 var interaction = (SocketSlashCommand) Context.Interaction;
                 await _errorFmt.FormatAndSend(
-                    new CommandErrorDiscordFormatter.Args(interaction.CommandName, Context.Guild?.Id, 
-                        Context.User.Id, exception), ModifyOriginalResponseAsync);
+                    new CommandErrorDiscordFormatter.Args(interaction.CommandName, 
+                        GetDebugString(interaction), Context.Guild?.Id, Context.User.Id, exception), 
+                    ModifyOriginalResponseAsync);
             }
             scope.Dispose();
         }
@@ -132,5 +134,32 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         {
             await ExecuteAsyncImpl();
         }
+    }
+
+    private static string GetDebugString(IDiscordInteraction interaction)
+    {
+        var sb = new StringBuilder();
+        if (interaction is ISlashCommandInteraction slashInteraction)
+        {
+            sb.Append('/');
+            sb.Append(slashInteraction.Data.Name);
+            foreach (var option in slashInteraction.Data.Options)
+            {
+                sb.Append(" <");
+                sb.Append(option.Name);
+                sb.Append(':');
+                sb.Append(option.Value);
+                sb.Append('>');
+            }
+
+            sb.Append(" (#");
+            sb.Append(slashInteraction.Data.Id);
+            sb.Append(')');
+        }
+        else
+        {
+            sb.Append(interaction);
+        }
+        return sb.ToString();
     }
 }
