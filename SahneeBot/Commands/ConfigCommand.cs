@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using SahneeBot.Formatter;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
@@ -28,17 +29,23 @@ public class ConfigCommand : CommandBase
         private readonly AddRoleTask _addRoleTask;
         private readonly RemoveRoleTask _removeRoleTask;
         private readonly RoleChangedDiscordFormatter _roleChangedFmt;
+        private readonly GetRolesOfGuildTask _rolesOfGuildTask;
+        private readonly RoleDiscordFormatter _roleFmt;
 
         public PermissionCommand(
             IServiceProvider serviceProvider, 
             AddRoleTask addRoleTask, 
             RemoveRoleTask removeRoleTask,
-            RoleChangedDiscordFormatter roleChangedFmt
+            RoleChangedDiscordFormatter roleChangedFmt,
+            GetRolesOfGuildTask rolesOfGuildTask,
+            RoleDiscordFormatter roleFmt
             ) : base(serviceProvider)
         {
             _addRoleTask = addRoleTask;
             _removeRoleTask = removeRoleTask;
             _roleChangedFmt = roleChangedFmt;
+            _rolesOfGuildTask = rolesOfGuildTask;
+            _roleFmt = roleFmt;
         }
 
         /// <summary>
@@ -85,6 +92,25 @@ public class ConfigCommand : CommandBase
                 role.Id, roleType));
             await _roleChangedFmt.FormatAndSend(new RoleChangedDiscordFormatter.Args(warnRole, roleType, 
                 false), ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            RequiredRole = RoleType.Administrator
+        });
+
+        /// <summary>
+        /// Lists all roles with role types in the guild.
+        /// </summary>
+        /// <returns>Once all roles have been listed.</returns>
+        [SlashCommand("list", "Lists all roles with sahnee permissions on this server")]
+        public Task CommandList() => ExecuteAsync(async ctx =>
+        {
+            var roles = (await _rolesOfGuildTask.Execute(ctx, Context.Guild.Id)).ToArray();
+            await ModifyOriginalResponseAsync(msg => msg.Content = new Optional<string>("There are " + roles.Length +
+                " roles with sahnee permissions in the Server " + Context.Guild.Name));
+            var interaction = (SocketSlashCommand)Context.Interaction;
+            var channel = (ITextChannel)interaction.Channel;
+            await Task.WhenAll(roles.Select(role => _roleFmt.FormatAndSend(role, channel.SendMessageAsync)));
         }, new CommandExecutionOptions
         {
             PlaceInQueue = true,

@@ -61,6 +61,6 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
         };
         embed.Timestamp = arg.Time;
 
-        return new DiscordFormat(embed.Build());
+        return new DiscordFormat(embed);
     }
 }

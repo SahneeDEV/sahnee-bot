@@ -38,6 +38,6 @@ public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
             }
         };
         
-        return Task.FromResult(new DiscordFormat(embed.Build()));
+        return Task.FromResult(new DiscordFormat(embed));
     }
 }

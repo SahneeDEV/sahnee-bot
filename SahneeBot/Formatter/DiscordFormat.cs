@@ -14,7 +14,7 @@ public class DiscordFormat
     /// <summary>
     /// The embeds of the message.
     /// </summary>
-    public Embed[]? Embeds = null;
+    public EmbedBuilder[]? Embeds = null;
     /// <summary>
     /// Settings for allowed mentions.
     /// </summary>
@@ -26,7 +26,7 @@ public class DiscordFormat
     /// <summary>
     /// A single embed of the message. Alias for creating an Embed array with a single element.
     /// </summary>
-    public Embed? Embed;
+    public EmbedBuilder? Embed;
 
     /// <summary>
     /// Creates an empty format.
@@ -48,7 +48,7 @@ public class DiscordFormat
     /// Creates a format with the given embed.
     /// </summary>
     /// <param name="embed">The embed.</param>
-    public DiscordFormat(Embed embed)
+    public DiscordFormat(EmbedBuilder embed)
     {
         Embed = embed;
     }
@@ -94,23 +94,40 @@ public class DiscordFormat
     public delegate Task<IUserMessage> ModifyOriginalResponseAsyncDelegate(
         Action<MessageProperties> func,
         RequestOptions? options = null);
+    
+    public delegate Task<IUserMessage> SendChannelMessageAsyncDelegate(
+        string? text = null,
+        bool isTts = false,
+        Embed? embed = null,
+        RequestOptions? options = null,
+        AllowedMentions? allowedMentions = null,
+        MessageReference? messageReference = null,
+        MessageComponent? components = null,
+        ISticker[]? stickers = null,
+        Embed[]? embeds = null);
 
     public async Task Send(RespondAsyncDelegate del, SendOptions sendOptions = default)
     {
-        await del(Text, Embeds, sendOptions.IsTts, sendOptions.Ephemeral, AllowedMentions, sendOptions.Request, 
-            Components, Embed);
+        await del(Text, Embeds?.Select(e => e.Build()).ToArray(), sendOptions.IsTts, sendOptions.Ephemeral,
+            AllowedMentions, sendOptions.Request, Components, Embed?.Build());
     }
     public async Task Send(SendMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
-        await del(Text, sendOptions.IsTts, Embed, sendOptions.Request, AllowedMentions, Components, Embeds);
+        await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, Components,
+            Embeds?.Select(e => e.Build()).ToArray());
+    }
+    public async Task Send(SendChannelMessageAsyncDelegate del, SendOptions sendOptions = default)
+    {
+        await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, null,
+            Components, null, Embeds?.Select(e => e.Build()).ToArray());
     }
     public Task Send(ModifyOriginalResponseAsyncDelegate del, SendOptions sendOptions = default)
     {
         del(properties =>
         {
             properties.Content = Opt(Text);
-            properties.Embed = Opt(Embed);
-            properties.Embeds = Opt(Embeds);
+            properties.Embed = Opt(Embed?.Build());
+            properties.Embeds = Opt(Embeds?.Select(e => e.Build()).ToArray());
             properties.AllowedMentions = Opt(AllowedMentions);
             properties.Components = Opt(Components);
         }, sendOptions.Request);
