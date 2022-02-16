@@ -136,6 +136,19 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         }
     }
 
+    /// <summary>
+    /// The delegate to send a message in the current channel.
+    /// </summary>
+    protected DiscordFormat.SendChannelMessageAsyncDelegate SendChannelMessageAsync
+    {
+        get
+        {
+            var interaction = (SocketSlashCommand)Context.Interaction;
+            var channel = (ITextChannel)interaction.Channel;
+            return channel.SendMessageAsync;
+        }
+    }
+
     private static string GetDebugString(IDiscordInteraction interaction)
     {
         var sb = new StringBuilder();

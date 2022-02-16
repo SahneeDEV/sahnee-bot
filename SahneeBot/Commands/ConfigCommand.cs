@@ -108,9 +108,7 @@ public class ConfigCommand : CommandBase
             var roles = (await _rolesOfGuildTask.Execute(ctx, Context.Guild.Id)).ToArray();
             await ModifyOriginalResponseAsync(msg => msg.Content = new Optional<string>("There are " + roles.Length +
                 " roles with sahnee permissions in the Server " + Context.Guild.Name));
-            var interaction = (SocketSlashCommand)Context.Interaction;
-            var channel = (ITextChannel)interaction.Channel;
-            await Task.WhenAll(roles.Select(role => _roleFmt.FormatAndSend(role, channel.SendMessageAsync)));
+            await Task.WhenAll(roles.Select(role => _roleFmt.FormatAndSend(role, SendChannelMessageAsync)));
         }, new CommandExecutionOptions
         {
             PlaceInQueue = true,

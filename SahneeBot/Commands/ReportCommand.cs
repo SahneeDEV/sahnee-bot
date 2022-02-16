@@ -13,20 +13,20 @@ namespace SahneeBot.Commands;
 public class ReportCommand : CommandBase
 {
     private readonly GetWarningsCreated _task;
-    private readonly GetRandomWarningTask _getRandomWarningTask;
+    private readonly GetRandomWarningsTask _getRandomWarningsTask;
     private readonly NoWarningFoundDiscordFormatter _noWarningFoundDiscordFormatter;
     private readonly WarningDiscordFormatter _warningDiscordFormatter;
 
     public ReportCommand(
         IServiceProvider serviceProvider, 
         GetWarningsCreated task, 
-        GetRandomWarningTask getRandomWarningTask,
+        GetRandomWarningsTask getRandomWarningsTask,
         NoWarningFoundDiscordFormatter noWarningFoundDiscordFormatter,
         WarningDiscordFormatter warningWarningDiscordFormatter
     ) : base(serviceProvider)
     {
         _task = task;
-        _getRandomWarningTask = getRandomWarningTask;
+        _getRandomWarningsTask = getRandomWarningsTask;
         _noWarningFoundDiscordFormatter = noWarningFoundDiscordFormatter;
         _warningDiscordFormatter = warningWarningDiscordFormatter;
     }
@@ -74,17 +74,31 @@ public class ReportCommand : CommandBase
         }
     });
 
-    [SlashCommand("random", "Gets a random warning on this Server")]
+    [SlashCommand("random", "Gets random warnings on this Server")]
     public Task RandomCommand(
-        [Summary(description: "If specified, gets a random warning of the given user on this Server")]
+        [Summary(description: "How many warnings should be returned? By default a single warning will be printed")]
+        [MinValue(1)] [MaxValue(25)]
+        int amount = 1,
+        [Summary(description: "If specified, only the warnings will only be chosen from the given user")]
         IUser? user = null
     ) => ExecuteAsync(async ctx =>
     {
-        var warning = await _getRandomWarningTask.Execute(ctx, new GetRandomWarningTask.Args(Context.Guild.Id,
-            user?.Id));
-        if (warning != null)
+        var warnings = (await _getRandomWarningsTask.Execute(ctx, 
+            new GetRandomWarningsTask.Args(Context.Guild.Id, user?.Id, amount))).ToArray();
+        if (warnings.Length > 0)
         {
-            await _warningDiscordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
+            for (var i = 0; i < warnings.Length; i++)
+            {
+                var warning = warnings[i];
+                if (i == 0)
+                {
+                    await _warningDiscordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
+                }
+                else
+                {
+                    await _warningDiscordFormatter.FormatAndSend(warning, SendChannelMessageAsync);
+                }
+            }
         }
         else
         {
