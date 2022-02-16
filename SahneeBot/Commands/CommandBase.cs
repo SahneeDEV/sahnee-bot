@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
@@ -24,12 +25,13 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     private readonly GuildQueue _queue;
     private readonly GetRolesOfUserTask _roles;
     private readonly MissingPermissionDiscordFormatter _missingPermFmt;
+    private readonly CommandErrorDiscordFormatter _errorFmt;
 
     /// <summary>
     /// Creates a new command base class.
     /// </summary>
     /// <param name="serviceProvider">The provider to use for DI.</param>
-    public CommandBase(IServiceProvider serviceProvider)
+    protected CommandBase(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
         // We resolve all further classes manually instead of injection to keep the ctor simple for inheritance.
@@ -37,6 +39,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         _queue = serviceProvider.GetRequiredService<GuildQueue>();
         _roles = serviceProvider.GetRequiredService<GetRolesOfUserTask>();
         _missingPermFmt = serviceProvider.GetRequiredService<MissingPermissionDiscordFormatter>();
+        _errorFmt = serviceProvider.GetRequiredService<CommandErrorDiscordFormatter>();
     }
     
     /// <summary>
@@ -107,7 +110,10 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             }
             catch (Exception exception)
             {
-                _logger.LogError(EventIds.Command, exception, "Error in {Command} command", Context.Interaction);
+                var interaction = (SocketSlashCommand) Context.Interaction;
+                await _errorFmt.FormatAndSend(
+                    new CommandErrorDiscordFormatter.Args(interaction.CommandName, Context.Guild?.Id, 
+                        Context.User.Id, exception), ModifyOriginalResponseAsync);
             }
             scope.Dispose();
         }
