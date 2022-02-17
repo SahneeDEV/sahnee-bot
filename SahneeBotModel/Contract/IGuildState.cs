@@ -14,4 +14,9 @@ public interface IGuildState: IGuildSpecific
     /// If roles will be set on the server for the warning count
     /// </summary>
     public bool SetRoles { get; set; }
+    
+    /// <summary>
+    /// default color for the roles
+    /// </summary>
+    public string WarningRoleColor { get; set; }
 }

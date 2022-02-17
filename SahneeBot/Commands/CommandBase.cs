@@ -74,7 +74,15 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     protected async Task ExecuteAsync(CommandDelegate del, CommandExecutionOptions opts = default)
     {
         var scope = ServiceProvider.CreateScope();
-        await DeferAsync(opts.DeferEphemeral, opts.DeferRequest);
+        try
+        {
+            await DeferAsync(opts.DeferEphemeral, opts.DeferRequest);
+        }
+        catch (Exception e)
+        {
+            _logger.LogCritical(EventIds.Discord, e, "Deferred answer could not be sent!");
+        }
+        
         
         async Task ExecuteAsyncImpl()
         {

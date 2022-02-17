@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using SahneeBot.Formatter;
+using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
@@ -114,5 +115,33 @@ public class ConfigCommand : CommandBase
             PlaceInQueue = true,
             RequiredRole = RoleType.Administrator
         });
+    }
+
+    [Group("role-config", "Configure the warning roles")]
+    public class RoleCommand : CommandBase
+    {
+        private readonly ChangeRoleColorTask _changeRoleColorTask;
+        private readonly RoleColorChangeDiscordFormatter _roleColorChangeDiscordFormatter;
+
+        public RoleCommand(IServiceProvider serviceProvider
+            , ChangeRoleColorTask changeRoleColorTask
+            , RoleColorChangeDiscordFormatter roleColorChangeDiscordFormatter) : base(serviceProvider)
+        {
+            _changeRoleColorTask = changeRoleColorTask;
+            _roleColorChangeDiscordFormatter = roleColorChangeDiscordFormatter;
+        }
+
+        [SlashCommand("color", "Configure the color of warning roles")]
+        public Task ChangeRoleColor(string color)
+            => ExecuteAsync(async ctx =>
+            {
+                var newColor = await _changeRoleColorTask.Execute(ctx
+                    , new ChangeRoleColorTask.Args(Context.Guild.Id, color));
+                await _roleColorChangeDiscordFormatter
+                    .FormatAndSend(new RoleColorChangeDiscordFormatter.Args(newColor), ModifyOriginalResponseAsync);
+            }, new CommandExecutionOptions
+            {
+                RequiredRole = RoleType.Administrator
+            });
     }
 }

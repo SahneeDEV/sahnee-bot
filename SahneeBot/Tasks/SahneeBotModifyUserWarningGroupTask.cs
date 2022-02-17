@@ -9,17 +9,15 @@ namespace SahneeBot.Tasks;
 
 public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
 {
-    private readonly GetUserGuildStateTask _userGuildState;
     private readonly GetGuildStateTask _guildState;
     private readonly DiscordSocketClient _bot;
     private readonly ILogger<SahneeBotModifyWarningGroupTask> _logger;
     private readonly IConfiguration _configuration;
 
     public SahneeBotModifyWarningGroupTask(
-        GetUserGuildStateTask userGuildStateTask, GetGuildStateTask guildStateTask,
-        DiscordSocketClient bot, ILogger<SahneeBotModifyWarningGroupTask> logger, IConfiguration configuration)
+        GetGuildStateTask guildStateTask, DiscordSocketClient bot
+        , ILogger<SahneeBotModifyWarningGroupTask> logger, IConfiguration configuration)
     {
-        _userGuildState = userGuildStateTask;
         _guildState = guildStateTask;
         _bot = bot;
         _logger = logger;
