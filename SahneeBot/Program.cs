@@ -64,7 +64,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetRolesOfUserTask, SahneeBotGetRolesOfUserTask>();
         services.AddTransient<GetRolesOfGuildTask>();
         services.AddTransient<GetRandomWarningsTask>();
-        services.AddTransient<GetWarningsCreated>();
+        services.AddTransient<GetAllWarningsCreatedFromToTask>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {

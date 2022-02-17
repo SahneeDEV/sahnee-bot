@@ -3,7 +3,10 @@ using SahneeBotModel.Contract;
 
 namespace SahneeBotController.Tasks;
 
-public class GetWarningsCreated
+/// <summary>
+/// Returns all warnings today for a specific guild if created in a specific timeframe
+/// </summary>
+public class GetAllWarningsCreatedFromToTask: ITask<GetAllWarningsCreatedFromToTask.Args, List<IWarning>>
 {
     /// <summary>
     /// Arguments for getting all warnings created till specified dateTime

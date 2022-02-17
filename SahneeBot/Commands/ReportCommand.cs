@@ -12,14 +12,14 @@ namespace SahneeBot.Commands;
 [Group("warnings", "Generates reports about warnings on this Server")]
 public class ReportCommand : CommandBase
 {
-    private readonly GetWarningsCreated _task;
+    private readonly GetAllWarningsCreatedFromToTask _task;
     private readonly GetRandomWarningsTask _getRandomWarningsTask;
     private readonly NoWarningFoundDiscordFormatter _noWarningFoundDiscordFormatter;
     private readonly WarningDiscordFormatter _warningDiscordFormatter;
 
     public ReportCommand(
         IServiceProvider serviceProvider, 
-        GetWarningsCreated task, 
+        GetAllWarningsCreatedFromToTask task, 
         GetRandomWarningsTask getRandomWarningsTask,
         NoWarningFoundDiscordFormatter noWarningFoundDiscordFormatter,
         WarningDiscordFormatter warningWarningDiscordFormatter
@@ -39,7 +39,9 @@ public class ReportCommand : CommandBase
         
         var allEmbeds = new List<DiscordFormat>();
         
-        var warnings = await _task.Execute(ctx, new GetWarningsCreated.Args(start, end, Context.Guild.Id));
+        var warnings = await _task.Execute(ctx, new GetAllWarningsCreatedFromToTask.Args(
+            start, end, Context.Guild.Id
+            ));
         foreach (var warning in warnings)
         {
             allEmbeds.Add(await _warningDiscordFormatter.Format(warning));
