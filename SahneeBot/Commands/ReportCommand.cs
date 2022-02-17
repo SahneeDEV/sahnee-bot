@@ -31,8 +31,11 @@ public class ReportCommand : CommandBase
         _warningDiscordFormatter = warningWarningDiscordFormatter;
     }
 
-    [SlashCommand("today", "Gets all warnings, were created today")]
-    public Task TodayCommand() => ExecuteAsync(async ctx =>
+    [SlashCommand("today", "Gets all warnings, that were created today")]
+    public Task TodayCommand(
+        [Summary(description: "If specified, the warnings will only be chosen from the given user")]
+        IUser? user = null
+        ) => ExecuteAsync(async ctx =>
     {
         var end = DateTime.UtcNow;
         var start = end - TimeSpan.FromHours(24);
@@ -40,39 +43,19 @@ public class ReportCommand : CommandBase
         var allEmbeds = new List<DiscordFormat>();
         
         var warnings = await _task.Execute(ctx, new GetAllWarningsCreatedFromToTask.Args(
-            start, end, Context.Guild.Id
+            start, end, Context.Guild.Id, user?.Id
             ));
-        foreach (var warning in warnings)
+        
+        if (!await _warningDiscordFormatter.FormatAndSendMany(
+            warnings, 
+            ModifyOriginalResponseAsync, 
+            SendChannelMessageAsync
+            ))
         {
-            allEmbeds.Add(await _warningDiscordFormatter.Format(warning));
-        }
-
-        var embedList = new List<EmbedBuilder>();
-        var discordFormats = new List<DiscordFormat>();
-        foreach (var embed in allEmbeds)
-        {
-            if (embed.Embed != null) embedList.Add(embed.Embed);
-            if (embedList.Count == 10)
-            {
-                discordFormats.Add(new DiscordFormat{Embeds = embedList.ToArray()});
-            }
-        }
-        if (embedList.Count > 0) 
-        {
-            discordFormats.Add(new DiscordFormat{Embeds = embedList.ToArray()});
-        }
-
-        for (var i = 0; i < discordFormats.Count; i++)
-        {
-            var discordFormat = discordFormats[i];
-            if (i == 0)
-            {
-                await discordFormat.Send(ModifyOriginalResponseAsync);
-            }
-            else
-            {
-                await discordFormat.Send(RespondAsync);
-            }
+            await _noWarningFoundDiscordFormatter.FormatAndSend(new NoWarningFoundDiscordFormatter.Args(
+                Context.Guild.Id, 
+                user?.Id
+                ), ModifyOriginalResponseAsync);
         }
     });
 
@@ -81,7 +64,7 @@ public class ReportCommand : CommandBase
         [Summary(description: "How many warnings should be returned? By default a single warning will be printed")]
         [MinValue(1)] [MaxValue(25)]
         int amount = 1,
-        [Summary(description: "If specified, only the warnings will only be chosen from the given user")]
+        [Summary(description: "If specified, the warnings will only be chosen from the given user")]
         IUser? user = null
     ) => ExecuteAsync(async ctx =>
     {

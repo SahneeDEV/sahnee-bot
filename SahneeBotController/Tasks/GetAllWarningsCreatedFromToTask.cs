@@ -13,15 +13,17 @@ public class GetAllWarningsCreatedFromToTask: ITask<GetAllWarningsCreatedFromToT
     /// </summary>
     /// <param name="Start">The dateTime object specifying which commands should be pulled</param>
     /// <param name="End">The timespan which the warnings have been created</param>
-    /// <param name="GuildID">The ID of the guild in which the warnings have bin issued</param>
-    public record struct Args(DateTime Start, DateTime End, ulong GuildID);
+    /// <param name="GuildId">The ID of the guild in which the warnings have been issued</param>
+    /// <param name="UserId">The ID of the user that got warned</param>
+    public record struct Args(DateTime Start, DateTime End, ulong GuildId, ulong? UserId);
 
     public async Task<List<IWarning>> Execute(ITaskContext ctx, Args arg)
     {
-        var (start,end, guildId) = arg;
+        var (start,end, guildId, userId) = arg;
 
         return await ctx.Model.Warnings.Where(
             warning => warning.GuildId == guildId &&
+                       (!userId.HasValue || warning.UserId == userId.Value) &&
                        warning.Time >= start &&
                        warning.Time <= end
         ).ToListAsync<IWarning>();
