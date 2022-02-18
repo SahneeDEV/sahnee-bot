@@ -54,6 +54,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<NoWarningFoundDiscordFormatter>();
         services.AddTransient<CommandErrorDiscordFormatter>();
         services.AddTransient<RoleColorChangeDiscordFormatter>();
+        services.AddTransient<GeneralErrorDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();

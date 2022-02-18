@@ -1,9 +1,9 @@
-﻿using ColorHelper;
+﻿using System.Text.RegularExpressions;
+using ColorHelper;
 using Discord;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using SahneeBotController.Tasks;
 
 namespace SahneeBot.Tasks;
@@ -12,6 +12,7 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
 {
     private readonly DiscordSocketClient _bot;
     private readonly IConfiguration _configuration;
+    private const string HexRegexPattern = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
     public SahneeBotGuildChangeRoleColorTask(DiscordSocketClient bot
         , IConfiguration configuration)
@@ -23,9 +24,9 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
     public override async Task<string> Execute(ITaskContext ctx, Args arg)
     {
         //Check if the color is valid
-        if (!arg.RoleColor.StartsWith('#'))
+        if (String.IsNullOrWhiteSpace(arg.RoleColor) || !Regex.IsMatch(arg.RoleColor, HexRegexPattern))
         {
-            //TODO: respond to user, that this is not a valid color
+            return null!;
         }
         //set the color in the database
         var guildState = await ctx.Model.GuildStates
