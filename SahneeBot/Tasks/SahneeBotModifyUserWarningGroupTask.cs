@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using ColorHelper;
+using Discord;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
@@ -61,10 +62,17 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
         {
             try
             {
+                //get custom color if available
+                var roleColor = Color.LightGrey;
+                if (!string.IsNullOrWhiteSpace(guildState.WarningRoleColor))
+                {
+                    var rgb = ColorConverter.HexToRgb(new HEX(guildState.WarningRoleColor));
+                    roleColor = new Color(rgb.R, rgb.G, rgb.B);
+                }
                 //create the new role
                 newRole = await currentGuild
                     .CreateRoleAsync(newRoleName, default,
-                        Color.LightGrey, false, null);
+                        roleColor, false, null);
                 //add the new role to the guild
                 await currentGuildUser.AddRoleAsync(newRole);
             }
