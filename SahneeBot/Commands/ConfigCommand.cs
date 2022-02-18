@@ -2,6 +2,7 @@
 using Discord.Interactions;
 using Discord.WebSocket;
 using SahneeBot.Formatter;
+using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
@@ -114,5 +115,58 @@ public class ConfigCommand : CommandBase
             PlaceInQueue = true,
             RequiredRole = RoleType.Administrator
         });
+    }
+
+    [Group("role-config", "Configure the warning roles")]
+    public class RoleCommand : CommandBase
+    {
+        private readonly ChangeRoleColorTask _changeRoleColorTask;
+        private readonly RoleColorChangeDiscordFormatter _roleColorChangeDiscordFormatter;
+        private readonly GeneralErrorDiscordFormatter _generalErrorDiscordFormatter;
+
+        public RoleCommand(IServiceProvider serviceProvider
+            , ChangeRoleColorTask changeRoleColorTask
+            , RoleColorChangeDiscordFormatter roleColorChangeDiscordFormatter
+            , GeneralErrorDiscordFormatter generalErrorDiscordFormatter) : base(serviceProvider)
+        {
+            _changeRoleColorTask = changeRoleColorTask;
+            _roleColorChangeDiscordFormatter = roleColorChangeDiscordFormatter;
+            _generalErrorDiscordFormatter = generalErrorDiscordFormatter;
+        }
+
+        [SlashCommand("color", "Configure the color of warning roles")]
+        public Task ChangeRoleColor(string color)
+            => ExecuteAsync(async ctx =>
+            {
+                var newColor = await _changeRoleColorTask.Execute(ctx
+                    , new ChangeRoleColorTask.Args(Context.Guild.Id, color));
+                if (string.IsNullOrWhiteSpace(newColor))
+                {
+                    await _generalErrorDiscordFormatter.FormatAndSend(new GeneralErrorDiscordFormatter.Args(
+                        "Cannot set " + color + " as color. Is it a valid hex string?", 
+                        new List<EmbedFieldBuilder>
+                        {
+                            new()
+                            {
+                                Name = "You specified color",
+                                Value = color,
+                                IsInline = true
+                            },
+                            new()
+                            {
+                                Name = "Hint",
+                                Value = "Please make sure, your color string starts with a '#'",
+                                IsInline = false
+                            }
+                        }
+                        ), ModifyOriginalResponseAsync);
+                    return;
+                }
+                await _roleColorChangeDiscordFormatter
+                    .FormatAndSend(new RoleColorChangeDiscordFormatter.Args(newColor), ModifyOriginalResponseAsync);
+            }, new CommandExecutionOptions
+            {
+                RequiredRole = RoleType.Administrator
+            });
     }
 }

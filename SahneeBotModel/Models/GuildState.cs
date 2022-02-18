@@ -8,12 +8,12 @@ public class GuildState: IGuildState
     [Key, Required]
     public ulong GuildId { get; set; }
     public string? BoundChannel { get; set; }
-
     public bool SetRoles { get; set; } = true;
+    public string WarningRoleColor { get; set; }
 
     public override string ToString()
     {
         return $"GuildState({nameof(GuildId)}: {GuildId}, {nameof(BoundChannel)}: {BoundChannel}" +
-               $", {nameof(SetRoles)}: {SetRoles})";
+               $", {nameof(SetRoles)}: {SetRoles}, {nameof(WarningRoleColor)}: {WarningRoleColor})";
     }
 }
