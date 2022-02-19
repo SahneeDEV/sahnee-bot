@@ -68,6 +68,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetRolesOfGuildTask>();
         services.AddTransient<GetRandomWarningsTask>();
         services.AddTransient<GetAllWarningsCreatedFromToTask>();
+        services.AddTransient<GetLastWarningsTask>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {
