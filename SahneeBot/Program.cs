@@ -55,6 +55,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<CommandErrorDiscordFormatter>();
         services.AddTransient<RoleColorChangeDiscordFormatter>();
         services.AddTransient<GeneralErrorDiscordFormatter>();
+        services.AddTransient<BoundChannelDiscordFormatter>();
+        services.AddTransient<NotBoundChannelDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -69,6 +71,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetRandomWarningsTask>();
         services.AddTransient<GetAllWarningsCreatedFromToTask>();
         services.AddTransient<GetLastWarningsTask>();
+        services.AddTransient<ChangeBoundChannelTask>();
+        services.AddTransient<GetBoundChannelTask>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {

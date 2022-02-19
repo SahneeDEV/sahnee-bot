@@ -6,15 +6,13 @@
 public interface IGuildState: IGuildSpecific
 {
     /// <summary>
-    /// The channel the bot is bound to.
+    /// The channel the bot has been bound to.
     /// </summary>
-    public string? BoundChannel { get; set; }
-
+    ulong? BoundChannelId { get; set; }
     /// <summary>
     /// If roles will be set on the server for the warning count
     /// </summary>
     public bool SetRoles { get; set; }
-    
     /// <summary>
     /// default color for the roles
     /// </summary>

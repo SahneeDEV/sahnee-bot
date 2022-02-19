@@ -27,6 +27,8 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     private readonly GetRolesOfUserTask _roles;
     private readonly MissingPermissionDiscordFormatter _missingPermFmt;
     private readonly CommandErrorDiscordFormatter _errorFmt;
+    private readonly GetBoundChannelTask _boundChannel;
+    private readonly NotBoundChannelDiscordFormatter _notBoundChannelFmt;
 
     /// <summary>
     /// Creates a new command base class.
@@ -41,6 +43,8 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         _roles = serviceProvider.GetRequiredService<GetRolesOfUserTask>();
         _missingPermFmt = serviceProvider.GetRequiredService<MissingPermissionDiscordFormatter>();
         _errorFmt = serviceProvider.GetRequiredService<CommandErrorDiscordFormatter>();
+        _boundChannel = serviceProvider.GetRequiredService<GetBoundChannelTask>();
+        _notBoundChannelFmt = serviceProvider.GetRequiredService<NotBoundChannelDiscordFormatter>();
     }
     
     /// <summary>
@@ -64,6 +68,30 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         /// The role require for this command.
         /// </summary>
         public readonly RoleType? RequiredRole { get; init; }
+        /// <summary>
+        /// Ignore the channel the bot has been bound to.
+        /// </summary>
+        public readonly bool IgnoreBoundChannel { get; init; }
+    }
+
+    /// <summary>
+    /// Deletes the original message after the given amount of MS.
+    /// </summary>
+    /// <param name="ms">The MS.</param>
+    protected void DeleteOriginalResponseAfter(int ms = 5000)
+    {
+#pragma warning disable CS4014
+        DeleteOriginalResponseAfterAndWaitAsync(ms);
+#pragma warning restore CS4014
+    }
+
+    /// <summary>
+    /// Deletes the original message after the given amount of MS and allows to await the deletion.
+    /// </summary>
+    /// <param name="ms">The MS.</param>
+    protected Task DeleteOriginalResponseAfterAndWaitAsync(int ms = 5000)
+    {
+        return Task.Delay(ms).ContinueWith(task => DeleteOriginalResponseAsync());
     }
     
     /// <summary>
@@ -92,6 +120,30 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                 await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
                 await using var transaction = await model.Database.BeginTransactionAsync();
                 using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
+                // Check binding
+                if (!opts.IgnoreBoundChannel)
+                {
+                    var channel = Channel;
+                    if (channel == null)
+                    {
+                        throw new InvalidOperationException(
+                            "Cannot ignore bound channel when the interaction does not use channels");
+                    }
+                    if (Context.Guild == null)
+                    {
+                        throw new InvalidOperationException("Cannot ignore bound channel in a global command");
+                    }
+
+                    var boundId = await _boundChannel.Execute(ctx, new GetBoundChannelTask.Args(
+                        Context.Guild.Id));
+                    if (boundId.HasValue && boundId.Value != channel.Id)
+                    {
+                        await _notBoundChannelFmt.FormatAndSend(new NotBoundChannelDiscordFormatter.Args(
+                            Context.Guild.Id, boundId), ModifyOriginalResponseAsync);
+                        DeleteOriginalResponseAfter();
+                        return;
+                    }
+                }
                 // Check permission
                 if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleType.None)
                 {
@@ -106,9 +158,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                     {
                         await _missingPermFmt.FormatAndSend(new MissingPermissionDiscordFormatter.Args(role),
                             ModifyOriginalResponseAsync);
-#pragma warning disable CS4014
-                        Task.Delay(5000).ContinueWith(task => DeleteOriginalResponseAsync());
-#pragma warning restore CS4014
+                        DeleteOriginalResponseAfter();
                         return;
                     }
                 }
@@ -143,7 +193,16 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             await ExecuteAsyncImpl();
         }
     }
-
+    
+    protected ITextChannel? Channel
+    {
+        get
+        {
+            var interaction = Context.Interaction as SocketSlashCommand;
+            return interaction?.Channel as ITextChannel;
+        }
+    }
+    
     /// <summary>
     /// The delegate to send a message in the current channel.
     /// </summary>
@@ -151,8 +210,11 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     {
         get
         {
-            var interaction = (SocketSlashCommand)Context.Interaction;
-            var channel = (ITextChannel)interaction.Channel;
+            var channel = Channel;
+            if (channel == null)
+            {
+                throw new InvalidOperationException("Cannot get channel in this kind of interaction");
+            }
             return channel.SendMessageAsync;
         }
     }

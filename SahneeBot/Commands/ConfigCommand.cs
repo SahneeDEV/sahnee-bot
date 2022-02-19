@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Commands;
 using Discord.Interactions;
 using Discord.WebSocket;
 using SahneeBot.Formatter;
@@ -8,14 +9,79 @@ using SahneeBotModel;
 
 namespace SahneeBot.Commands;
 
-[Group("config", "Sahnee bot configuration commands")]
+[Discord.Interactions.Group("config", "Sahnee bot configuration commands")]
 public class ConfigCommand : CommandBase
 {
+
     public ConfigCommand(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
     
-    [Group("sahnee-permission", "Configure the permission system")]
+    [Discord.Interactions.Group("bind", "Configure the bound channel of the bot")]
+    public class BindCommand : CommandBase
+    {
+        private readonly ChangeBoundChannelTask _changeBoundChannelTask;
+        private readonly BoundChannelDiscordFormatter _boundChannelDiscordFormatter;
+        private readonly GetBoundChannelTask _getBoundChannelTask;
+
+        public BindCommand(IServiceProvider serviceProvider, 
+            ChangeBoundChannelTask changeBoundChannelTask,
+            BoundChannelDiscordFormatter boundChannelDiscordFormatter,
+            GetBoundChannelTask getBoundChannelTask
+            ) : base(serviceProvider)
+        {
+            _changeBoundChannelTask = changeBoundChannelTask;
+            _boundChannelDiscordFormatter = boundChannelDiscordFormatter;
+            _getBoundChannelTask = getBoundChannelTask;
+        }
+
+        [SlashCommand("set", "Binds the bot to a channel")]
+        public Task BindChannelCommand(
+            [Discord.Interactions.Summary(description: "The channel to bind to")]
+            ITextChannel channel
+        ) => ExecuteAsync(async ctx =>
+        {
+            var boundTo = await _changeBoundChannelTask.Execute(ctx, new ChangeBoundChannelTask.Args(
+                Context.Guild.Id, channel.Id));
+            await _boundChannelDiscordFormatter.FormatAndSend(new BoundChannelDiscordFormatter.Args(Context.Guild.Id,
+                boundTo), ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            RequiredRole = RoleType.Administrator,
+            IgnoreBoundChannel = true
+        });
+
+        [SlashCommand("unset", "Unbinds from the channel")]
+        public Task UnbindChannelCommand() => ExecuteAsync(async ctx =>
+        {
+            var boundTo = await _changeBoundChannelTask.Execute(ctx, new ChangeBoundChannelTask.Args(
+                Context.Guild.Id, null));
+            await _boundChannelDiscordFormatter.FormatAndSend(new BoundChannelDiscordFormatter.Args(Context.Guild.Id,
+                boundTo), ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            RequiredRole = RoleType.Administrator,
+            IgnoreBoundChannel = true
+        });
+
+        [SlashCommand("get", "Gets the currently bound channel")]
+        public Task GetChannelCommand() => ExecuteAsync(async ctx =>
+        {
+            var boundTo = await _getBoundChannelTask.Execute(ctx, new GetBoundChannelTask.Args(
+                Context.Guild.Id));
+            await _boundChannelDiscordFormatter.FormatAndSend(new BoundChannelDiscordFormatter.Args(Context.Guild.Id,
+                boundTo), ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            RequiredRole = RoleType.Administrator,
+            IgnoreBoundChannel = true
+        });
+    }
+    
+    [Discord.Interactions.Group("sahnee-permission", "Configure the permission system")]
     public class PermissionCommand : CommandBase
     {
         /// <summary>
@@ -57,9 +123,9 @@ public class ConfigCommand : CommandBase
         /// <returns>Once the role has been added</returns>
         [SlashCommand("add", "Adds a sahnee permission to a role")]
         public Task CommandAdd(
-            [Summary(description: "The role to add the sahnee permission to")]
+            [Discord.Interactions.Summary(description: "The role to add the sahnee permission to")]
             IRole role,
-            [Summary(description: "The sahnee permission to add")]
+            [Discord.Interactions.Summary(description: "The sahnee permission to add")]
             SahneePermission sahneePermission
             ) => ExecuteAsync(async ctx =>
         {
@@ -82,9 +148,9 @@ public class ConfigCommand : CommandBase
         /// <returns>Once the role has been removed.</returns>
         [SlashCommand("remove", "Removes a (or all) sahnee permission(s) from a role")]
         public Task CommandRemove(
-            [Summary(description: "The role to remove the sahnee permission from")] 
+            [Discord.Interactions.Summary(description: "The role to remove the sahnee permission from")] 
             IRole role,
-            [Summary(description: "The sahnee permission to remove - if not specified, all sahnee permissions will be removed")]
+            [Discord.Interactions.Summary(description: "The sahnee permission to remove - if not specified, all sahnee permissions will be removed")]
             SahneePermission? sahneePermission = null
             ) => ExecuteAsync(async ctx =>
         {
@@ -117,7 +183,7 @@ public class ConfigCommand : CommandBase
         });
     }
 
-    [Group("role-config", "Configure the warning roles")]
+    [Discord.Interactions.Group("role-config", "Configure the warning roles")]
     public class RoleCommand : CommandBase
     {
         private readonly ChangeRoleColorTask _changeRoleColorTask;
