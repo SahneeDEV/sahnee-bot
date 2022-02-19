@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Interactions;
-using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBotController.Tasks;
 
@@ -31,7 +30,7 @@ public class ReportCommand : CommandBase
         _warningDiscordFormatter = warningWarningDiscordFormatter;
     }
 
-    [SlashCommand("today", "Gets all warnings, that were created today")]
+    [SlashCommand("today", "Gets all warnings that were created today")]
     public Task TodayCommand(
         [Summary(description: "If specified, the warnings will only be chosen from the given user")]
         IUser? user = null
@@ -39,8 +38,6 @@ public class ReportCommand : CommandBase
     {
         var end = DateTime.UtcNow;
         var start = end - TimeSpan.FromHours(24);
-        
-        var allEmbeds = new List<DiscordFormat>();
         
         var warnings = await _task.Execute(ctx, new GetAllWarningsCreatedFromToTask.Args(
             start, end, Context.Guild.Id, user?.Id
