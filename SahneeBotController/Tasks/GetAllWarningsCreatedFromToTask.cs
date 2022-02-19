@@ -6,7 +6,7 @@ namespace SahneeBotController.Tasks;
 /// <summary>
 /// Returns all warnings today for a specific guild if created in a specific timeframe
 /// </summary>
-public class GetAllWarningsCreatedFromToTask: ITask<GetAllWarningsCreatedFromToTask.Args, List<IWarning>>
+public class GetAllWarningsCreatedFromToTask: ITask<GetAllWarningsCreatedFromToTask.Args, IEnumerable<IWarning>>
 {
     /// <summary>
     /// Arguments for getting all warnings created till specified dateTime
@@ -17,7 +17,7 @@ public class GetAllWarningsCreatedFromToTask: ITask<GetAllWarningsCreatedFromToT
     /// <param name="UserId">The ID of the user that got warned</param>
     public record struct Args(DateTime Start, DateTime End, ulong GuildId, ulong? UserId);
 
-    public async Task<List<IWarning>> Execute(ITaskContext ctx, Args arg)
+    public async Task<IEnumerable<IWarning>> Execute(ITaskContext ctx, Args arg)
     {
         var (start,end, guildId, userId) = arg;
 
