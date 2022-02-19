@@ -29,6 +29,36 @@ public class ReportCommand : CommandBase
         _noWarningFoundDiscordFormatter = noWarningFoundDiscordFormatter;
         _warningDiscordFormatter = warningWarningDiscordFormatter;
     }
+    
+    [SlashCommand("between", "Gets all warnings in the given time frame")]
+    public Task BetweenCommand(
+        [Summary("start", "The start of the time frame")]
+        DateTime startRaw,
+        [Summary("end", "The end of the time frame - If not specified, the current date and time will be used")]
+        DateTime? endRaw = null,
+        [Summary(description: "If specified, the warnings will only be chosen from the given user")]
+        IUser? user = null
+    ) => ExecuteAsync(async ctx =>
+    {
+        var start = startRaw.ToUniversalTime();
+        var end = endRaw?.ToUniversalTime() ?? DateTime.UtcNow;
+        
+        var warnings = await _task.Execute(ctx, new GetAllWarningsCreatedFromToTask.Args(
+            start, end, Context.Guild.Id, user?.Id
+        ));
+        
+        if (!await _warningDiscordFormatter.FormatAndSendMany(
+                warnings, 
+                ModifyOriginalResponseAsync, 
+                SendChannelMessageAsync
+            ))
+        {
+            await _noWarningFoundDiscordFormatter.FormatAndSend(new NoWarningFoundDiscordFormatter.Args(
+                Context.Guild.Id, 
+                user?.Id
+            ), ModifyOriginalResponseAsync);
+        }
+    });
 
     [SlashCommand("today", "Gets all warnings that were created today")]
     public Task TodayCommand(
