@@ -1,23 +1,87 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.Interactions;
-using Discord.WebSocket;
 using SahneeBot.Formatter;
-using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
 namespace SahneeBot.Commands;
 
-[Discord.Interactions.Group("config", "Sahnee bot configuration commands")]
+[Group("config", "Sahnee bot configuration commands")]
 public class ConfigCommand : CommandBase
 {
 
     public ConfigCommand(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
+
+    [Group("pm", "Configure private messages about this guild sent to you by the bot")]
+    public class PmCommand : CommandBase
+    {
+        private readonly MessageOptOutTask _optOutTask;
+        private readonly GetMessageOptOutTask _getMessageOptOutTask;
+        private readonly MessageOptOutDiscordFormatter _messageOptOutDiscordFormatter;
+
+        public PmCommand(
+            IServiceProvider serviceProvider,
+            MessageOptOutTask optOutTask,
+            GetMessageOptOutTask getMessageOptOutTask,
+            MessageOptOutDiscordFormatter messageOptOutDiscordFormatter
+            ) : base(serviceProvider)
+        {
+            _optOutTask = optOutTask;
+            _getMessageOptOutTask = getMessageOptOutTask;
+            _messageOptOutDiscordFormatter = messageOptOutDiscordFormatter;
+        }
+        
+        [SlashCommand("opt-out", "Opts yourself out of receiving messages related to this Server from this bot by private message")]
+        public Task OptOutCommand() => ExecuteAsync(async ctx =>
+        {
+            await HelperOptOut(ctx, true);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            IgnoreBoundChannel = true
+        });
+        
+        [SlashCommand("opt-in", "Opts yourself back into receiving messages")]
+        public Task OptInCommand() => ExecuteAsync(async ctx =>
+        {
+            await HelperOptOut(ctx, false);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            IgnoreBoundChannel = true
+        });
+        
+        [SlashCommand("am-i-opted-out", "Checks if you have opted out of receiving messages")]
+        public Task IsOptedOutCommand() => ExecuteAsync(async ctx =>
+        {
+            var optedOut = await _getMessageOptOutTask.Execute(ctx, new GetMessageOptOutTask.Args(
+                Context.User.Id, Context.Guild.Id));
+            await HelperSendOptOut(ctx, optedOut);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            IgnoreBoundChannel = true
+        });
+
+        private async Task HelperOptOut(ITaskContext ctx, bool optOut)
+        {
+            var optedOut = await _optOutTask.Execute(ctx, new MessageOptOutTask.Args(Context.User.Id, 
+                Context.Guild.Id, optOut));
+            await HelperSendOptOut(ctx, optedOut);
+        }
+
+        private async Task HelperSendOptOut(ITaskContext ctx, bool optedOut)
+        {
+            await _messageOptOutDiscordFormatter.FormatAndSend(
+                new MessageOptOutDiscordFormatter.Args(Context.User.Id, Context.Guild.Id, optedOut),
+                ModifyOriginalResponseAsync);
+            DeleteOriginalResponseAfter();
+        }
+    }
     
-    [Discord.Interactions.Group("bind", "Configure the bound channel of the bot")]
+    [Group("bind", "Configure the bound channel of the bot")]
     public class BindCommand : CommandBase
     {
         private readonly ChangeBoundChannelTask _changeBoundChannelTask;
@@ -37,7 +101,7 @@ public class ConfigCommand : CommandBase
 
         [SlashCommand("set", "Binds the bot to a channel")]
         public Task BindChannelCommand(
-            [Discord.Interactions.Summary(description: "The channel to bind to")]
+            [Summary(description: "The channel to bind to")]
             ITextChannel channel
         ) => ExecuteAsync(async ctx =>
         {
@@ -81,7 +145,7 @@ public class ConfigCommand : CommandBase
         });
     }
     
-    [Discord.Interactions.Group("sahnee-permission", "Configure the permission system")]
+    [Group("sahnee-permission", "Configure the permission system")]
     public class PermissionCommand : CommandBase
     {
         /// <summary>
@@ -123,9 +187,9 @@ public class ConfigCommand : CommandBase
         /// <returns>Once the role has been added</returns>
         [SlashCommand("add", "Adds a sahnee permission to a role")]
         public Task CommandAdd(
-            [Discord.Interactions.Summary(description: "The role to add the sahnee permission to")]
+            [Summary(description: "The role to add the sahnee permission to")]
             IRole role,
-            [Discord.Interactions.Summary(description: "The sahnee permission to add")]
+            [Summary(description: "The sahnee permission to add")]
             SahneePermission sahneePermission
             ) => ExecuteAsync(async ctx =>
         {
@@ -148,9 +212,9 @@ public class ConfigCommand : CommandBase
         /// <returns>Once the role has been removed.</returns>
         [SlashCommand("remove", "Removes a (or all) sahnee permission(s) from a role")]
         public Task CommandRemove(
-            [Discord.Interactions.Summary(description: "The role to remove the sahnee permission from")] 
+            [Summary(description: "The role to remove the sahnee permission from")] 
             IRole role,
-            [Discord.Interactions.Summary(description: "The sahnee permission to remove - if not specified, all sahnee permissions will be removed")]
+            [Summary(description: "The sahnee permission to remove - if not specified, all sahnee permissions will be removed")]
             SahneePermission? sahneePermission = null
             ) => ExecuteAsync(async ctx =>
         {
@@ -183,7 +247,7 @@ public class ConfigCommand : CommandBase
         });
     }
 
-    [Discord.Interactions.Group("role-config", "Configure the warning roles")]
+    [Group("role-config", "Configure the warning roles")]
     public class RoleCommand : CommandBase
     {
         private readonly ChangeRoleColorTask _changeRoleColorTask;

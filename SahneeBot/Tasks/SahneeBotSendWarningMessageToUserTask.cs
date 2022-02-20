@@ -8,38 +8,28 @@ namespace SahneeBot.Tasks;
 
 public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
 {
-    private readonly GetUserGuildStateTask _userGuildState;
     private readonly DiscordSocketClient _bot;
     private readonly ILogger<SahneeBotSendWarningMessageToUserTask> _logger;
     private readonly WarningDiscordFormatter _discordFormatter;
 
-    public SahneeBotSendWarningMessageToUserTask(
-        GetUserGuildStateTask userGuildState, DiscordSocketClient bot, 
-        ILogger<SahneeBotSendWarningMessageToUserTask> logger, WarningDiscordFormatter discordFormatter)
+    public SahneeBotSendWarningMessageToUserTask(IServiceProvider provider, DiscordSocketClient bot,
+        ILogger<SahneeBotSendWarningMessageToUserTask> logger,
+        WarningDiscordFormatter discordFormatter) : base(provider)
     {
-        _userGuildState = userGuildState;
         _bot = bot;
         _logger = logger;
         _discordFormatter = discordFormatter;
     }
     
-    public override async Task<bool> Execute(ITaskContext ctx, Args arg)
+    protected override async Task<bool> ExecuteImpl(ITaskContext ctx, Args arg)
     {
-        // Don't send a message if the user opted out.
-        var userGuildState = await _userGuildState.Execute(
-            ctx, 
-            new GetUserGuildStateTask.Args(arg.Warning.GuildId, arg.Warning.UserId));
-        if (userGuildState.MessageOptOut)
-        {
-            return false;
-        }
+        var (warning, recipientId) = arg;
         // Get the user, could be deleted
-        var user = await _bot.GetUserAsync(arg.RecipientId);
+        var user = await _bot.GetUserAsync(recipientId);
         if (user == null)
         {
             _logger.LogWarning(EventIds.Discord, 
-                "Failed to deliver warning message for warning {Warning}: Could not get the user", 
-                arg.Warning);
+                "Failed to deliver warning message for warning {Warning}: Could not get the user", warning);
             return false;
         }
         // Sending messages to bots is pointless
@@ -50,15 +40,13 @@ public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
         // Sending the actual message crashes if the bot is blocked
         try
         {
-            await _discordFormatter.FormatAndSend(arg.Warning, user.SendMessageAsync);
+            await _discordFormatter.FormatAndSend(warning, user.SendMessageAsync);
             return true;
         }
         catch (Exception e)
         {
-            _logger.LogWarning(EventIds.Discord,
-                e,
-                "Failed to deliver warning message for warning {Warning}", 
-                arg.Warning);
+            _logger.LogWarning(EventIds.Discord, e, 
+                "Failed to deliver warning message for warning {Warning}", warning);
             return false;
         }
     }

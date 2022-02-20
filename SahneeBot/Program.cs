@@ -57,6 +57,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GeneralErrorDiscordFormatter>();
         services.AddTransient<BoundChannelDiscordFormatter>();
         services.AddTransient<NotBoundChannelDiscordFormatter>();
+        services.AddTransient<MessageOptOutHintDiscordFormatter>();
+        services.AddTransient<MessageOptOutDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -73,6 +75,9 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetLastWarningsTask>();
         services.AddTransient<ChangeBoundChannelTask>();
         services.AddTransient<GetBoundChannelTask>();
+        services.AddTransient<SendMessageOptOutHintToUserTask, SahneeBotSendMessageOptOutHintToUserTask>();
+        services.AddTransient<MessageOptOutTask>();
+        services.AddTransient<GetMessageOptOutTask>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {
