@@ -247,7 +247,7 @@ public class ConfigCommand : CommandBase
         });
     }
 
-    [Group("role-config", "Configure the warning roles")]
+    [Group("role", "Configure the warning roles")]
     public class RoleCommand : CommandBase
     {
         private readonly ChangeRoleColorTask _changeRoleColorTask;
