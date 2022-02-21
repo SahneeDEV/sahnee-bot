@@ -28,4 +28,8 @@ public static class EventIds
     /// Migration log events.
     /// </summary>
     public static readonly EventId Migration = new (Base + 4, "Migration");
+    /// <summary>
+    /// Job log events.
+    /// </summary>
+    public static readonly EventId Jobs = new(Base + 5, "Jobs");
 }

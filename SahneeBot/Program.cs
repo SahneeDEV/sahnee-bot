@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using SahneeBot;
 using SahneeBot.Commands;
 using SahneeBot.Formatter;
+using SahneeBot.Jobs;
+using SahneeBot.Jobs.JobTasks;
 using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
@@ -43,6 +45,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<DiscordLogger>();
         services.AddSingleton<GuildQueue>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
+        services.AddSingleton<JobHandler>();
         // FORMATTER
         services.AddSingleton<DefaultFormatArguments>();
         services.AddTransient<WarningDiscordFormatter>();
@@ -59,6 +62,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<NotBoundChannelDiscordFormatter>();
         services.AddTransient<MessageOptOutHintDiscordFormatter>();
         services.AddTransient<MessageOptOutDiscordFormatter>();
+        services.AddTransient<WarningRoleCleanupDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -78,6 +82,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<SendMessageOptOutHintToUserTask, SahneeBotSendMessageOptOutHintToUserTask>();
         services.AddTransient<MessageOptOutTask>();
         services.AddTransient<GetMessageOptOutTask>();
+        // JOBS
+        services.AddTransient<CleanupWarningRolesJobTask>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {
@@ -92,6 +98,8 @@ var host = CreateHostBuilder(args)
 var bot = host.Services.GetRequiredService<DiscordSocketClient>();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 var discordLogger = host.Services.GetRequiredService<DiscordLogger>();
+var jobHandler = host.Services.GetRequiredService<JobHandler>();
+var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJobTask>();
 
 using (var scope = host.Services.CreateScope())
 {
@@ -119,5 +127,15 @@ await bot.StartAsync();
 
 var commandHandler = host.Services.GetRequiredService<ICommandHandler>();
 commandHandler.Install();
+
+//register the jobs
+var guid = jobHandler.RegisterJob(new JobHandler.Args(new JobTimeSpanRepeat(
+        TimeSpan.FromMinutes(int.Parse(configuration["BotSettings:Jobs:CleanupWarningRoles"]))),
+    async () =>
+    {
+        await clearWarningRoles.CleanupWarningRolesRun(host.Services);
+    }));
+logger.LogDebug(EventIds.Jobs, "Registered Job for cleaning warning roles" +
+                               " with guid: {guid}", guid);
 
 await host.RunAsync();
