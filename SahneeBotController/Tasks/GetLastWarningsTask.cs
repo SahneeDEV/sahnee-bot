@@ -13,14 +13,17 @@ public class GetLastWarningsTask : ITask<GetLastWarningsTask.Args, IEnumerable<I
     /// </summary>
     /// <param name="GuildId">The guild ID to get the warnings of.</param>
     /// <param name="UserId">The user ID to get the warnings of.</param>
+    /// <param name="Issuer">The user issued the warning.</param>
     /// <param name="MaxAmount">The max amount of warnings to get.</param>
-    public record struct Args(ulong GuildId, ulong? UserId, int MaxAmount);
+    public record struct Args(ulong GuildId, ulong? UserId, bool Issuer, int MaxAmount);
 
     public async Task<IEnumerable<IWarning>> Execute(ITaskContext ctx, Args arg)
     {
-        var (guildId, userId, maxAmount) = arg;
+        var (guildId, userId, warner, maxAmount) = arg;
         var list = await ctx.Model.Warnings
-            .Where(w => w.GuildId == guildId && (!userId.HasValue || w.UserId == userId))
+            .Where(w => w.GuildId == guildId && (!userId.HasValue || warner 
+                ? w.IssuerUserId == userId 
+                : w.UserId == userId))
             .OrderByDescending(w => w.Time)
             .Take(maxAmount)
             .ToListAsync<IWarning>();
