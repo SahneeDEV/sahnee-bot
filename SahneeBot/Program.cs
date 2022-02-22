@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SahneeBot;
+using SahneeBot.Activity;
 using SahneeBot.Commands;
 using SahneeBot.Formatter;
 using SahneeBot.Jobs;
@@ -93,8 +94,11 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetLastChangelogOfGuildTask>();
         services.AddTransient<SahneeBotJoinedGuildTask>();
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
+        services.AddTransient<SahneeBotLeftGuildTask>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJobTask>();
+        // ACTIVITY
+        services.AddTransient<BotActivity>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {
@@ -112,6 +116,8 @@ var discordLogger = host.Services.GetRequiredService<DiscordLogger>();
 var jobHandler = host.Services.GetRequiredService<JobHandler>();
 var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJobTask>();
 var joinedTask = host.Services.GetRequiredService<SahneeBotJoinedGuildTask>();
+var leftTask = host.Services.GetRequiredService<SahneeBotLeftGuildTask>();
+var botActivity = host.Services.GetRequiredService<BotActivity>();
 
 using (var scope = host.Services.CreateScope())
 {
@@ -130,6 +136,8 @@ using (var scope = host.Services.CreateScope())
 
 bot.Log += discordLogger.Log;
 bot.JoinedGuild += joinedTask.JoinedGuildTask;
+bot.LeftGuild += leftTask.LeftGuildTask;
+bot.Ready += botActivity.UpdateBotActivity;
 
 //login the bot and start
 var configuration = host.Services.GetRequiredService<IConfiguration>();

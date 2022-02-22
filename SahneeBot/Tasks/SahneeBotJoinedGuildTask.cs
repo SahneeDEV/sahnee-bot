@@ -1,5 +1,6 @@
 ﻿using Discord;
 using Microsoft.Extensions.Logging;
+using SahneeBot.Activity;
 using SahneeBot.Formatter;
 
 namespace SahneeBot.Tasks;
@@ -9,14 +10,17 @@ public class SahneeBotJoinedGuildTask
     private readonly ILogger<SahneeBotJoinedGuildTask> _logger;
     private readonly WelcomeOnNewGuildJoinDiscordFormatter _welcomeOnNewGuildJoinDiscordFormatter;
     private readonly PrivateMessageToGuildOwnerFormatter _privateMessageToGuildOwnerFormatter;
+    private readonly BotActivity _botActivity;
 
     public SahneeBotJoinedGuildTask(ILogger<SahneeBotJoinedGuildTask> logger
-        , WelcomeOnNewGuildJoinDiscordFormatter welcomeOnNewGuildJoinDiscordFormatter,
-        PrivateMessageToGuildOwnerFormatter privateMessageToGuildOwnerFormatter)
+        , WelcomeOnNewGuildJoinDiscordFormatter welcomeOnNewGuildJoinDiscordFormatter
+        , PrivateMessageToGuildOwnerFormatter privateMessageToGuildOwnerFormatter
+        , BotActivity botActivity)
     {
         _logger = logger;
         _welcomeOnNewGuildJoinDiscordFormatter = welcomeOnNewGuildJoinDiscordFormatter;
         _privateMessageToGuildOwnerFormatter = privateMessageToGuildOwnerFormatter;
+        _botActivity = botActivity;
     }
 
     public async Task JoinedGuildTask(IGuild guild)
@@ -40,11 +44,13 @@ public class SahneeBotJoinedGuildTask
                       " bot with the suggested permissions. If you are worried about our data processing," +
                       "you can refer to our [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/)")
                 , guildOwner.SendMessageAsync);
+            await _botActivity.UpdateBotActivity();
             return;
         }
 
         await _welcomeOnNewGuildJoinDiscordFormatter.FormatAndSend(
             new WelcomeOnNewGuildJoinDiscordFormatter.Args(guild.Name)
             , channel.SendMessageAsync);
+        await _botActivity.UpdateBotActivity();
     }
 }
