@@ -63,6 +63,9 @@ var host = CreateHostBuilder(args)
         services.AddTransient<MessageOptOutHintDiscordFormatter>();
         services.AddTransient<MessageOptOutDiscordFormatter>();
         services.AddTransient<WarningRoleCleanupDiscordFormatter>();
+        services.AddTransient<WarningRoleSetDiscordFormatter>();
+        services.AddTransient<WelcomeOnNewGuildJoinDiscordFormatter>();
+        services.AddTransient<PrivateMessageToGuildOwnerFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -82,6 +85,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<SendMessageOptOutHintToUserTask, SahneeBotSendMessageOptOutHintToUserTask>();
         services.AddTransient<MessageOptOutTask>();
         services.AddTransient<GetMessageOptOutTask>();
+        services.AddTransient<SetGuildRoleSetTask>();
+        services.AddTransient<SahneeBotJoinedGuildTask>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJobTask>();
         // DISCORD
@@ -100,6 +105,7 @@ var logger = host.Services.GetRequiredService<ILogger<Program>>();
 var discordLogger = host.Services.GetRequiredService<DiscordLogger>();
 var jobHandler = host.Services.GetRequiredService<JobHandler>();
 var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJobTask>();
+var joinedTask = host.Services.GetRequiredService<SahneeBotJoinedGuildTask>();
 
 using (var scope = host.Services.CreateScope())
 {
@@ -117,6 +123,7 @@ using (var scope = host.Services.CreateScope())
 }
 
 bot.Log += discordLogger.Log;
+bot.JoinedGuild += joinedTask.JoinedGuildTask;
 
 //login the bot and start
 var configuration = host.Services.GetRequiredService<IConfiguration>();

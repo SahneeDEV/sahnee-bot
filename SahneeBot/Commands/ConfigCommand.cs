@@ -253,15 +253,24 @@ public class ConfigCommand : CommandBase
         private readonly ChangeRoleColorTask _changeRoleColorTask;
         private readonly RoleColorChangeDiscordFormatter _roleColorChangeDiscordFormatter;
         private readonly GeneralErrorDiscordFormatter _generalErrorDiscordFormatter;
+        private readonly SetGuildRoleSetTask _setGuildRoleSetTask;
+        private readonly WarningRoleSetDiscordFormatter _warningRoleSetDiscordFormatter;
+        private readonly GetGuildStateTask _getGuildStateTask;
 
         public RoleCommand(IServiceProvider serviceProvider
             , ChangeRoleColorTask changeRoleColorTask
             , RoleColorChangeDiscordFormatter roleColorChangeDiscordFormatter
-            , GeneralErrorDiscordFormatter generalErrorDiscordFormatter) : base(serviceProvider)
+            , GeneralErrorDiscordFormatter generalErrorDiscordFormatter
+            , SetGuildRoleSetTask setGuildRoleSetTask
+            , WarningRoleSetDiscordFormatter warningRoleSetDiscordFormatter
+            , GetGuildStateTask getGuildStateTask) : base(serviceProvider)
         {
             _changeRoleColorTask = changeRoleColorTask;
             _roleColorChangeDiscordFormatter = roleColorChangeDiscordFormatter;
             _generalErrorDiscordFormatter = generalErrorDiscordFormatter;
+            _setGuildRoleSetTask = setGuildRoleSetTask;
+            _warningRoleSetDiscordFormatter = warningRoleSetDiscordFormatter;
+            _getGuildStateTask = getGuildStateTask;
         }
 
         [SlashCommand("color", "Configure the color of warning roles")]
@@ -296,7 +305,49 @@ public class ConfigCommand : CommandBase
                     .FormatAndSend(new RoleColorChangeDiscordFormatter.Args(newColor), ModifyOriginalResponseAsync);
             }, new CommandExecutionOptions
             {
-                RequiredRole = RoleType.Administrator
+                RequiredRole = RoleType.Administrator,
+                DeferEphemeral = true,
+                PlaceInQueue = true
             });
+
+        [SlashCommand("enable","Enables that warning roles will be set at warning/unwarning")]
+        public Task ChangeRoleSetEnable() => ExecuteAsync(async ctx =>
+        {
+            var guildState = await _setGuildRoleSetTask.Execute(ctx
+                , new SetGuildRoleSetTask.Args(Context.Guild.Id, true));
+            await _warningRoleSetDiscordFormatter.FormatAndSend(
+                new WarningRoleSetDiscordFormatter.Args(guildState.SetRoles, true), ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            RequiredRole = RoleType.Administrator,
+            DeferEphemeral = true
+        });
+        
+        [SlashCommand("disable","Disables that warning roles will be set at warning/unwarning")]
+        public Task ChangeRolesSetDisabled() => ExecuteAsync(async ctx =>
+        {
+            var guildState = await _setGuildRoleSetTask.Execute(ctx
+                , new SetGuildRoleSetTask.Args(Context.Guild.Id, false));
+            await _warningRoleSetDiscordFormatter.FormatAndSend(
+                new WarningRoleSetDiscordFormatter.Args(guildState.SetRoles, true), ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            PlaceInQueue = true,
+            RequiredRole = RoleType.Administrator,
+            DeferEphemeral = true
+        });
+        
+        [SlashCommand("status","Displays the current status if a role will be set on warning/unwarning")]
+        public Task ChangeRolesSetStatus() => ExecuteAsync(async ctx =>
+        {
+            var guildState = await _getGuildStateTask.Execute(ctx, new GetGuildStateTask.Args(Context.Guild.Id));
+            await _warningRoleSetDiscordFormatter.FormatAndSend(
+                new WarningRoleSetDiscordFormatter.Args(guildState.SetRoles, false), ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            RequiredRole = RoleType.Administrator,
+            DeferEphemeral = true
+        });
     }
 }
