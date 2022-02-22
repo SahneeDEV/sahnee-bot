@@ -53,6 +53,13 @@ public static class DiscordFormatterExtensions
         await format.Send(del);
     }
 
+    public static async Task<IEnumerable<DiscordFormat>> FormatMany<T>(this IDiscordFormatter<T> discordFormatter,
+        IEnumerable<T> args)
+    {
+        var formats = await Task.WhenAll(args.Select(discordFormatter.Format));
+        return DiscordFormat.Join(formats);
+    } 
+
     /// <summary>
     /// Formats and sends many messages. Use this method when wanting to join multiple messages together.
     /// </summary>
@@ -66,10 +73,9 @@ public static class DiscordFormatterExtensions
         DiscordFormat.ModifyOriginalResponseAsyncDelegate delFirst,
         DiscordFormat.SendChannelMessageAsyncDelegate delOther)
     {
+        var formats = await discordFormatter.FormatMany(args);
         var sentAny = false;
-        var formats = await Task.WhenAll(args.Select(discordFormatter.Format));
-        var joinedFormats = DiscordFormat.Join(formats);
-        foreach (var format in joinedFormats)
+        foreach (var format in formats)
         {
             if (!sentAny)
             {
@@ -96,10 +102,9 @@ public static class DiscordFormatterExtensions
     public static async Task<bool> FormatAndSendMany<T>(this IDiscordFormatter<T> discordFormatter, IEnumerable<T> args,
         DiscordFormat.SendChannelMessageAsyncDelegate del)
     {
-        var formats = await Task.WhenAll(args.Select(discordFormatter.Format));
-        var joinedFormats = DiscordFormat.Join(formats);
+        var formats = await discordFormatter.FormatMany(args);
         var sentAny = false;
-        foreach (var format in joinedFormats)
+        foreach (var format in formats)
         {
             await format.Send(del);
             sentAny = true;

@@ -13,7 +13,7 @@ public class GetMessageOptOutTask : ITask<GetMessageOptOutTask.Args, bool>
     /// <param name="UserId">The user ID that can opt out and should receive the message.</param>
     /// <param name="GuildId">The guild ID the user can opt out of.</param>
     public record struct Args(ulong UserId, ulong GuildId);
-    
+
     public GetMessageOptOutTask(GetUserGuildStateTask getUserGuildStateTask)
     {
         _getUserGuildStateTask = getUserGuildStateTask;

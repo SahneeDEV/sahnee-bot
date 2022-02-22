@@ -17,4 +17,8 @@ public interface IGuildState: IGuildSpecific
     /// default color for the roles
     /// </summary>
     public string WarningRoleColor { get; set; }
+    /// <summary>
+    /// The last changelog version this guild has received.
+    /// </summary>
+    public Version? LastChangelogVersion { get; set; }
 }

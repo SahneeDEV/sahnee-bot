@@ -21,8 +21,8 @@ public class GetLastWarningsTask : ITask<GetLastWarningsTask.Args, IEnumerable<I
     {
         var (guildId, userId, warner, maxAmount) = arg;
         var list = await ctx.Model.Warnings
-            .Where(w => w.GuildId == guildId && (!userId.HasValue || warner 
-                ? w.IssuerUserId == userId 
+            .Where(w => w.GuildId == guildId && (!userId.HasValue || warner
+                ? w.IssuerUserId == userId
                 : w.UserId == userId))
             .OrderByDescending(w => w.Time)
             .Take(maxAmount)
