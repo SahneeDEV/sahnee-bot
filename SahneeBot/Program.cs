@@ -45,6 +45,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<DiscordLogger>();
         services.AddSingleton<GuildQueue>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
+        services.AddSingleton<Changelog>();
         services.AddSingleton<JobHandler>();
         // FORMATTER
         services.AddSingleton<DefaultFormatArguments>();
@@ -62,6 +63,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<NotBoundChannelDiscordFormatter>();
         services.AddTransient<MessageOptOutHintDiscordFormatter>();
         services.AddTransient<MessageOptOutDiscordFormatter>();
+        services.AddTransient<ChangelogVersionDiscordFormatter>();
+        services.AddTransient<NoChangelogFoundDiscordFormatter>();
         services.AddTransient<WarningRoleCleanupDiscordFormatter>();
         services.AddTransient<WarningRoleSetDiscordFormatter>();
         services.AddTransient<WelcomeOnNewGuildJoinDiscordFormatter>();
@@ -86,6 +89,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<MessageOptOutTask>();
         services.AddTransient<GetMessageOptOutTask>();
         services.AddTransient<SetGuildRoleSetTask>();
+        services.AddTransient<GetLastChangelogOfGuildTask>();
         services.AddTransient<SahneeBotJoinedGuildTask>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJobTask>();

@@ -14,8 +14,7 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
     private readonly IConfiguration _configuration;
     private const string HexRegexPattern = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
-    public SahneeBotGuildChangeRoleColorTask(DiscordSocketClient bot
-        , IConfiguration configuration)
+    public SahneeBotGuildChangeRoleColorTask(DiscordSocketClient bot, IConfiguration configuration)
     {
         _bot = bot;
         _configuration = configuration;

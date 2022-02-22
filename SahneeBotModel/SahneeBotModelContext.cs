@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Microsoft.Extensions.Configuration;
 using SahneeBotModel.Contract;
 using SahneeBotModel.Models;
@@ -61,6 +62,19 @@ public class SahneeBotModelContext : DbContext
             userGuildState.RoleId, 
             userGuildState.GuildId
         });
+        // Version class
+        var versionConverter = new ValueConverter<Version?, string?>(
+            v => v == null ? null : v.ToString(),
+            s => s == null ? null : Version.Parse(s)
+        );
+        modelBuilder.Entity<GuildState>().Property(s => s.LastChangelogVersion).HasConversion(versionConverter);
+        foreach (var prop in modelBuilder.Model
+                     .GetEntityTypes()
+                     .SelectMany(et => et.GetProperties())
+                     .Where(prop => prop.ClrType == typeof(Version)))
+        {
+            prop.SetValueConverter(versionConverter);
+        }
         base.OnModelCreating(modelBuilder);
     }
 

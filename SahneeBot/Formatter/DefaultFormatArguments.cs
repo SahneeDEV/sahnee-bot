@@ -74,6 +74,10 @@ public class DefaultFormatArguments
     {
         return user.Mention;
     }
+    public string GetMention(IGuild guild)
+    {
+        return $"*{guild.Name}*";
+    }
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     public string GetMention(ulong userId)
     {
