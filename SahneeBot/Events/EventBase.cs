@@ -48,6 +48,8 @@ public abstract class EventBase<TArg> : IEvent<TArg>
 
         async Task ExecuteAsyncImpl()
         {
+            _logger.LogDebug("Executing event {Event} on guild {Guild}", GetType().Name,
+                opts.PlaceInQueue);
             try
             {
                 await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
