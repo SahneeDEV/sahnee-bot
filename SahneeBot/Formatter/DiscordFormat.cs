@@ -8,6 +8,11 @@ namespace SahneeBot.Formatter;
 public class DiscordFormat
 {
     /// <summary>
+    /// Voids the message.
+    /// </summary>
+    public static readonly CustomDelegate Void = (fmt, opts) => Task.CompletedTask;
+    
+    /// <summary>
     /// The text of the message.
     /// </summary>
     public string? Text;
@@ -106,6 +111,8 @@ public class DiscordFormat
         ISticker[]? stickers = null,
         Embed[]? embeds = null);
 
+    public delegate Task CustomDelegate(DiscordFormat format, SendOptions sendOptions);
+
     public async Task Send(RespondAsyncDelegate del, SendOptions sendOptions = default)
     {
         await del(Text, Embeds?.Select(e => e.Build()).ToArray(), sendOptions.IsTts, sendOptions.Ephemeral,
@@ -132,6 +139,10 @@ public class DiscordFormat
             properties.Components = Opt(Components);
         }, sendOptions.Request);
         return Task.CompletedTask;
+    }
+    public Task Send(CustomDelegate del, SendOptions sendOptions = default)
+    {
+        return del(this, sendOptions);
     }
 
     private static Optional<T> Opt<T>(T? value)

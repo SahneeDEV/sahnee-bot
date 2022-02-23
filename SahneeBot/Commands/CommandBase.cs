@@ -26,7 +26,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     private readonly GuildQueue _queue;
     private readonly GetRolesOfUserTask _roles;
     private readonly MissingPermissionDiscordFormatter _missingPermFmt;
-    private readonly CommandErrorDiscordFormatter _errorFmt;
+    private readonly ErrorDiscordFormatter _errorFmt;
     private readonly GetBoundChannelTask _boundChannel;
     private readonly NotBoundChannelDiscordFormatter _notBoundChannelFmt;
 
@@ -42,7 +42,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         _queue = serviceProvider.GetRequiredService<GuildQueue>();
         _roles = serviceProvider.GetRequiredService<GetRolesOfUserTask>();
         _missingPermFmt = serviceProvider.GetRequiredService<MissingPermissionDiscordFormatter>();
-        _errorFmt = serviceProvider.GetRequiredService<CommandErrorDiscordFormatter>();
+        _errorFmt = serviceProvider.GetRequiredService<ErrorDiscordFormatter>();
         _boundChannel = serviceProvider.GetRequiredService<GetBoundChannelTask>();
         _notBoundChannelFmt = serviceProvider.GetRequiredService<NotBoundChannelDiscordFormatter>();
     }
@@ -171,7 +171,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             {
                 var interaction = (SocketSlashCommand) Context.Interaction;
                 await _errorFmt.FormatAndSend(
-                    new CommandErrorDiscordFormatter.Args(interaction.CommandName, 
+                    new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, 
                         GetDebugString(interaction), Context.Guild?.Id, Context.User.Id, exception), 
                     ModifyOriginalResponseAsync);
             }

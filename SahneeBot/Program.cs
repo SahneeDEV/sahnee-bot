@@ -8,12 +8,14 @@ using Microsoft.Extensions.Logging;
 using SahneeBot;
 using SahneeBot.Activity;
 using SahneeBot.Commands;
+using SahneeBot.Events;
 using SahneeBot.Formatter;
 using SahneeBot.Jobs;
 using SahneeBot.Jobs.JobTasks;
 using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
+using EventHandler = SahneeBot.Events.EventHandler;
 using EventIds = SahneeBot.EventIds;
 
 static IHostBuilder CreateHostBuilder(string[] args)
@@ -46,6 +48,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<DiscordLogger>();
         services.AddSingleton<GuildQueue>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
+        services.AddSingleton<IEventHandler, EventHandler>();
         services.AddSingleton<Changelog>();
         services.AddSingleton<JobHandler>();
         // FORMATTER
@@ -57,7 +60,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<RoleDiscordFormatter>();
         services.AddTransient<RoleChangedDiscordFormatter>();
         services.AddTransient<NoWarningFoundDiscordFormatter>();
-        services.AddTransient<CommandErrorDiscordFormatter>();
+        services.AddTransient<ErrorDiscordFormatter>();
         services.AddTransient<RoleColorChangeDiscordFormatter>();
         services.AddTransient<GeneralErrorDiscordFormatter>();
         services.AddTransient<BoundChannelDiscordFormatter>();
@@ -151,6 +154,9 @@ await bot.StartAsync();
 
 var commandHandler = host.Services.GetRequiredService<ICommandHandler>();
 commandHandler.Install();
+
+var eventHandler = host.Services.GetRequiredService<IEventHandler>();
+eventHandler.Install();
 
 //register the jobs
 var guid = jobHandler.RegisterJob(new JobHandler.Args(new JobTimeSpanRepeat(
