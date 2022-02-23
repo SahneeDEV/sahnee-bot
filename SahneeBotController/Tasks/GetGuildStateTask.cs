@@ -43,6 +43,7 @@ public class GetGuildStateTask: ITask<GetGuildStateTask.Args, IGuildState>
             if (String.IsNullOrWhiteSpace(guildState.WarningRolePrefix))
             {
                 guildState.WarningRolePrefix = _configuration["BotSettings:WarningRolePrefix"];
+                await ctx.Model.SaveChangesAsync();
             }
             return guildState;
         }
