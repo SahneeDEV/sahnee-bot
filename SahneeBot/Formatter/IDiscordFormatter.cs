@@ -52,6 +52,12 @@ public static class DiscordFormatterExtensions
         var format = await discordFormatter.Format(arg);
         await format.Send(del);
     }
+    public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, 
+        DiscordFormat.CustomDelegate del)
+    {
+        var format = await discordFormatter.Format(arg);
+        await format.Send(del);
+    }
 
     public static async Task<IEnumerable<DiscordFormat>> FormatMany<T>(this IDiscordFormatter<T> discordFormatter,
         IEnumerable<T> args)

@@ -1,6 +1,21 @@
 ﻿# CHANGELOG
 
 
+## 1.1.0
+
+F* it, we rewrote everything....
+
+
+## 1.0.3
+
+We fixed one or two more bugs
+
+
+## 1.0.2
+
+We love bugs, so we fixed a few and added tons of new ones!
+
+
 ## 1.0.1
 
 Oops, we still had a bug left!
