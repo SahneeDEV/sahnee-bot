@@ -21,4 +21,8 @@ public interface IGuildState: IGuildSpecific
     /// The last changelog version this guild has received.
     /// </summary>
     public Version? LastChangelogVersion { get; set; }
+    /// <summary>
+    /// The prefix of the guild specific warning roles.
+    /// </summary>
+    public string WarningRolePrefix { get; set; }
 }

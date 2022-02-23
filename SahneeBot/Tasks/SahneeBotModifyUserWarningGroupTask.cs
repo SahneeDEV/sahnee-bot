@@ -13,16 +13,14 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
     private readonly GetGuildStateTask _guildState;
     private readonly DiscordSocketClient _bot;
     private readonly ILogger<SahneeBotModifyWarningGroupTask> _logger;
-    private readonly IConfiguration _configuration;
 
     public SahneeBotModifyWarningGroupTask(
         GetGuildStateTask guildStateTask, DiscordSocketClient bot
-        , ILogger<SahneeBotModifyWarningGroupTask> logger, IConfiguration configuration)
+        , ILogger<SahneeBotModifyWarningGroupTask> logger)
     {
         _guildState = guildStateTask;
         _bot = bot;
         _logger = logger;
-        _configuration = configuration;
     }
 
     public override async Task<bool> Execute(ITaskContext ctx, Args args)
@@ -37,14 +35,14 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
         //check if the new role already exists on the guild
         var currentGuild = _bot.GetGuild(args.GuildId);
         var currentGuildUser = currentGuild.GetUser(args.UserId);
-        string newRoleName = _configuration["BotSettings:WarningRolePrefix"] + args.Number;
+        string newRoleName = guildState.WarningRolePrefix + args.Number;
         //remove all current warning roles from the user if any are available
         if (currentGuildUser.Roles.Any(r => 
-                r.Name.Contains(_configuration["BotSettings:WarningRolePrefix"])))
+                r.Name.Contains(guildState.WarningRolePrefix)))
         {
             foreach (var currentRole in currentGuildUser.Roles)
             {
-                if (currentRole.Name.StartsWith(_configuration["BotSettings:WarningRolePrefix"]))
+                if (currentRole.Name.StartsWith(guildState.WarningRolePrefix))
                 {
                     //remove the role
                     await currentGuildUser.RemoveRoleAsync(currentRole);

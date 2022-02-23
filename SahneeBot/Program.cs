@@ -71,6 +71,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<WelcomeOnNewGuildJoinDiscordFormatter>();
         services.AddTransient<PrivateMessageToGuildOwnerFormatter>();
         services.AddTransient<InformRoleLimitDiscordFormatter>();
+        services.AddTransient<WarningRolePrefixChangedDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -95,6 +96,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<SahneeBotJoinedGuildTask>();
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
         services.AddTransient<SahneeBotLeftGuildTask>();
+        services.AddTransient<ChangeWarningRoleNameTask>();
+        services.AddTransient<SahneeBotChangeWarningRoleNameTask>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJobTask>();
         // ACTIVITY
