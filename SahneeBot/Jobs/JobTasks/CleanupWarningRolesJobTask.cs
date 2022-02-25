@@ -106,7 +106,7 @@ public class CleanupWarningRolesJobTask
         catch (Exception e)
         {
             _logger.LogError(EventIds.Jobs, e, "Failed cleaning warning roles in guild {guildId}"
-                , currentGuild.Id);
+                , currentGuild!.Id);
             return 0;
         }
     }
