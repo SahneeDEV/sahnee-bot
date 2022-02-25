@@ -75,6 +75,14 @@ public class DiscordFormat
         /// The options of the request.
         /// </summary>
         public RequestOptions? Request = null;
+        /// <summary>
+        /// Override the username in a webhook.
+        /// </summary>
+        public string? Username = null;
+        /// <summary>
+        /// Override the avatar in a webhook.
+        /// </summary>
+        public string? AvatarUrl = null;
     }
 
     public delegate Task RespondAsyncDelegate(
@@ -111,6 +119,16 @@ public class DiscordFormat
         ISticker[]? stickers = null,
         Embed[]? embeds = null);
 
+    public delegate Task<ulong> SendWebhookMessageAsyncDelegate(
+        string? text = null,
+        bool isTts = false,
+        IEnumerable<Embed>? embeds = null,
+        string? username = null,
+        string? avatarUrl = null,
+        RequestOptions? options = null,
+        AllowedMentions? allowedMentions = null,
+        MessageComponent? components = null);
+
     public delegate Task CustomDelegate(DiscordFormat format, SendOptions sendOptions);
 
     public async Task Send(RespondAsyncDelegate del, SendOptions sendOptions = default)
@@ -127,6 +145,16 @@ public class DiscordFormat
     {
         await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, null,
             Components, null, Embeds?.Select(e => e.Build()).ToArray());
+    }
+    public async Task Send(SendWebhookMessageAsyncDelegate del, SendOptions sendOptions = default)
+    {
+        var embeds = Embeds != null 
+            ? Embeds.Select(e => e.Build()) 
+            : Embed != null 
+                ? new[] {Embed.Build()} 
+                : null;
+        await del(Text, sendOptions.IsTts, embeds, sendOptions.Username, sendOptions.AvatarUrl, sendOptions.Request,
+            AllowedMentions, Components);
     }
     public Task Send(ModifyOriginalResponseAsyncDelegate del, SendOptions sendOptions = default)
     {

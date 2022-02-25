@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -97,19 +98,29 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetLastChangelogOfGuildTask>();
         services.AddTransient<PostChangelogsToGuildTask, SahneeBotPostChangelogsToGuildTask>();
         services.AddTransient<UpdateGuildChangelogTask, SahneeBotUpdateGuildChangelogTask>();
+        // TASKS (BOT ONLY)
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
+        services.AddTransient<SahneeBotReportErrorTask>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJobTask>();
         // ACTIVITY
         services.AddTransient<BotActivity>();
         // DISCORD
-        var discordConfig = new DiscordSocketConfig
+        services.AddSingleton(provider =>
         {
-            GatewayIntents = GatewayIntents.All,
-            AlwaysDownloadUsers = true
-        };
-        var discordSocketClient  = new DiscordSocketClient(discordConfig);
-        services.AddSingleton(provider => discordSocketClient);
+            var discordConfig = new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.All,
+                AlwaysDownloadUsers = true
+            };
+            return new DiscordSocketClient(discordConfig);
+        });
+        services.AddSingleton(provider =>
+        {
+            var cfg = provider.GetRequiredService<IConfiguration>();
+            var url = cfg["BotSettings:ErrorWebhookUrl"];
+            return new DiscordWebhookClient(url);
+        });
     })
     .Build();
 

@@ -41,7 +41,7 @@ public class WarnCommand: CommandBase
         IUser user,
         [Discord.Interactions.Summary(description: "the reason why the user was warned")]
         string reason
-        ) => ExecuteAsync(async ctx => 
+        ) => ExecuteAsync(async ctx =>
     {
         var warning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(false, Context.Guild.Id, 
             Context.User.Id, user.Id, reason));
