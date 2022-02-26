@@ -45,12 +45,12 @@ public class WarnCommand: CommandBase
     {
         var warning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(false, Context.Guild.Id, 
             Context.User.Id, user.Id, reason));
+        if (warning == null)
+        {
+            throw new Exception("Warning is null");
+        }
         try
         {
-            if (warning == null)
-            {
-                throw new Exception("Warning is null");
-            }
             await _discordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
             
             //check for role limit
