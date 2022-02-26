@@ -9,13 +9,16 @@ using IRole = Discord.IRole;
 
 namespace SahneeBot.Jobs.JobTasks;
 
-public class CleanupWarningRolesJobTask
+/// <summary>
+/// The cleanup warning job regularly cleans all warnings roles in the system that are no longer used.
+/// </summary>
+public class CleanupWarningRolesJob
 {
-    private readonly ILogger<CleanupWarningRolesJobTask> _logger;
+    private readonly ILogger<CleanupWarningRolesJob> _logger;
     private readonly DiscordSocketClient _bot;
     private readonly string _warningPrefix;
 
-    public CleanupWarningRolesJobTask(ILogger<CleanupWarningRolesJobTask> logger, DiscordSocketClient bot
+    public CleanupWarningRolesJob(ILogger<CleanupWarningRolesJob> logger, DiscordSocketClient bot
         , IConfiguration configuration)
     {
         _logger = logger;
@@ -98,14 +101,14 @@ public class CleanupWarningRolesJobTask
             await Task.WhenAll(notNeededRoles.Select(r => r.DeleteAsync()).ToArray());
             if (notNeededRoles.Count > 0)
             {
-                _logger.LogDebug(EventIds.Jobs, "In Guild: {guild} deleted roles: {deletedRoles}"
+                _logger.LogDebug(EventIds.Jobs, "In Guild: {Guild} deleted roles: {DeletedRoles}"
                     , currentGuild.Id, string.Join(",", notNeededRoles.Select(r => r.Name)));
             }
             return notNeededRoles.Count;
         }
         catch (Exception e)
         {
-            _logger.LogError(EventIds.Jobs, e, "Failed cleaning warning roles in guild {guildId}"
+            _logger.LogError(EventIds.Jobs, e, "Failed cleaning warning roles in guild {GuildId}"
                 , currentGuild!.Id);
             return 0;
         }

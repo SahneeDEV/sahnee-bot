@@ -12,7 +12,7 @@ namespace SahneeBot.Commands;
 /// <summary>
 /// This command is used to warn users.
 /// </summary>
-public class WarnCommand: CommandBase
+public class WarnCommand : CommandBase
 {
     private readonly GiveWarningToUserTask _task;
     private readonly ILogger<WarnCommand> _logger;

@@ -105,7 +105,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
         services.AddTransient<SahneeBotReportErrorTask>();
         // JOBS
-        services.AddTransient<CleanupWarningRolesJobTask>();
+        services.AddTransient<CleanupWarningRolesJob>();
         // ACTIVITY
         services.AddTransient<BotActivity>();
         // DISCORD
@@ -131,7 +131,7 @@ var bot = host.Services.GetRequiredService<DiscordSocketClient>();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 var discordLogger = host.Services.GetRequiredService<DiscordLogger>();
 var jobHandler = host.Services.GetRequiredService<JobHandler>();
-var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJobTask>();
+var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJob>();
 
 using (var scope = host.Services.CreateScope())
 {
