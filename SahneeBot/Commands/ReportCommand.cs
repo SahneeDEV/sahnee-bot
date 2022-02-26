@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using SahneeBot.Formatter;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 using SahneeBotModel.Contract;
 
@@ -21,7 +22,9 @@ public class ReportCommand : CommandBase
     private readonly GetRandomWarningsTask _getRandomWarningsTask;
     private readonly NoWarningFoundDiscordFormatter _noWarningFoundDiscordFormatter;
     private readonly WarningDiscordFormatter _warningDiscordFormatter;
+    private readonly TopUserWarnedDiscordFormatter _topUserWarnedDiscordFormatter;
     private readonly GetLastWarningsTask _getLastWarningsTask;
+    private readonly GetTopUserWarnedAmountTask _getTopUserWarnedAmountTask;
 
     public ReportCommand(
         IServiceProvider serviceProvider, 
@@ -29,16 +32,36 @@ public class ReportCommand : CommandBase
         GetRandomWarningsTask getRandomWarningsTask,
         NoWarningFoundDiscordFormatter noWarningFoundDiscordFormatter,
         WarningDiscordFormatter warningWarningDiscordFormatter,
-        GetLastWarningsTask getLastWarningsTask
+        TopUserWarnedDiscordFormatter topUserWarnedDiscordFormatter,
+        GetLastWarningsTask getLastWarningsTask,
+        GetTopUserWarnedAmountTask getTopUserWarnedAmountTask
     ) : base(serviceProvider)
     {
         _getAllWarningsCreatedFromToTask = getAllWarningsCreatedFromToTask;
         _getRandomWarningsTask = getRandomWarningsTask;
         _noWarningFoundDiscordFormatter = noWarningFoundDiscordFormatter;
         _warningDiscordFormatter = warningWarningDiscordFormatter;
+        _topUserWarnedDiscordFormatter = topUserWarnedDiscordFormatter;
         _getLastWarningsTask = getLastWarningsTask;
+        _getTopUserWarnedAmountTask = getTopUserWarnedAmountTask;
     }
 
+    [SlashCommand("top", "Gets the users with the most warnings on the server")]
+    public Task TopCommand(
+        [Summary(
+            description: "How many rankings should be displayed? By default only the last 10 ranking will be returned")]
+        [MinValue(REPORT_MIN)]
+        [MaxValue(REPORT_MAX)]
+        int maxRankings = REPORT_MANY_DEFAULT
+    ) => ExecuteAsync(async ctx =>
+    {
+        var users = await _getTopUserWarnedAmountTask.Execute(ctx, new GetTopUserWarnedAmountTask.Args(
+            maxRankings, Context.Guild.Id
+            ));
+
+        await HelperSendTopWarnedUsers(ctx, users);
+    });
+    
     [SlashCommand("history", "Gets the warning history of this Server")]
     public Task HistoryCommand(
         [Summary(description: "How long in the past should the bot look? By default only the last 10 warnings will be returned")]
@@ -121,5 +144,20 @@ public class ReportCommand : CommandBase
             await _noWarningFoundDiscordFormatter.FormatAndSend(new NoWarningFoundDiscordFormatter.Args
                 (Context.Guild.Id, user?.Id, issuer), ModifyOriginalResponseAsync);
         }
+    }
+    
+    private async Task HelperSendTopWarnedUsers(ITaskContext ctx, 
+        IEnumerable<GetTopUserWarnedAmountTask.ReturnValue> topWarned
+    )
+    {
+        
+       if (!await _topUserWarnedDiscordFormatter.FormatAndSendMany(topWarned.Select(t => 
+                   new TopUserWarnedDiscordFormatter.Args(t.Place, t.UserId, t.WarningNumber)),
+               ModifyOriginalResponseAsync, SendChannelMessageAsync))
+       {
+           await _noWarningFoundDiscordFormatter.FormatAndSend(new NoWarningFoundDiscordFormatter.Args
+               (Context.Guild.Id, null, false), ModifyOriginalResponseAsync);
+       }
+
     }
 }
