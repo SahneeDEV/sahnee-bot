@@ -11,7 +11,6 @@ namespace SahneeBot.Commands;
 [Discord.Interactions.Group("config", "Sahnee bot configuration commands")]
 public class ConfigCommand : CommandBase
 {
-
     public ConfigCommand(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
@@ -42,7 +41,8 @@ public class ConfigCommand : CommandBase
         }, new CommandExecutionOptions
         {
             PlaceInQueue = true,
-            IgnoreBoundChannel = true
+            IgnoreBoundChannel = true,
+            DeferEphemeral = true
         });
         
         [SlashCommand("opt-in", "Opts yourself back into receiving messages")]
@@ -52,7 +52,8 @@ public class ConfigCommand : CommandBase
         }, new CommandExecutionOptions
         {
             PlaceInQueue = true,
-            IgnoreBoundChannel = true
+            IgnoreBoundChannel = true,
+            DeferEphemeral = true
         });
         
         [SlashCommand("am-i-opted-out", "Checks if you have opted out of receiving messages")]
@@ -64,7 +65,8 @@ public class ConfigCommand : CommandBase
         }, new CommandExecutionOptions
         {
             PlaceInQueue = true,
-            IgnoreBoundChannel = true
+            IgnoreBoundChannel = true,
+            DeferEphemeral = true
         });
 
         private async Task HelperOptOut(ITaskContext ctx, bool optOut)
@@ -78,8 +80,10 @@ public class ConfigCommand : CommandBase
         {
             await _messageOptOutDiscordFormatter.FormatAndSend(
                 new MessageOptOutDiscordFormatter.Args(Context.User.Id, Context.Guild.Id, optedOut),
-                ModifyOriginalResponseAsync);
-            DeleteOriginalResponseAfter();
+                ModifyOriginalResponseAsync, new DiscordFormat.SendOptions
+                {
+                    Ephemeral = true
+                });
         }
     }
     
