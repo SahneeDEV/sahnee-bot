@@ -40,7 +40,7 @@ public class GetGuildStateTask: ITask<GetGuildStateTask.Args, IGuildState>
         if (guildState != null)
         {
             //check for the warning role prefix
-            if (String.IsNullOrWhiteSpace(guildState.WarningRolePrefix))
+            if (string.IsNullOrWhiteSpace(guildState.WarningRolePrefix))
             {
                 guildState.WarningRolePrefix = _configuration["BotSettings:WarningRolePrefix"];
                 await ctx.Model.SaveChangesAsync();
