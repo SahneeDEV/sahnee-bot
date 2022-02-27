@@ -150,14 +150,19 @@ public class ReportCommand : CommandBase
         IEnumerable<GetTopUserWarnedAmountTask.ReturnValue> topWarned
     )
     {
-        
-       if (!await _topUserWarnedDiscordFormatter.FormatAndSendMany(topWarned.Select(t => 
-                   new TopUserWarnedDiscordFormatter.Args(t.Place, t.UserId, t.WarningNumber)),
-               ModifyOriginalResponseAsync, SendChannelMessageAsync))
+        if (!await _topUserWarnedDiscordFormatter.FormatAndSendMany(
+                topWarned.Select(t => 
+                    new TopUserWarnedDiscordFormatter.Args(t.Place, t.UserId, t.WarningNumber)),
+                SendChannelMessageAsync, 
+                default, 
+                () => ModifyOriginalResponseAsync(msg => 
+                {
+                    msg.Content = "The following users have the most warnings:";
+                })
+                ))
        {
            await _noWarningFoundDiscordFormatter.FormatAndSend(new NoWarningFoundDiscordFormatter.Args
                (Context.Guild.Id, null, false), ModifyOriginalResponseAsync);
        }
-
     }
 }

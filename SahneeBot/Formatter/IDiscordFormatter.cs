@@ -104,7 +104,7 @@ public static class DiscordFormatterExtensions
 
         return sentAny;
     }
-    
+
     /// <summary>
     /// Formats and sends many messages. Use this method when wanting to join multiple messages together.
     /// </summary>
@@ -112,15 +112,25 @@ public static class DiscordFormatterExtensions
     /// <param name="args">The arguments to format and send.</param>
     /// <param name="del">The delegate to send the messages.</param>
     /// <param name="sendOptions">Options to send the message</param>
+    /// <param name="beforeSendFirst">Called before sending the first entry (if any)</param>
     /// <returns>Were any messages sent?</returns>
     /// <typeparam name="T">The data type.</typeparam>
-    public static async Task<bool> FormatAndSendMany<T>(this IDiscordFormatter<T> discordFormatter, IEnumerable<T> args,
-        DiscordFormat.SendChannelMessageAsyncDelegate del, DiscordFormat.SendOptions sendOptions = default)
+    public static async Task<bool> FormatAndSendMany<T>(
+        this IDiscordFormatter<T> discordFormatter,
+        IEnumerable<T> args,
+        DiscordFormat.SendChannelMessageAsyncDelegate del,
+        DiscordFormat.SendOptions sendOptions = default,
+        Func<Task>? beforeSendFirst = null
+        )
     {
         var formats = await discordFormatter.FormatMany(args);
         var sentAny = false;
         foreach (var format in formats)
         {
+            if (!sentAny && beforeSendFirst != null)
+            {
+                await beforeSendFirst();
+            }
             await format.Send(del, sendOptions);
             sentAny = true;
         }
