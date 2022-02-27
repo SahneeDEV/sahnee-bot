@@ -69,11 +69,13 @@ public class DefaultFormatArguments
     /// </summary>
     /// <param name="user">The user.</param>
     /// <returns>The mention.</returns>
+    // ReSharper disable MemberCanBeMadeStatic.Global
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
     public string GetMention(IUser user)
     {
         return user.Mention;
     }
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
     public string GetMention(IGuild guild)
     {
         return $"*{guild.Name}*";
@@ -83,6 +85,7 @@ public class DefaultFormatArguments
     {
         return "<@" + userId + ">";
     }
+    // ReSharper enable MemberCanBeMadeStatic.Global
 
     /// <summary>
     /// Generates a finished embed with author, color and footer prefilled

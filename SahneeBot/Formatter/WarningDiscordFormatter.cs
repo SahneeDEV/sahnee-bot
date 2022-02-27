@@ -20,24 +20,25 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
     {
         var guild = _bot.GetGuild(arg.GuildId);
         var user = await _bot.GetUserAsync(arg.UserId);
+        var issuer = await _bot.GetUserAsync(arg.IssuerUserId);
         var embed = _fmt.GetEmbed();
         var unwarn = arg.Type == WarningType.Unwarning;
 
         embed.Title = unwarn
-            ? $":heart: {user.Username} has been unwarned"
-            : $":thumbsdown: {user.Username} has been warned";
+            ? $":heart: {user?.Username ?? "n/a"} has been unwarned"
+            : $":thumbsdown: {user?.Username ?? "n/a"} has been warned";
         embed.Fields = new List<EmbedFieldBuilder>
         {
             new()
             {
                 Name = unwarn ? "Unwarned" : "Warned",
-                Value = _fmt.GetMention(arg.UserId),
+                Value = user != null ? _fmt.GetMention(user) : "n/a",
                 IsInline = true
             },
             new()
             {
                 Name = unwarn ? "Unwarned by" : "Warned by",
-                Value = _fmt.GetMention(arg.IssuerUserId),
+                Value = issuer != null ? _fmt.GetMention(issuer) : "n/a",
                 IsInline = true
             },
             new()
@@ -49,7 +50,7 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
             new()
             {
                 Name = "In Server",
-                Value = $"{guild.Name}",
+                Value = guild != null ? _fmt.GetMention(guild) : "n/a",
                 IsInline = true
             },
             new()
