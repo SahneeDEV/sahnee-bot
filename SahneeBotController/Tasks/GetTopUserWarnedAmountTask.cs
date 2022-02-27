@@ -25,7 +25,7 @@ public class GetTopUserWarnedAmountTask: ITask<
     {
         var (maxRankings, guildId) = arg;
         var topWarned = await ctx.Model.UserGuildStates.Where(
-                state => state.GuildId == guildId)
+                state => state.GuildId == guildId & state.WarningNumber != 0)
             .OrderByDescending(state => state.WarningNumber)
             .Take(maxRankings)
             .Select(state => new ReturnValue(0, state.UserId, state.WarningNumber))
