@@ -26,13 +26,13 @@ public class SahneeBotReportErrorTask : ITask<SahneeBotReportErrorTask.Args, str
     private static readonly Random Rng = new();
     private readonly ILogger<SahneeBotReportErrorTask> _logger;
     private readonly DiscordSocketClient _bot;
-    private readonly DiscordWebhookClient _webhook;
+    private readonly ErrorWebhook _webhook;
     private readonly ErrorDiscordFormatter _webhookFmt;
 
     public SahneeBotReportErrorTask(
         ILogger<SahneeBotReportErrorTask> logger,
         DiscordSocketClient bot,
-        DiscordWebhookClient webhook,
+        ErrorWebhook webhook,
         ErrorDiscordFormatter webhookFmt)
     {
         _logger = logger;
@@ -53,8 +53,20 @@ public class SahneeBotReportErrorTask : ITask<SahneeBotReportErrorTask.Args, str
             "[TICKET #{TicketId}] Reported error in {Interaction} {InteractionType}\n  Guild: {Guild} (#{GuildId})\n  User: {User}#{Discriminator} (#{UserId})\n  Interaction: {FullInteraction}", 
             ticketId, interactionName, interactionType, guild?.Name, guildId, user?.Username, user?.Discriminator, userId, fullInteraction);
         // Send to webhook
-        await _webhookFmt.FormatAndSend(new ErrorDiscordFormatter.Args(interactionType, interactionName,
-            fullInteraction, guildId, userId, exception, ticketId, true), _webhook.SendMessageAsync);
+        if (_webhook.Client != null)
+        {
+            try
+            {
+                await _webhookFmt.FormatAndSend(new ErrorDiscordFormatter.Args(interactionType, interactionName,
+                    fullInteraction, guildId, userId, exception, ticketId, true),
+                    _webhook.Client.SendMessageAsync);
+            }
+            catch (Exception webhookError)
+            {
+                _logger.LogError(EventIds.Command, webhookError, "Failed to send message to error webhook");
+            }
+        }
+
         return ticketId;
     }
 
