@@ -51,6 +51,7 @@ The following commands can be used to customize the bot on your server:
 * `/config pm opt-out` - Opts out of receiving messages from this bot on the current server. *(This command ignores the bound channel)*
 * `/config pm opt-in` - Opts back into receiving messages from this bot on the current server. *(This command ignores the bound channel)*
 * `/config pm am-i-opted-out` - Checks if you are currently opted out of receiving messages from the bot on this server. *(This command ignores the bound channel)*
+* `/config old-users remove-list` - Removes users that left, got banned or got their account deleted, from the current server. *(Administrator permission required)*
 
 ### Miscellaneous commands
 

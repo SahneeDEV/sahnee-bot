@@ -26,6 +26,7 @@ All commands to report warnings (such as `warnhistory`, `warningstoday`, ...) ar
 - You can now customize the channel the Bot listens to for commands via `/config bind set <your channel name>`.
 - You can now disable roles assigned by the bot using `/config role disable` or set their color using `/config role color <your hex color>`.
 - You can now also get all warnings in a given timespan using `/warnings between <start date> <end date>`.
+- You can now remove users that left your server (or got banned) using `/config old-users remove-list`.
 
 ### Bug Fixes
 
