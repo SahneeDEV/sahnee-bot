@@ -2,6 +2,9 @@
 
 namespace SahneeBotController.Tasks;
 
+/// <summary>
+/// Returns a list of users with an entry for the guild
+/// </summary>
 public class GetGuildGuildUsersTask : ITask<GetGuildGuildUsersTask.Args, List<ulong>>
 {
     /// <summary>

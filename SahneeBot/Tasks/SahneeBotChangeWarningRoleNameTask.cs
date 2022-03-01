@@ -3,7 +3,10 @@ using SahneeBotController.Tasks;
 
 namespace SahneeBot.Tasks;
 
-public class SahneeBotChangeWarningRoleNameTask
+/// <summary>
+/// Changes the warning role name of the given guild in the guild state
+/// </summary>
+public class SahneeBotChangeWarningRoleNameTask : ITask<SahneeBotChangeWarningRoleNameTask.Args, string>
 {
     private readonly ChangeWarningRoleNameTask _changeWarningRoleNameTask;
     private readonly DiscordSocketClient _bot;

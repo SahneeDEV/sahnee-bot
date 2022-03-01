@@ -387,16 +387,16 @@ public class ConfigCommand : CommandBase
     [Discord.Interactions.Group("old-users", "Manage Users that are not on your guild anymore")]
     public class RemoveUsersCommand : CommandBase
     {
-        private readonly SahneeBotGetLeftGuildUsers _sahneeBotGetLeftGuildUsers;
+        private readonly SahneeBotGetLeftGuildUsersTask _sahneeBotGetLeftGuildUsersTask;
         private readonly RemoveUserFromGuildSelectMenu _removeUserFromGuildSelectMenu;
         private readonly RemovedUsersFromGuildStateDiscordFormatter _removedUsersFromGuildStateDiscordFormatter;
 
         public RemoveUsersCommand(IServiceProvider serviceProvider
-        , SahneeBotGetLeftGuildUsers sahneeBotGetLeftGuildUsers
+        , SahneeBotGetLeftGuildUsersTask sahneeBotGetLeftGuildUsersTask
         , RemoveUserFromGuildSelectMenu removeUserFromGuildSelectMenu
         , RemovedUsersFromGuildStateDiscordFormatter removedUsersFromGuildStateDiscordFormatter) : base(serviceProvider)
         {
-            _sahneeBotGetLeftGuildUsers = sahneeBotGetLeftGuildUsers;
+            _sahneeBotGetLeftGuildUsersTask = sahneeBotGetLeftGuildUsersTask;
             _removeUserFromGuildSelectMenu = removeUserFromGuildSelectMenu;
             _removedUsersFromGuildStateDiscordFormatter = removedUsersFromGuildStateDiscordFormatter;
         }
@@ -406,14 +406,15 @@ public class ConfigCommand : CommandBase
                                     ", that can be removed")]
         public Task RemoveOldUsersFromDatabase() => ExecuteAsync(async ctx =>
         {
-            var usersToRemove = await _sahneeBotGetLeftGuildUsers.Execute(
+            var usersToRemove = await _sahneeBotGetLeftGuildUsersTask.Execute(
                 ctx
-                , new SahneeBotGetLeftGuildUsers.Args(Context.Guild.Id));
-            if (usersToRemove.Count > 0)
+                , new SahneeBotGetLeftGuildUsersTask.Args(Context.Guild.Id));
+            var toRemove = usersToRemove.ToList();
+            if (toRemove.ToList().Count > 0)
             {
                 var builder = new ComponentBuilder()
                     .WithSelectMenu(await _removeUserFromGuildSelectMenu.SelectMenu(
-                        new RemoveUserFromGuildSelectMenu.Args(usersToRemove)));
+                        new RemoveUserFromGuildSelectMenu.Args(toRemove)));
                 await ModifyOriginalResponseAsync(func: properties =>
                 {
                     properties.Content = "Please select all users you want to have removed";

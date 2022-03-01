@@ -1,5 +1,8 @@
 ﻿namespace SahneeBotController.Tasks;
 
+/// <summary>
+/// Changes the role color of the given guild to the given hex color
+/// </summary>
 public abstract class ChangeRoleColorTask: ITask<ChangeRoleColorTask.Args, string>
 {
     

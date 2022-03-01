@@ -5,7 +5,7 @@ namespace SahneeBot.InteractionComponents.SelectMenu;
 public class RemoveUserFromGuildSelectMenu : ISelectMenu<RemoveUserFromGuildSelectMenu.Args>
 {
 
-    public record struct Args(List<IUser> Users);
+    public record struct Args(IEnumerable<IUser> Users);
 
     public Task<SelectMenuBuilder> SelectMenu(Args arg)
     {
@@ -13,7 +13,7 @@ public class RemoveUserFromGuildSelectMenu : ISelectMenu<RemoveUserFromGuildSele
             .WithPlaceholder("Select one or more Users that will be removed")
             .WithCustomId("remove-guild-users-from-db")
             .WithMinValues(1)
-            .WithMaxValues(arg.Users.Count);
+            .WithMaxValues(arg.Users.ToList().Count);
         //add all users
         foreach (var currentUser in arg.Users)
         {

@@ -2,6 +2,9 @@
 
 namespace SahneeBotController.Tasks;
 
+/// <summary>
+/// Removes a user and all his associated warnings from a guild
+/// </summary>
 public class RemoveUserFromUserGuildStatesTask : ITask<RemoveUserFromUserGuildStatesTask.Args, bool>
 {
 
