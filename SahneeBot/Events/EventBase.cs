@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
+using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
@@ -15,6 +16,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
     private readonly ILogger<EventBase<TArg>> _logger;
     private readonly GuildQueue _queue;
     private readonly ErrorDiscordFormatter _errorFmt;
+    private readonly SahneeBotReportErrorTask _errorTask;
 
     protected EventBase(IServiceProvider serviceProvider)
     {
@@ -23,6 +25,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
         _logger = serviceProvider.GetRequiredService<ILogger<EventBase<TArg>>>();
         _queue = serviceProvider.GetRequiredService<GuildQueue>();
         _errorFmt = serviceProvider.GetRequiredService<ErrorDiscordFormatter>();
+        _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
     }
 
     public record struct EventExecutionOptions
@@ -44,17 +47,20 @@ public abstract class EventBase<TArg> : IEvent<TArg>
 
     protected async Task HandleAsync(EventDelegate del, EventExecutionOptions opts = default)
     {
+        // Create scope for event
         var scope = ServiceProvider.CreateScope();
 
+        // Actual handler, called later
         async Task ExecuteAsyncImpl()
         {
             _logger.LogDebug("Executing event {Event} on guild {Guild}", GetType().Name,
                 opts.PlaceInQueue);
+            // Create context
+            await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
+            await using var transaction = await model.Database.BeginTransactionAsync();
+            using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
             try
             {
-                await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
-                await using var transaction = await model.Database.BeginTransactionAsync();
-                using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
                 // Run command
                 await del(ctx);
                 // Commit transaction
@@ -62,15 +68,15 @@ public abstract class EventBase<TArg> : IEvent<TArg>
             }
             catch (Exception exception)
             {
-                // TODO: Report to admin?
-                await _errorFmt.FormatAndSend(
-                    new ErrorDiscordFormatter.Args("Event", GetType().Name, 
-                        ToString() ?? "", opts.PlaceInQueue, null, exception),
-                    DiscordFormat.Void);
+                // Report error
+                await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args("Event", GetType().Name, 
+                    ToString() ?? "", opts.PlaceInQueue, null, exception));
             }
+            // Dispose provider scope
             scope.Dispose();
         }
         
+        // Execute immediately or place in queue
         if (opts.PlaceInQueue != null)
         {
             var guildId = opts.PlaceInQueue.Value;

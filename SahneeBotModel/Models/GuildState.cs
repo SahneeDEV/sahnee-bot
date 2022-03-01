@@ -9,9 +9,9 @@ public class GuildState: IGuildState
     public ulong GuildId { get; set; }
     public ulong? BoundChannelId { get; set; }
     public bool SetRoles { get; set; } = true;
-    public string WarningRoleColor { get; set; }
+    public string WarningRoleColor { get; set; } = "";
     public Version? LastChangelogVersion { get; set; }
-    public string WarningRolePrefix { get; set; }
+    public string WarningRolePrefix { get; set; } = "";
 
     public override string ToString()
     {

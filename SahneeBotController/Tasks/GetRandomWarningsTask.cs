@@ -29,6 +29,7 @@ public class GetRandomWarningsTask : ITask<GetRandomWarningsTask.Args, IEnumerab
                 : w.UserId == userId.Value)))
             .Skip(toSkip)
             .Take(count)
+            .OrderBy(w => w.Time)
             .ToListAsync<IWarning>();
     }
 }

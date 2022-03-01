@@ -10,15 +10,15 @@ namespace SahneeBot.Commands;
 public class CleanupWarningRolesCommand : CommandBase
 {
     private readonly ILogger<CleanupWarningRolesCommand> _logger;
-    private readonly CleanupWarningRolesJobTask _cleanupWarningRolesJobTask;
+    private readonly CleanupWarningRolesJob _cleanupWarningRolesJob;
     private readonly WarningRoleCleanupDiscordFormatter _warningRoleCleanupDiscordFormatter;
 
     public CleanupWarningRolesCommand(IServiceProvider serviceProvider, ILogger<CleanupWarningRolesCommand> logger
-    , CleanupWarningRolesJobTask cleanupWarningRolesJobTask
+    , CleanupWarningRolesJob cleanupWarningRolesJob
     , WarningRoleCleanupDiscordFormatter warningRoleCleanupDiscordFormatter) : base(serviceProvider)
     {
         _logger = logger;
-        _cleanupWarningRolesJobTask = cleanupWarningRolesJobTask;
+        _cleanupWarningRolesJob = cleanupWarningRolesJob;
         _warningRoleCleanupDiscordFormatter = warningRoleCleanupDiscordFormatter;
     }
 
@@ -27,7 +27,7 @@ public class CleanupWarningRolesCommand : CommandBase
     {
         try
         {
-            var amount = await _cleanupWarningRolesJobTask
+            var amount = await _cleanupWarningRolesJob
                 .CleanupWarningRolesForAGuild(Context.Guild as SocketGuild, ctx.Model);
             await _warningRoleCleanupDiscordFormatter.FormatAndSend(
                 new WarningRoleCleanupDiscordFormatter.Args(amount), ModifyOriginalResponseAsync);

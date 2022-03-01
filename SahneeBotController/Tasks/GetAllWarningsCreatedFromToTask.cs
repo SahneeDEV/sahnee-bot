@@ -28,6 +28,6 @@ public class GetAllWarningsCreatedFromToTask: ITask<GetAllWarningsCreatedFromToT
                            : warning.UserId == userId.Value)) &&
                        warning.Time >= start &&
                        warning.Time <= end
-        ).ToListAsync<IWarning>();
+        ).OrderBy(w => w.Time).ToListAsync<IWarning>();
     }
 }

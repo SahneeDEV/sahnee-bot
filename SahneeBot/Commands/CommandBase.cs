@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
+using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
@@ -27,6 +28,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     private readonly GetRolesOfUserTask _roles;
     private readonly MissingPermissionDiscordFormatter _missingPermFmt;
     private readonly ErrorDiscordFormatter _errorFmt;
+    private readonly SahneeBotReportErrorTask _errorTask;
     private readonly GetBoundChannelTask _boundChannel;
     private readonly NotBoundChannelDiscordFormatter _notBoundChannelFmt;
 
@@ -45,6 +47,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         _errorFmt = serviceProvider.GetRequiredService<ErrorDiscordFormatter>();
         _boundChannel = serviceProvider.GetRequiredService<GetBoundChannelTask>();
         _notBoundChannelFmt = serviceProvider.GetRequiredService<NotBoundChannelDiscordFormatter>();
+        _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
     }
     
     /// <summary>
@@ -101,7 +104,10 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     /// <param name="opts">Options to customize command execution.</param>
     protected async Task ExecuteAsync(CommandDelegate del, CommandExecutionOptions opts = default)
     {
+        // Create the scope
         var scope = ServiceProvider.CreateScope();
+        
+        // Give us more than three seconds to respond
         try
         {
             await DeferAsync(opts.DeferEphemeral, opts.DeferRequest);
@@ -111,15 +117,15 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             _logger.LogCritical(EventIds.Discord, e, "Deferred answer could not be sent!");
         }
         
-        
+        // Actual handler, called later
         async Task ExecuteAsyncImpl()
         {
+            // Create context
+            await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
+            await using var transaction = await model.Database.BeginTransactionAsync();
+            using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
             try
             {
-                // Create context
-                await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
-                await using var transaction = await model.Database.BeginTransactionAsync();
-                using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
                 // Check binding
                 if (!opts.IgnoreBoundChannel)
                 {
@@ -170,14 +176,20 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             catch (Exception exception)
             {
                 var interaction = (SocketSlashCommand) Context.Interaction;
+                var ticketId = await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args(
+                    "Slash-command", interaction.CommandName, GetDebugString(interaction),
+                    Context.Guild?.Id, Context.User.Id, exception));
                 await _errorFmt.FormatAndSend(
                     new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, 
-                        GetDebugString(interaction), Context.Guild?.Id, Context.User.Id, exception), 
+                        GetDebugString(interaction), Context.Guild?.Id, Context.User.Id, exception, 
+                        ticketId, false), 
                     ModifyOriginalResponseAsync);
             }
+            // Dispose command provider scope
             scope.Dispose();
         }
-
+        
+        // Execute command immediately or place in queue
         if (opts.PlaceInQueue)
         {
             var guildId = Context.Guild?.Id;

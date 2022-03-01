@@ -4,13 +4,11 @@ namespace SahneeBot.Formatter;
 
 public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
 {
-    /// <summary>
-    /// Arguments for the generation of the format of the help command
-    /// </summary>
-    public record struct Args(string Website = "https://sahnee.dev/en/project/sahnee-bot/",
-        string Github = "https://github.com/Sahnee-DE/sahnee-bot");
+    public record struct Args();
     
     private readonly DefaultFormatArguments _defaultFormatArguments;
+    private readonly string _website = "https://sahnee.dev/en/project/sahnee-bot/";
+    private readonly string _github = "https://github.com/Sahnee-DE/sahnee-bot";
 
     public HelpDiscordFormatter(DefaultFormatArguments defaultFormatArguments)
     {
@@ -19,7 +17,6 @@ public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
 
     public Task<DiscordFormat> Format(Args arg)
     {
-        var (website, github) = arg;
         var embed = _defaultFormatArguments.GetEmbed();
         embed.Title = "More details about this bot:";
         embed.Fields = new List<EmbedFieldBuilder>
@@ -27,13 +24,13 @@ public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
             new()
             {
                 Name = "Website of the bot",
-                Value = website,
+                Value = _website,
                 IsInline = true
             },
             new()
             {
                 Name = "GitHub Repository of the bot",
-                Value = github,
+                Value = _github,
                 IsInline = true
             }
         };

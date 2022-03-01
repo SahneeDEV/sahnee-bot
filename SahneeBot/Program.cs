@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -53,6 +54,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<IEventHandler, EventHandler>();
         services.AddSingleton<Changelog>();
         services.AddSingleton<JobHandler>();
+        services.AddTransient<SelectMenuExecution>();
         // FORMATTER
         services.AddSingleton<DefaultFormatArguments>();
         services.AddTransient<WarningDiscordFormatter>();
@@ -77,6 +79,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<PrivateMessageToGuildOwnerFormatter>();
         services.AddTransient<InformRoleLimitDiscordFormatter>();
         services.AddTransient<WarningRolePrefixChangedDiscordFormatter>();
+        services.AddTransient<TopUserWarnedDiscordFormatter>();
         services.AddTransient<RemovedUsersFromGuildStateDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
@@ -98,31 +101,40 @@ var host = CreateHostBuilder(args)
         services.AddTransient<MessageOptOutTask>();
         services.AddTransient<GetMessageOptOutTask>();
         services.AddTransient<SetGuildRoleSetTask>();
-        services.AddTransient<GetLastChangelogOfGuildTask>();
-        services.AddTransient<SahneeBotRoleLimitInformationTask>();
         services.AddTransient<ChangeWarningRoleNameTask>();
         services.AddTransient<GetLastChangelogOfGuildTask>();
         services.AddTransient<PostChangelogsToGuildTask, SahneeBotPostChangelogsToGuildTask>();
         services.AddTransient<UpdateGuildChangelogTask, SahneeBotUpdateGuildChangelogTask>();
-        services.AddTransient<SahneeBotChangeWarningRoleNameTask>();
+        services.AddTransient<GetTopUserWarnedAmountTask>();
         services.AddTransient<GetGuildGuildUsersTask>();
+        // TASKS (BOT ONLY)
+        services.AddTransient<SahneeBotChangeWarningRoleNameTask>();
+        services.AddTransient<SahneeBotRoleLimitInformationTask>();
+        services.AddTransient<SahneeBotReportErrorTask>();
         services.AddTransient<SahneeBotGetLeftGuildUsers>();
         services.AddTransient<SahneeBotRemoveUserFromGuildState>();
-        services.AddTransient<SelectMenuExecution>();
         // JOBS
-        services.AddTransient<CleanupWarningRolesJobTask>();
+        services.AddTransient<CleanupWarningRolesJob>();
         // ACTIVITY
         services.AddTransient<BotActivity>();
-        //Select Menus
+        // SELECT MENUS
         services.AddTransient<RemoveUserFromGuildSelectMenu>();
         // DISCORD
-        var discordConfig = new DiscordSocketConfig
+        services.AddSingleton(provider =>
         {
-            GatewayIntents = GatewayIntents.All,
-            AlwaysDownloadUsers = true
-        };
-        var discordSocketClient  = new DiscordSocketClient(discordConfig);
-        services.AddSingleton(provider => discordSocketClient);
+            var discordConfig = new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.All,
+                AlwaysDownloadUsers = true
+            };
+            return new DiscordSocketClient(discordConfig);
+        });
+        services.AddSingleton(provider =>
+        {
+            var cfg = provider.GetRequiredService<IConfiguration>();
+            var url = cfg["BotSettings:ErrorWebhookUrl"];
+            return new DiscordWebhookClient(url);
+        });
     })
     .Build();
 
@@ -130,7 +142,7 @@ var bot = host.Services.GetRequiredService<DiscordSocketClient>();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 var discordLogger = host.Services.GetRequiredService<DiscordLogger>();
 var jobHandler = host.Services.GetRequiredService<JobHandler>();
-var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJobTask>();
+var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJob>();
 
 using (var scope = host.Services.CreateScope())
 {
