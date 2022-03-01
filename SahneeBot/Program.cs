@@ -133,7 +133,7 @@ var host = CreateHostBuilder(args)
         {
             var cfg = provider.GetRequiredService<IConfiguration>();
             var url = cfg["BotSettings:ErrorWebhookUrl"];
-            return new DiscordWebhookClient(url);
+            return new ErrorWebhook(url != null ? new DiscordWebhookClient(url) : null);
         });
     })
     .Build();

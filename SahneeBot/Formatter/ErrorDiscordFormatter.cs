@@ -50,8 +50,8 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
             embed.Title = $"Error in {interactionName} {interactionType.ToLowerInvariant()} on " + (guild != null ? _fmt.GetMention(guild) : "a global interaction");
             embed.Color = Color.DarkRed;
             embed.AddField("Ticket Id", ticketId + " (" + supportServer + ")", true);
-            embed.AddField("User", user != null ? _fmt.GetMention(user) + " `(#" + user.Id + ")`" : "", true);
-            embed.AddField("Server", guild != null ? _fmt.GetMention(guild) + " `(#" + guild.Id + ")`" : "", true);
+            embed.AddField("User", user != null ? _fmt.GetMention(user) + " `(#" + user.Id + ")`" : "n/a", true);
+            embed.AddField("Server", guild != null ? _fmt.GetMention(guild) + " `(#" + guild.Id + ")`" : "n/a", true);
             embed.AddField(interactionType, "`" + fullInteraction + "`");
             embed.AddField(error.GetType().Name, error.Message[..Math.Min(error.Message.Length, 1000)]);
             embed.AddField("Stack trace",
