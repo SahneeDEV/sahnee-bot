@@ -1,29 +1,17 @@
-﻿namespace SahneeBot.InteractionComponents;
+﻿using Discord;
 
-public interface ISelectMenu
+namespace SahneeBot.InteractionComponents;
+
+/// <summary>
+/// A select menu class for data.
+/// </summary>
+/// <typeparam name="T"></typeparam>
+public interface ISelectMenu<in T>
 {
     /// <summary>
-    /// The placeholder for the select menu
+    /// Select menu builder
     /// </summary>
-    public string Placeholder { get; set; }
-
-    /// <summary>
-    /// The minimum amount of select menu options the user will have to select
-    /// </summary>
-    public int MinValues { get; set; }
-    
-    /// <summary>
-    /// The maximum amount of select menu options the user can select
-    /// </summary>
-    public int MaxValues { get; set; }
-    
-    /// <summary>
-    /// The unique custom id for the select menu
-    /// </summary>
-    public string CustomId { get; set; }
-    
-    /// <summary>
-    /// Determines whether the select menu is disabled or not
-    /// </summary>
-    public bool IsDisabled { get; set; }
+    /// <param name="arg">The data to insert into the select Menu</param>
+    /// <returns></returns>
+    Task<SelectMenuBuilder> SelectMenu(T arg);
 }

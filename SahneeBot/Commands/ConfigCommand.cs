@@ -2,6 +2,7 @@
 using Discord.Commands;
 using Discord.Interactions;
 using SahneeBot.Formatter;
+using SahneeBot.InteractionComponents.SelectMenu;
 using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
@@ -377,5 +378,53 @@ public class ConfigCommand : CommandBase
             RequiredRole = RoleType.Administrator,
             DeferEphemeral = true
         });
+    }
+
+    [Discord.Interactions.Group("old-users", "Manage Users that are not on your guild anymore")]
+    public class RemoveUsersCommand : CommandBase
+    {
+        private readonly SahneeBotGetLeftGuildUsers _sahneeBotGetLeftGuildUsers;
+        private readonly RemoveUserFromGuildSelectMenu _removeUserFromGuildSelectMenu;
+        private readonly RemovedUsersFromGuildStateDiscordFormatter _removedUsersFromGuildStateDiscordFormatter;
+
+        public RemoveUsersCommand(IServiceProvider serviceProvider
+        , SahneeBotGetLeftGuildUsers sahneeBotGetLeftGuildUsers
+        , RemoveUserFromGuildSelectMenu removeUserFromGuildSelectMenu
+        , RemovedUsersFromGuildStateDiscordFormatter removedUsersFromGuildStateDiscordFormatter) : base(serviceProvider)
+        {
+            _sahneeBotGetLeftGuildUsers = sahneeBotGetLeftGuildUsers;
+            _removeUserFromGuildSelectMenu = removeUserFromGuildSelectMenu;
+            _removedUsersFromGuildStateDiscordFormatter = removedUsersFromGuildStateDiscordFormatter;
+        }
+        
+        
+        [SlashCommand("remove-list","Gives you a list of Users not on your server anymore" +
+                                    ", that can be removed")]
+        public Task RemoveOldUsersFromDatabase() => ExecuteAsync(async ctx =>
+        {
+            var usersToRemove = await _sahneeBotGetLeftGuildUsers.Execute(
+                ctx
+                , new SahneeBotGetLeftGuildUsers.Args(Context.Guild.Id));
+            if (usersToRemove.Count > 0)
+            {
+                var builder = new ComponentBuilder()
+                    .WithSelectMenu(await _removeUserFromGuildSelectMenu.SelectMenu(
+                        new RemoveUserFromGuildSelectMenu.Args(usersToRemove)));
+                await ModifyOriginalResponseAsync(func: properties =>
+                {
+                    properties.Content = "Please select all users you want to have removed";
+                    properties.Components = builder.Build();
+                });
+                return;
+            }
+            await _removedUsersFromGuildStateDiscordFormatter.FormatAndSend(
+                new RemovedUsersFromGuildStateDiscordFormatter.Args(Context.Guild.Id, 0, 0)
+                , ModifyOriginalResponseAsync);
+        }, new CommandExecutionOptions
+        {
+            RequiredRole = RoleType.Administrator,
+            DeferEphemeral = true
+        });
+
     }
 }

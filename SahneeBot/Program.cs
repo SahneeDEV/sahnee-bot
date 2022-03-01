@@ -10,6 +10,8 @@ using SahneeBot.Activity;
 using SahneeBot.Commands;
 using SahneeBot.Events;
 using SahneeBot.Formatter;
+using SahneeBot.InteractionComponents;
+using SahneeBot.InteractionComponents.SelectMenu;
 using SahneeBot.Jobs;
 using SahneeBot.Jobs.JobTasks;
 using SahneeBot.Tasks;
@@ -75,6 +77,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<PrivateMessageToGuildOwnerFormatter>();
         services.AddTransient<InformRoleLimitDiscordFormatter>();
         services.AddTransient<WarningRolePrefixChangedDiscordFormatter>();
+        services.AddTransient<RemovedUsersFromGuildStateDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -102,10 +105,16 @@ var host = CreateHostBuilder(args)
         services.AddTransient<PostChangelogsToGuildTask, SahneeBotPostChangelogsToGuildTask>();
         services.AddTransient<UpdateGuildChangelogTask, SahneeBotUpdateGuildChangelogTask>();
         services.AddTransient<SahneeBotChangeWarningRoleNameTask>();
+        services.AddTransient<GetGuildGuildUsersTask>();
+        services.AddTransient<SahneeBotGetLeftGuildUsers>();
+        services.AddTransient<SahneeBotRemoveUserFromGuildState>();
+        services.AddTransient<SelectMenuExecution>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJobTask>();
         // ACTIVITY
         services.AddTransient<BotActivity>();
+        //Select Menus
+        services.AddTransient<RemoveUserFromGuildSelectMenu>();
         // DISCORD
         var discordConfig = new DiscordSocketConfig
         {
