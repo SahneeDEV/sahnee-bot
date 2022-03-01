@@ -97,7 +97,7 @@ public class ReportCommand : CommandBase
         await HelperSendWarnings(ctx, warnings, user, issuer);
     });
 
-    [SlashCommand("today", "Gets all warnings that were created today")]
+    [SlashCommand("today", "Gets all warnings that were created within the last 24 hours")]
     public Task TodayCommand(
         [Summary(description: "If specified, the warnings will only be chosen from the given user")]
         IUser? user = null,
