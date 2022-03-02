@@ -1,8 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
-using SahneeBotModel.Contract;
+﻿using SahneeBotModel.Contract;
 
 namespace SahneeBotController.Tasks;
 
+/// <summary>
+/// Sets if the guild will set roles upon a user getting warned/unwarned
+/// </summary>
 public class SetGuildRoleSetTask : ITask<SetGuildRoleSetTask.Args, IGuildState>
 {
     private readonly GetGuildStateTask _getGuildStateTask;

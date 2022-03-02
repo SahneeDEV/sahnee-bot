@@ -11,6 +11,8 @@ using SahneeBot.Activity;
 using SahneeBot.Commands;
 using SahneeBot.Events;
 using SahneeBot.Formatter;
+using SahneeBot.InteractionComponents;
+using SahneeBot.InteractionComponents.SelectMenu;
 using SahneeBot.Jobs;
 using SahneeBot.Jobs.JobTasks;
 using SahneeBot.Tasks;
@@ -52,6 +54,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<IEventHandler, EventHandler>();
         services.AddSingleton<Changelog>();
         services.AddSingleton<JobHandler>();
+        services.AddTransient<SelectMenuExecution>();
         // FORMATTER
         services.AddSingleton<DefaultFormatArguments>();
         services.AddTransient<WarningDiscordFormatter>();
@@ -77,6 +80,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<InformRoleLimitDiscordFormatter>();
         services.AddTransient<WarningRolePrefixChangedDiscordFormatter>();
         services.AddTransient<TopUserWarnedDiscordFormatter>();
+        services.AddTransient<RemovedUsersFromGuildStateDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -102,14 +106,19 @@ var host = CreateHostBuilder(args)
         services.AddTransient<PostChangelogsToGuildTask, SahneeBotPostChangelogsToGuildTask>();
         services.AddTransient<UpdateGuildChangelogTask, SahneeBotUpdateGuildChangelogTask>();
         services.AddTransient<GetTopUserWarnedAmountTask>();
-		// TASKS (BOT ONLY)
+        services.AddTransient<GetGuildGuildUsersTask>();
+        services.AddTransient<SahneeBotRemoveUserFromGuildState>();
+        // TASKS (BOT ONLY)
         services.AddTransient<SahneeBotChangeWarningRoleNameTask>();
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
         services.AddTransient<SahneeBotReportErrorTask>();
+        services.AddTransient<SahneeBotGetLeftGuildUsersTask>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJob>();
         // ACTIVITY
         services.AddTransient<BotActivity>();
+        // SELECT MENUS
+        services.AddTransient<RemoveUserFromGuildSelectMenu>();
         // DISCORD
         services.AddSingleton(provider =>
         {

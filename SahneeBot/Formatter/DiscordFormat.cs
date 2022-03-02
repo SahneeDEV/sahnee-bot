@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 
 namespace SahneeBot.Formatter;
 
@@ -107,6 +108,10 @@ public class DiscordFormat
     public delegate Task<IUserMessage> ModifyOriginalResponseAsyncDelegate(
         Action<MessageProperties> func,
         RequestOptions? options = null);
+
+    public delegate Task<RestInteractionMessage> ModifyOriginalResponseAsyncDelegate2(
+        Action<MessageProperties> func,
+        RequestOptions? options = null);
     
     public delegate Task<IUserMessage> SendChannelMessageAsyncDelegate(
         string? text = null,
@@ -157,6 +162,18 @@ public class DiscordFormat
             AllowedMentions, Components);
     }
     public Task Send(ModifyOriginalResponseAsyncDelegate del, SendOptions sendOptions = default)
+    {
+        del(properties =>
+        {
+            properties.Content = Opt(Text);
+            properties.Embed = Opt(Embed?.Build());
+            properties.Embeds = Opt(Embeds?.Select(e => e.Build()).ToArray());
+            properties.AllowedMentions = Opt(AllowedMentions);
+            properties.Components = Opt(Components);
+        }, sendOptions.Request);
+        return Task.CompletedTask;
+    }
+    public Task Send(ModifyOriginalResponseAsyncDelegate2 del, SendOptions sendOptions = default)
     {
         del(properties =>
         {

@@ -50,7 +50,8 @@ public class GetGuildStateTask: ITask<GetGuildStateTask.Args, IGuildState>
         guildState = new GuildState
         {
             GuildId = args.GuildId,
-            WarningRolePrefix = _configuration["BotSettings:WarningRolePrefix"]
+            WarningRolePrefix = _configuration["BotSettings:WarningRolePrefix"],
+            WarningRoleColor = _configuration["BotSettings:WarningRoleColor"]
         };
         ctx.Model.GuildStates.Add(guildState);
         await ctx.Model.SaveChangesAsync();

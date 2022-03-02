@@ -1,6 +1,9 @@
 ﻿
 namespace SahneeBotController.Tasks;
 
+/// <summary>
+/// Changes to role color for a specific guild
+/// </summary>
 public class ChangeWarningRoleNameTask : ITask<ChangeWarningRoleNameTask.Args, string>
 {
     private readonly GetGuildStateTask _getGuildStateTask;

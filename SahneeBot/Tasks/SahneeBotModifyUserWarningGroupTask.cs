@@ -1,8 +1,6 @@
 ﻿using ColorHelper;
 using Discord;
-using Discord.Rest;
 using Discord.WebSocket;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SahneeBotController.Tasks;
 

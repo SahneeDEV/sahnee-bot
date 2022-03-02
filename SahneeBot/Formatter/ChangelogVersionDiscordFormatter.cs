@@ -22,7 +22,7 @@ public class ChangelogVersionDiscordFormatter : IDiscordFormatter<Changelog.Vers
         embed.Fields = arg.Sections.Select(section => new EmbedFieldBuilder
         {
             Name = section.Name,
-            Value = section.Content
+            Value = string.IsNullOrWhiteSpace(section.Content) ? section.Name : section.Content
         }).ToList();
         return Task.FromResult(new DiscordFormat(embed));
     }

@@ -63,9 +63,9 @@ public class WarnCommand : CommandBase
             await _discordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
             
             //check for role limit
-            await _sahneeBotRoleLimitInformationTask.CheckGuildRoleLimit(ctx
-                , Context.Interaction as SocketSlashCommand
-                , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id));
+            await _sahneeBotRoleLimitInformationTask.Execute(ctx
+                , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id
+                , Context.Interaction as SocketSlashCommand));
         }
         catch (Exception e)
         {
@@ -101,9 +101,9 @@ public class WarnCommand : CommandBase
                 await _discordFormatter.FormatAndSend(unwarning, ModifyOriginalResponseAsync);
             
                 //check for role limit
-                await _sahneeBotRoleLimitInformationTask.CheckGuildRoleLimit(ctx
-                    , Context.Interaction as SocketSlashCommand
-                    , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id));
+                await _sahneeBotRoleLimitInformationTask.Execute(ctx
+                    , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id
+                        , Context.Interaction as SocketSlashCommand));
             }
         }
         catch (Exception e)

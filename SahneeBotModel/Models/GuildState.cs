@@ -1,8 +1,13 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using SahneeBotModel.Contract;
 
 namespace SahneeBotModel.Models;
 
+[Index(nameof(GuildId), nameof(SetRoles))]
+[Index(nameof(GuildId), nameof(WarningRolePrefix))]
+[Index(nameof(GuildId), nameof(WarningRoleColor))]
+[Index(nameof(GuildId), nameof(BoundChannelId))]
 public class GuildState: IGuildState
 {
     [Key, Required]
