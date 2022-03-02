@@ -4,6 +4,9 @@ using SahneeBotModel.Contract;
 
 namespace SahneeBotModel.Models;
 
+[Index(nameof(GuildId), nameof(RoleId))]
+[Index(nameof(GuildId))]
+[Index(nameof(RoleId))]
 public class Role : IRole
 {
     [Required]

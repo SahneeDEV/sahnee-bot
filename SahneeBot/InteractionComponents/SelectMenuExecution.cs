@@ -30,7 +30,7 @@ public class SelectMenuExecution
         switch (arg.Data.CustomId)
         {
             case "remove-guild-users-from-db":
-                await _sahneeBotRemoveUserFromGuildState.RemoveUsersAsync(ctx, arg);
+                await _sahneeBotRemoveUserFromGuildState.Execute(ctx, new SahneeBotRemoveUserFromGuildState.Args(arg));
                 break;
             default:
                 _logger.LogCritical(EventIds.Discord, "Could not find a case for the given SelectMenu");

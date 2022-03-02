@@ -1,8 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using SahneeBotModel.Contract;
 
 namespace SahneeBotModel.Models;
 
+[Index(nameof(UserId))]
+[Index(nameof(GuildId))]
+[Index(nameof(GuildId), nameof(Time))]
+[Index(nameof(GuildId), nameof(UserId))]
+[Index(nameof(GuildId), nameof(UserId), nameof(Time))]
+[Index(nameof(GuildId), nameof(IssuerUserId))]
+[Index(nameof(GuildId), nameof(IssuerUserId), nameof(Time))]
 public class Warning : DatabaseObject, IWarning
 {
     [Required] public ulong GuildId { get; set; }

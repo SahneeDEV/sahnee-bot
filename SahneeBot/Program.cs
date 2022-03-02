@@ -107,7 +107,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<UpdateGuildChangelogTask, SahneeBotUpdateGuildChangelogTask>();
         services.AddTransient<GetTopUserWarnedAmountTask>();
         services.AddTransient<GetGuildGuildUsersTask>();
-        services.AddTransient<RemoveUserFromUserGuildStatesTask, SahneeBotRemoveUserFromGuildState>();
+        services.AddTransient<SahneeBotRemoveUserFromGuildState>();
         // TASKS (BOT ONLY)
         services.AddTransient<SahneeBotChangeWarningRoleNameTask>();
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
