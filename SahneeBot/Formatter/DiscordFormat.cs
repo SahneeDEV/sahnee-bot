@@ -67,23 +67,32 @@ public class DiscordFormat
         /// <summary>
         /// Can only the command sender see the response?
         /// </summary>
-        public bool Ephemeral = false;
+        public bool Ephemeral;
         /// <summary>
         /// Ready the message?
         /// </summary>
-        public bool IsTts = false;
+        public bool IsTts;
         /// <summary>
         /// The options of the request.
         /// </summary>
-        public RequestOptions? Request = null;
+        public RequestOptions? Request;
         /// <summary>
         /// Override the username in a webhook.
         /// </summary>
-        public string? Username = null;
+        public string? Username;
         /// <summary>
         /// Override the avatar in a webhook.
         /// </summary>
-        public string? AvatarUrl = null;
+        public string? AvatarUrl;
+
+        public SendOptions()
+        {
+            Ephemeral = false;
+            IsTts = false;
+            Request = null;
+            Username = null;
+            AvatarUrl = null;
+        }
     }
 
     public delegate Task RespondAsyncDelegate(
