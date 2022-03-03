@@ -42,8 +42,14 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
         var customColor = new Color(rgb.R, rgb.G, rgb.B);
         //get all warning roles from the guild
         var currentGuild = _bot.GetGuild(arg.GuildId);
+        //check if the guild set a custom prefix
+        var rolePrefix = _configuration["BotSettings:WarningRolePrefix"];
+        if (!String.IsNullOrWhiteSpace(guildState.WarningRolePrefix))
+        {
+            rolePrefix = guildState.WarningRolePrefix;
+        }
         var allWarningRolesInGuild = currentGuild.Roles
-            .Where(r => r.Name.StartsWith(_configuration["BotSettings:WarningRolePrefix"]));
+            .Where(r => r.Name.StartsWith(rolePrefix));
         foreach (var currentRole in allWarningRolesInGuild)
         {
             await currentRole.ModifyAsync(r =>
