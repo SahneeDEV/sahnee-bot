@@ -53,8 +53,8 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
             return false;
         }
         //check if the new warning as group already exists
-        IRole? newRole = null;
-        if (currentGuild.Roles.All(r => r.Name != newRoleName))
+        IRole? newRole;
+        if (currentGuild.Roles.Any(r => r.Name != newRoleName))
         {
             try
             {
@@ -71,6 +71,7 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
                         roleColor, false, null);
                 //add the new role to the guild
                 await currentGuildUser.AddRoleAsync(newRole);
+                return true;
             }
             catch (Exception e)
             {
@@ -80,11 +81,12 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
             }
         }
         //check if the role got created or needs to be received from the guild
-        newRole ??= currentGuild.Roles.FirstOrDefault(r => r.Name == newRoleName);
+        newRole = currentGuild.Roles.First(r => r.Name == newRoleName);
         //add the role to the user
         try
         {
             await currentGuildUser.AddRoleAsync(newRole);
+            return true;
         }
         catch (Exception e)
         {
@@ -92,6 +94,5 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
                 "Failed to add a role to a user in guild {guild}", args.GuildId);
             return false;
         }
-        return true;
     }
 }

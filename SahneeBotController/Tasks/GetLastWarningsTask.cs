@@ -24,7 +24,7 @@ public class GetLastWarningsTask : ITask<GetLastWarningsTask.Args, IEnumerable<I
             .Where(w => 
                 w.GuildId == guildId 
                 && (!userId.HasValue || (warner ? w.IssuerUserId == userId.Value : w.UserId == userId.Value)))
-            .OrderBy(w => w.Time)
+            .OrderByDescending(w => w.Time)
             .Take(maxAmount)
             .ToListAsync<IWarning>();
         return list;
