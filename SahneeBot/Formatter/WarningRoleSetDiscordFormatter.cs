@@ -20,21 +20,22 @@ public class WarningRoleSetDiscordFormatter : IDiscordFormatter<WarningRoleSetDi
     public Task<DiscordFormat> Format(Args args)
     {
         var embed = _defaultFormatArguments.GetEmbed();
-        embed.Title = args.Changed ? "Warning-Roles set setting has been changed" :
+        var (state, prefix, changed) = args;
+        embed.Title = changed ? "Warning-Roles set setting has been changed" :
             "Your current Warning-Roles configuration";
         embed.Fields = new List<EmbedFieldBuilder>
         {
             new()
             {
-                Name = args.Changed? "New configuration" : "Current configuration",
+                Name = changed? "New configuration" : "Current configuration",
                 Value = "Warning/Unwarning roles " + 
-                        (args.State ? "will" : "will not") + " be set",
+                        (state ? "will" : "will not") + " be set",
                 IsInline = true
             },
             new()
             {
                 Name = "Current Prefix",
-                Value = args.Prefix.Replace(" ", ""),
+                Value = prefix.TrimEnd(),
                 IsInline = true
             }
         };

@@ -66,7 +66,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<NoWarningFoundDiscordFormatter>();
         services.AddTransient<ErrorDiscordFormatter>();
         services.AddTransient<RoleColorChangeDiscordFormatter>();
-        services.AddTransient<GeneralErrorDiscordFormatter>();
+        services.AddTransient<InvalidColorDiscordFormatter>();
+        services.AddTransient<InvalidPrefixDiscordFormatter>();
         services.AddTransient<BoundChannelDiscordFormatter>();
         services.AddTransient<NotBoundChannelDiscordFormatter>();
         services.AddTransient<MessageOptOutHintDiscordFormatter>();
@@ -101,7 +102,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<MessageOptOutTask>();
         services.AddTransient<GetMessageOptOutTask>();
         services.AddTransient<SetGuildRoleSetTask>();
-        services.AddTransient<ChangeWarningRoleNameTask>();
+        services.AddTransient<ChangeWarningRoleNameTask, SahneeBotChangeWarningRoleNameTask>();
         services.AddTransient<GetLastChangelogOfGuildTask>();
         services.AddTransient<PostChangelogsToGuildTask, SahneeBotPostChangelogsToGuildTask>();
         services.AddTransient<UpdateGuildChangelogTask, SahneeBotUpdateGuildChangelogTask>();
@@ -109,7 +110,6 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetGuildGuildUsersTask>();
         services.AddTransient<SahneeBotRemoveUserFromGuildState>();
         // TASKS (BOT ONLY)
-        services.AddTransient<SahneeBotChangeWarningRoleNameTask>();
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
         services.AddTransient<SahneeBotReportErrorTask>();
         services.AddTransient<SahneeBotGetLeftGuildUsersTask>();

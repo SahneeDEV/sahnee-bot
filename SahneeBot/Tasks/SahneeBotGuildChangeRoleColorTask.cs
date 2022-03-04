@@ -1,9 +1,11 @@
 ﻿using System.Text.RegularExpressions;
 using ColorHelper;
 using Discord;
+using Discord.Net;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 
 namespace SahneeBot.Tasks;
@@ -11,21 +13,19 @@ namespace SahneeBot.Tasks;
 public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
 {
     private readonly DiscordSocketClient _bot;
-    private readonly IConfiguration _configuration;
-    private const string HexRegexPattern = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
+    private const string HEX_REGEX_PATTERN = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
-    public SahneeBotGuildChangeRoleColorTask(DiscordSocketClient bot, IConfiguration configuration)
+    public SahneeBotGuildChangeRoleColorTask(DiscordSocketClient bot)
     {
         _bot = bot;
-        _configuration = configuration;
     }
     
-    public override async Task<string> Execute(ITaskContext ctx, Args arg)
+    public override async Task<ISuccess<string>> Execute(ITaskContext ctx, Args arg)
     {
         //Check if the color is valid
-        if (String.IsNullOrWhiteSpace(arg.RoleColor) || !Regex.IsMatch(arg.RoleColor, HexRegexPattern))
+        if (string.IsNullOrWhiteSpace(arg.RoleColor) || !Regex.IsMatch(arg.RoleColor, HEX_REGEX_PATTERN))
         {
-            return null!;
+            return new Error<string>("Please make sure your color string starts with a '#' and is a valid three or six digit hex-code");
         }
         //set the color in the database
         var guildState = await ctx.Model.GuildStates
@@ -43,15 +43,35 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
         //get all warning roles from the guild
         var currentGuild = _bot.GetGuild(arg.GuildId);
         var allWarningRolesInGuild = currentGuild.Roles
-            .Where(r => r.Name.StartsWith(_configuration["BotSettings:WarningRolePrefix"]));
-        foreach (var currentRole in allWarningRolesInGuild)
+            .Where(r => r.Name.StartsWith(guildState.WarningRolePrefix));
+        try
         {
-            await currentRole.ModifyAsync(r =>
+            var commands = allWarningRolesInGuild.Select(role =>
             {
-                r.Color = customColor;
+                var originalColor = role.Color;
+                return Command.CreateSimple(
+                    () => role.ModifyAsync(r =>
+                    {
+                        r.Color = customColor;
+                    }),
+                    () => role.ModifyAsync(r =>
+                    {
+                        r.Color = originalColor;
+                    })
+                );
             });
+            await Command.DoAll(commands);
         }
-        return arg.RoleColor;
+        catch (Exception error)
+        {
+            if (error is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+            {
+                return SahneeBotDiscordError.GetMissingRolePermissionsError<string>(guildState.WarningRolePrefix);
+            }
+            return new Error<string>(error.Message);
+        }
+
+        return new Success<string>(arg.RoleColor);
     }
     
 }

@@ -3,7 +3,7 @@
 /// <summary>
 /// Changes the role color of the given guild to the given hex color
 /// </summary>
-public abstract class ChangeRoleColorTask: ITask<ChangeRoleColorTask.Args, string>
+public abstract class ChangeRoleColorTask: ITask<ChangeRoleColorTask.Args, ISuccess<string>>
 {
     
     public struct Args
@@ -25,5 +25,5 @@ public abstract class ChangeRoleColorTask: ITask<ChangeRoleColorTask.Args, strin
         }
     }
 
-    public abstract Task<string> Execute(ITaskContext ctx, Args arg);
+    public abstract Task<ISuccess<string>> Execute(ITaskContext ctx, Args arg);
 }

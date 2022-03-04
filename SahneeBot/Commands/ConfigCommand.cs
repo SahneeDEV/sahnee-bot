@@ -1,22 +1,22 @@
 ﻿using Discord;
-using Discord.Commands;
 using Discord.Interactions;
 using SahneeBot.Formatter;
 using SahneeBot.InteractionComponents.SelectMenu;
 using SahneeBot.Tasks;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
 namespace SahneeBot.Commands;
 
-[Discord.Interactions.Group("config", "Sahnee bot configuration commands")]
+[Group("config", "Sahnee bot configuration commands")]
 public class ConfigCommand : CommandBase
 {
     public ConfigCommand(IServiceProvider serviceProvider) : base(serviceProvider)
     {
     }
 
-    [Discord.Interactions.Group("pm", "Configure private messages about this guild sent to you by the bot")]
+    [Group("pm", "Configure private messages about this guild sent to you by the bot")]
     public class PmCommand : CommandBase
     {
         private readonly MessageOptOutTask _optOutTask;
@@ -88,7 +88,7 @@ public class ConfigCommand : CommandBase
         }
     }
     
-    [Discord.Interactions.Group("bind", "Configure the bound channel of the bot")]
+    [Group("bind", "Configure the bound channel of the bot")]
     public class BindCommand : CommandBase
     {
         private readonly ChangeBoundChannelTask _changeBoundChannelTask;
@@ -108,7 +108,7 @@ public class ConfigCommand : CommandBase
 
         [SlashCommand("set", "Binds the bot to a channel")]
         public Task BindChannelCommand(
-            [Discord.Interactions.Summary(description: "The channel to bind to")]
+            [Summary(description: "The channel to bind to")]
             ITextChannel channel
         ) => ExecuteAsync(async ctx =>
         {
@@ -152,7 +152,7 @@ public class ConfigCommand : CommandBase
         });
     }
     
-    [Discord.Interactions.Group("sahnee-permission", "Configure the permission system")]
+    [Group("sahnee-permission", "Configure the permission system")]
     public class PermissionCommand : CommandBase
     {
         /// <summary>
@@ -194,9 +194,9 @@ public class ConfigCommand : CommandBase
         /// <returns>Once the role has been added</returns>
         [SlashCommand("add", "Adds a sahnee permission to a role")]
         public Task CommandAdd(
-            [Discord.Interactions.Summary(description: "The role to add the sahnee permission to")]
+            [Summary(description: "The role to add the sahnee permission to")]
             IRole role,
-            [Discord.Interactions.Summary(description: "The sahnee permission to add")]
+            [Summary(description: "The sahnee permission to add")]
             SahneePermission sahneePermission
             ) => ExecuteAsync(async ctx =>
         {
@@ -219,9 +219,9 @@ public class ConfigCommand : CommandBase
         /// <returns>Once the role has been removed.</returns>
         [SlashCommand("remove", "Removes a (or all) sahnee permission(s) from a role")]
         public Task CommandRemove(
-            [Discord.Interactions.Summary(description: "The role to remove the sahnee permission from")] 
+            [Summary(description: "The role to remove the sahnee permission from")] 
             IRole role,
-            [Discord.Interactions.Summary(description: "The sahnee permission to remove - if not specified, all sahnee permissions will be removed")]
+            [Summary(description: "The sahnee permission to remove - if not specified, all sahnee permissions will be removed")]
             SahneePermission? sahneePermission = null
             ) => ExecuteAsync(async ctx =>
         {
@@ -254,68 +254,61 @@ public class ConfigCommand : CommandBase
         });
     }
 
-    [Discord.Interactions.Group("role", "Configure the warning roles")]
+    [Group("role", "Configure the warning roles")]
     public class RoleCommand : CommandBase
     {
         private readonly ChangeRoleColorTask _changeRoleColorTask;
         private readonly RoleColorChangeDiscordFormatter _roleColorChangeDiscordFormatter;
-        private readonly GeneralErrorDiscordFormatter _generalErrorDiscordFormatter;
+        private readonly InvalidColorDiscordFormatter _invalidColorDiscordFormatter;
+        private readonly InvalidPrefixDiscordFormatter _invalidPrefixDiscordFormatter;
         private readonly SetGuildRoleSetTask _setGuildRoleSetTask;
         private readonly WarningRoleSetDiscordFormatter _warningRoleSetDiscordFormatter;
         private readonly GetGuildStateTask _getGuildStateTask;
-        private readonly SahneeBotChangeWarningRoleNameTask _sahneeBotChangeWarningRoleNameTask;
+        private readonly ChangeWarningRoleNameTask _changeWarningRoleNameTask;
         private readonly WarningRolePrefixChangedDiscordFormatter _warningRolePrefixChangedDiscordFormatter;
 
         public RoleCommand(IServiceProvider serviceProvider
             , ChangeRoleColorTask changeRoleColorTask
             , RoleColorChangeDiscordFormatter roleColorChangeDiscordFormatter
-            , GeneralErrorDiscordFormatter generalErrorDiscordFormatter
+            , InvalidColorDiscordFormatter invalidColorDiscordFormatter
             , SetGuildRoleSetTask setGuildRoleSetTask
             , WarningRoleSetDiscordFormatter warningRoleSetDiscordFormatter
             , GetGuildStateTask getGuildStateTask
-            , SahneeBotChangeWarningRoleNameTask sahneeBotChangeWarningRoleNameTask
-            , WarningRolePrefixChangedDiscordFormatter warningRolePrefixChangedDiscordFormatter) : base(serviceProvider)
+            , ChangeWarningRoleNameTask changeWarningRoleNameTask
+            , WarningRolePrefixChangedDiscordFormatter warningRolePrefixChangedDiscordFormatter
+            , InvalidPrefixDiscordFormatter invalidPrefixDiscordFormatter) : base(serviceProvider)
         {
             _changeRoleColorTask = changeRoleColorTask;
             _roleColorChangeDiscordFormatter = roleColorChangeDiscordFormatter;
-            _generalErrorDiscordFormatter = generalErrorDiscordFormatter;
+            _invalidColorDiscordFormatter = invalidColorDiscordFormatter;
             _setGuildRoleSetTask = setGuildRoleSetTask;
             _warningRoleSetDiscordFormatter = warningRoleSetDiscordFormatter;
             _getGuildStateTask = getGuildStateTask;
-            _sahneeBotChangeWarningRoleNameTask = sahneeBotChangeWarningRoleNameTask;
+            _changeWarningRoleNameTask = changeWarningRoleNameTask;
             _warningRolePrefixChangedDiscordFormatter = warningRolePrefixChangedDiscordFormatter;
+            _invalidPrefixDiscordFormatter = invalidPrefixDiscordFormatter;
         }
 
         [SlashCommand("color", "Configure the color of warning roles")]
         public Task ChangeRoleColor(string color)
             => ExecuteAsync(async ctx =>
             {
-                var newColor = await _changeRoleColorTask.Execute(ctx
+                var colorSuccess = await _changeRoleColorTask.Execute(ctx
                     , new ChangeRoleColorTask.Args(Context.Guild.Id, color));
-                if (string.IsNullOrWhiteSpace(newColor))
+                if (colorSuccess.IsSuccess)
                 {
-                    await _generalErrorDiscordFormatter.FormatAndSend(new GeneralErrorDiscordFormatter.Args(
-                        "Cannot set " + color + " as color. Is it a valid hex string?", 
-                        new List<EmbedFieldBuilder>
-                        {
-                            new()
-                            {
-                                Name = "You specified color",
-                                Value = color,
-                                IsInline = true
-                            },
-                            new()
-                            {
-                                Name = "Hint",
-                                Value = "Please make sure, your color string starts with a '#'",
-                                IsInline = false
-                            }
-                        }
-                        ), ModifyOriginalResponseAsync);
-                    return;
+                    await _roleColorChangeDiscordFormatter
+                        .FormatAndSend(new RoleColorChangeDiscordFormatter.Args(colorSuccess.Value),
+                            ModifyOriginalResponseAsync);
                 }
-                await _roleColorChangeDiscordFormatter
-                    .FormatAndSend(new RoleColorChangeDiscordFormatter.Args(newColor), ModifyOriginalResponseAsync);
+                else
+                {
+                    await _invalidColorDiscordFormatter
+                        .FormatAndSend(new InvalidColorDiscordFormatter.Args(color, colorSuccess.Message), 
+                            ModifyOriginalResponseAsync);
+                }
+
+                return colorSuccess;
             }, new CommandExecutionOptions
             {
                 RequiredRole = RoleType.Administrator,
@@ -367,14 +360,24 @@ public class ConfigCommand : CommandBase
         });
 
         [SlashCommand("prefix","Changes the warning role prefix")]
-        public Task ChangeRoleName([Discord.Interactions.Summary(description: "Sets the new prefix of warning roles")]
+        public Task ChangeRoleName([Summary(description: "Sets the new prefix of warning roles")]
             string newRolePrefix) => ExecuteAsync(async ctx =>
             {
-                var newPrefix = await _sahneeBotChangeWarningRoleNameTask.Execute(ctx
-                    , new SahneeBotChangeWarningRoleNameTask.Args(Context.Guild.Id, newRolePrefix));
-                await _warningRolePrefixChangedDiscordFormatter.FormatAndSend(
-                    new WarningRolePrefixChangedDiscordFormatter.Args(newPrefix)
-                    , ModifyOriginalResponseAsync);
+                var prefixSuccess = await _changeWarningRoleNameTask.Execute(ctx
+                    , new ChangeWarningRoleNameTask.Args(Context.Guild.Id, newRolePrefix));
+                if (prefixSuccess.IsSuccess)
+                {
+                    await _warningRolePrefixChangedDiscordFormatter.FormatAndSend(
+                        new WarningRolePrefixChangedDiscordFormatter.Args(newRolePrefix)
+                        , ModifyOriginalResponseAsync);
+                }
+                else
+                {
+                    await _invalidPrefixDiscordFormatter.FormatAndSend(
+                        new InvalidPrefixDiscordFormatter.Args(newRolePrefix, prefixSuccess.Message),
+                        ModifyOriginalResponseAsync);
+                }
+                return prefixSuccess;
             }
         , new CommandExecutionOptions
         {
@@ -384,7 +387,7 @@ public class ConfigCommand : CommandBase
         });
     }
 
-    [Discord.Interactions.Group("old-users", "Manage Users that are not on your guild anymore")]
+    [Group("old-users", "Manage Users that are not on your guild anymore")]
     public class RemoveUsersCommand : CommandBase
     {
         private readonly SahneeBotGetLeftGuildUsersTask _sahneeBotGetLeftGuildUsersTask;

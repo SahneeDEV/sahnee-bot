@@ -1,48 +1,65 @@
-﻿using Discord.WebSocket;
+﻿using Discord;
+using Discord.Net;
+using Discord.WebSocket;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 
 namespace SahneeBot.Tasks;
 
-/// <summary>
-/// Changes the warning role name of the given guild in the guild state
-/// </summary>
-public class SahneeBotChangeWarningRoleNameTask : ITask<SahneeBotChangeWarningRoleNameTask.Args, string>
+public class SahneeBotChangeWarningRoleNameTask : ChangeWarningRoleNameTask
 {
-    private readonly ChangeWarningRoleNameTask _changeWarningRoleNameTask;
     private readonly DiscordSocketClient _bot;
 
-    public record struct Args(ulong GuildId, string WarningRolePrefix);
-
-    public SahneeBotChangeWarningRoleNameTask(ChangeWarningRoleNameTask changeWarningRoleNameTask,
-        DiscordSocketClient bot)
+    public SahneeBotChangeWarningRoleNameTask(IServiceProvider provider
+        , DiscordSocketClient bot) : base(provider)
     {
-        _changeWarningRoleNameTask = changeWarningRoleNameTask;
         _bot = bot;
     }
 
-    public async Task<string> Execute(ITaskContext ctx, Args args)
+    public override async Task<ISuccess<string>> Execute(ITaskContext ctx, Args args)
     {
-        //change the prefix in the guildState
-        var oldPrefix = await _changeWarningRoleNameTask.Execute(ctx
-            , new ChangeWarningRoleNameTask.Args(args.GuildId, args.WarningRolePrefix));
+        var oldPrefix = await base.Execute(ctx, args);
+
+        if (!oldPrefix.IsSuccess)
+        {
+            return oldPrefix;
+        }
         
         //change the warning roles in the current guild
         var currentGuild = _bot.GetGuild(args.GuildId);
-        var allWarningRoles = currentGuild.Roles.Where(r => r.Name.StartsWith(oldPrefix));
+        var allWarningRoles = currentGuild.Roles.Where(r => r.Name.StartsWith(oldPrefix.Value));
         if (!args.WarningRolePrefix.EndsWith(" "))
         {
             args.WarningRolePrefix += " ";
         }
-        foreach (var currentRole in allWarningRoles)
+
+        try
         {
-            if (currentRole != null)
+            var commands = allWarningRoles.Select(role =>
             {
-                await currentRole.ModifyAsync(r =>
-                {
-                    r.Name = currentRole.Name.Replace(oldPrefix, args.WarningRolePrefix);
-                });
-            }
+                var originalName = role.Name;
+                return Command.CreateSimple(
+                    () => role.ModifyAsync(r =>
+                    {
+                        r.Name = originalName.Replace(oldPrefix.Value, args.WarningRolePrefix);
+                    }),
+                    () => role.ModifyAsync(r =>
+                    {
+                        r.Name = originalName;
+                    })
+                );
+            });
+            await Command.DoAll(commands);
         }
-        return args.WarningRolePrefix;
+        catch (Exception error)
+        {
+            if (error is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+            {
+                return SahneeBotDiscordError.GetMissingRolePermissionsError<string>(oldPrefix.Value);
+            }
+            return new Error<string>(error.Message);
+        }
+
+        return oldPrefix;
     }
 }

@@ -1,10 +1,12 @@
 ﻿
+using Microsoft.Extensions.DependencyInjection;
+
 namespace SahneeBotController.Tasks;
 
 /// <summary>
-/// Changes to role color for a specific guild
+/// Changes the warning role name of the given guild in the guild state
 /// </summary>
-public class ChangeWarningRoleNameTask : ITask<ChangeWarningRoleNameTask.Args, string>
+public abstract class ChangeWarningRoleNameTask : ITask<ChangeWarningRoleNameTask.Args, ISuccess<string>>
 {
     private readonly GetGuildStateTask _getGuildStateTask;
 
@@ -15,22 +17,23 @@ public class ChangeWarningRoleNameTask : ITask<ChangeWarningRoleNameTask.Args, s
     /// <param name="WarningRolePrefix">the new warning role prefix</param>
     public record struct Args(ulong GuildId, string WarningRolePrefix);
 
-    public ChangeWarningRoleNameTask(GetGuildStateTask getGuildStateTask)
+    protected ChangeWarningRoleNameTask(IServiceProvider provider)
     {
-        _getGuildStateTask = getGuildStateTask;
+        _getGuildStateTask = provider.GetRequiredService<GetGuildStateTask>();
     }
 
-    public async Task<string> Execute(ITaskContext ctx, Args arg)
+    public virtual async Task<ISuccess<string>> Execute(ITaskContext ctx, Args arg)
     {
-        var guildState = await _getGuildStateTask.Execute(ctx, new GetGuildStateTask.Args(arg.GuildId));
-        //update the prefix
-        if (!arg.WarningRolePrefix.EndsWith(" "))
+        var (guildId, warningRolePrefix) = arg;
+        var guildState = await _getGuildStateTask.Execute(ctx, new GetGuildStateTask.Args(guildId));
+        // Update the prefix
+        if (!warningRolePrefix.EndsWith(" "))
         {
-            arg.WarningRolePrefix += " ";
+            warningRolePrefix += " ";
         }
         var oldPrefix = guildState.WarningRolePrefix;
-        guildState.WarningRolePrefix = arg.WarningRolePrefix;
+        guildState.WarningRolePrefix = warningRolePrefix;
         await ctx.Model.SaveChangesAsync();
-        return oldPrefix;
+        return new Success<string>(oldPrefix);
     }
 }

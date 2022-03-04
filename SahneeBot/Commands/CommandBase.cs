@@ -6,12 +6,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBot.Tasks;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
 namespace SahneeBot.Commands;
 
 public delegate Task CommandDelegate(ITaskContext ctx);
+public delegate Task<ISuccess<T>> CommandSuccessDelegate<T>(ITaskContext ctx);
 
 /// <summary>
 /// Base class for commands.
@@ -96,13 +98,24 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     {
         return Task.Delay(ms).ContinueWith(task => DeleteOriginalResponseAsync());
     }
+
+    protected Task ExecuteAsync(CommandDelegate del, CommandExecutionOptions opts = default)
+    {
+        async Task<ISuccess<string>> WrapperFunction(ITaskContext ctx)
+        {
+            await del(ctx);
+            return new Success<string>("");
+        }
+
+        return ExecuteAsync(WrapperFunction, opts);
+    }
     
     /// <summary>
     /// Executes the command.
     /// </summary>
     /// <param name="del">The command delegate.</param>
     /// <param name="opts">Options to customize command execution.</param>
-    protected async Task ExecuteAsync(CommandDelegate del, CommandExecutionOptions opts = default)
+    protected async Task ExecuteAsync<T>(CommandSuccessDelegate<T> del, CommandExecutionOptions opts = default)
     {
         // Create the scope
         var scope = ServiceProvider.CreateScope();
@@ -169,12 +182,20 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                     }
                 }
                 // Run command
-                await del(ctx);
-                // Commit transaction
-                await transaction.CommitAsync();
+                var success = await del(ctx);
+                // Commit transaction or rollback
+                if (success.IsSuccess)
+                {
+                    await transaction.CommitAsync();
+                }
+                else
+                {
+                    await transaction.RollbackAsync();
+                }
             }
             catch (Exception exception)
             {
+                await transaction.RollbackAsync();
                 var interaction = (SocketSlashCommand) Context.Interaction;
                 var ticketId = await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args(
                     "Slash-command", interaction.CommandName, GetDebugString(interaction),
