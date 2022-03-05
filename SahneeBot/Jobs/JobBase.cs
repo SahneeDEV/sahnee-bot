@@ -1,32 +1,30 @@
-﻿using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using SahneeBot.Formatter;
+using SahneeBot.Events;
 using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
-namespace SahneeBot.Events;
+namespace SahneeBot.Jobs;
 
-public delegate Task EventDelegate(ITaskContext ctx);
-
-public abstract class EventBase<TArg> : IEvent<TArg>
+public abstract class JobBase : IJob
 {
     protected IServiceProvider ServiceProvider { get; }
-    private readonly ILogger<EventBase<TArg>> _logger;
+    private readonly ILogger<JobBase> _logger;
     private readonly GuildQueue _queue;
-    private readonly SahneeBotReportErrorTask _errorTask;
 
-    protected EventBase(IServiceProvider serviceProvider)
+    protected JobBase(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
-        // We resolve all further classes manually instead of injection to keep the ctor simple for inheritance.
-        _logger = serviceProvider.GetRequiredService<ILogger<EventBase<TArg>>>();
+        _logger = serviceProvider.GetRequiredService<ILogger<JobBase>>();
         _queue = serviceProvider.GetRequiredService<GuildQueue>();
-        _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
     }
 
-    public record struct EventExecutionOptions
+    public delegate Task JobDelegate(ITaskContext ctx);
+    
+    public abstract Task Perform();
+
+    public record struct JobExecutionOptions
     {
         /// <summary>
         /// In which guild queue should the event be placed?
@@ -34,16 +32,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
         public readonly ulong? PlaceInQueue { get; init; }
     }
 
-    public abstract void Register();
-    
-    public Task Handle(object arg)
-    {
-        return Handle((TArg) arg);
-    }
-
-    public abstract Task Handle(TArg arg);
-
-    protected async Task HandleAsync(EventDelegate del, EventExecutionOptions opts = default)
+    protected async Task PerformAsync(JobDelegate del, JobExecutionOptions opts = default)
     {
         // Create scope for event
         var scope = ServiceProvider.CreateScope();
@@ -51,7 +40,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
         // Actual handler, called later
         async Task ExecuteAsyncImpl()
         {
-            _logger.LogDebug("Executing event {Event} on guild {Guild}", GetType().Name,
+            _logger.LogDebug("Executing job {Job} on guild {Guild}", GetType().Name,
                 opts.PlaceInQueue);
             // Create context
             await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
@@ -67,8 +56,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
             catch (Exception exception)
             {
                 // Report error
-                await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args("Event", GetType().Name, 
-                    ToString() ?? "", opts.PlaceInQueue, null, exception));
+                _logger.LogError(EventIds.Jobs, exception, "Error in job");
             }
             // Dispose provider scope
             scope.Dispose();

@@ -21,6 +21,7 @@ public class InvalidColorDiscordFormatter : IDiscordFormatter<InvalidColorDiscor
         var embed = _defaultFormatArguments.GetEmbed();
         var (color, hint) = args;
         embed.Title = "Cannot change role color";
+        embed.Color = Color.DarkRed;
         embed.Fields = new List<EmbedFieldBuilder>
         {
             new()

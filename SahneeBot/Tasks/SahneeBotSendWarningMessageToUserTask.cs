@@ -1,53 +1,45 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBotController.Tasks;
 
 namespace SahneeBot.Tasks;
 
-public class SahneeBotSendWarningMessageToUserTask: SendWarningMessageToUserTask
+public class SahneeBotSendWarningMessageToUserTask : SendWarningMessageToUserTask
 {
-    private readonly DiscordSocketClient _bot;
     private readonly ILogger<SahneeBotSendWarningMessageToUserTask> _logger;
     private readonly WarningDiscordFormatter _discordFormatter;
+    private readonly SahneeBotPrivateMessageToGuildMembersTask _privateMessage;
 
-    public SahneeBotSendWarningMessageToUserTask(IServiceProvider provider, DiscordSocketClient bot,
-        ILogger<SahneeBotSendWarningMessageToUserTask> logger,
-        WarningDiscordFormatter discordFormatter) : base(provider)
+    public SahneeBotSendWarningMessageToUserTask(IServiceProvider provider
+        , ILogger<SahneeBotSendWarningMessageToUserTask> logger
+        , WarningDiscordFormatter discordFormatter
+        , SahneeBotPrivateMessageToGuildMembersTask privateMessage) : base(provider)
     {
-        _bot = bot;
         _logger = logger;
         _discordFormatter = discordFormatter;
+        _privateMessage = privateMessage;
     }
-    
+
     protected override async Task<bool> ExecuteImpl(ITaskContext ctx, Args arg)
     {
-        var (warning, recipientId) = arg;
-        // Get the user, could be deleted
-        var user = await _bot.GetUserAsync(recipientId);
-        if (user == null)
-        {
-            _logger.LogWarning(EventIds.Discord, 
-                "Failed to deliver warning message for warning {Warning}: Could not get the user", warning);
-            return false;
-        }
-        // Sending messages to bots is pointless
-        if (user.IsBot)
-        {
-            return false;
-        }
-        // Sending the actual message crashes if the bot is blocked
-        try
-        {
-            await _discordFormatter.FormatAndSend(warning, user.SendMessageAsync);
-            return true;
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(EventIds.Discord, e, 
-                "Failed to deliver warning message for warning {Warning}", warning);
-            return false;
-        }
+        var warning = arg.Warning;
+        var message = await _discordFormatter.Format(warning);
+        var recipients = await _privateMessage.Execute(ctx,
+            new SahneeBotPrivateMessageToGuildMembersTask.Args(
+                arg.Warning.GuildId,
+                async guild =>
+                {
+                    var user = await guild.GetUserAsync(warning.UserId);
+                    if (user != null)
+                    {
+                        return new[] {user};
+                    }
+                    _logger.LogWarning(EventIds.Discord,
+                        "Failed to deliver warning message for warning {Warning}: Could not get the user", 
+                        warning);
+                    return Array.Empty<IUser>();
+                }, new[] {message}));
+        return recipients.IsSuccess && recipients.Value == 1;
     }
 }

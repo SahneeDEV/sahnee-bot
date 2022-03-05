@@ -2,6 +2,9 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Prints that the color of the roles has been changed.
+/// </summary>
 public class RoleColorChangeDiscordFormatter : IDiscordFormatter<RoleColorChangeDiscordFormatter.Args>
 {
     private readonly DefaultFormatArguments _fmt;
@@ -9,7 +12,7 @@ public class RoleColorChangeDiscordFormatter : IDiscordFormatter<RoleColorChange
     /// <summary>
     /// Arguments for printing the new colorName
     /// </summary>
-    /// <param name="ColorName"></param>
+    /// <param name="ColorName">The color that was changed to.</param>
     public record struct Args(string ColorName);
 
     public RoleColorChangeDiscordFormatter(DefaultFormatArguments fmt)

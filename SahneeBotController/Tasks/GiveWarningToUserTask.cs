@@ -54,7 +54,7 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, IWarning?>
         await _modifyUserWarningGroupTask.Execute(ctx, 
             new ModifyUserWarningGroupTask.Args(warn.Number, warn.UserId,
                 warn.GuildId));
-        await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn, warn.UserId));
+        await _message.Execute(ctx, new SendWarningMessageToUserTask.Args(warn));
         return warn;
     }
 }

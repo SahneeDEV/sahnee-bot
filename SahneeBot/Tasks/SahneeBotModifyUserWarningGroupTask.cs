@@ -23,42 +23,38 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
 
     public override async Task<bool> Execute(ITaskContext ctx, Args args)
     {
-        //Don't set a role if the guild opted out
+        // Don't set a role if the guild opted out
         var guildState = await _guildState.Execute(ctx,
             new GetGuildStateTask.Args(args.GuildId));
         if (!guildState.SetRoles)
         {
             return false;
         }
-        //check if the new role already exists on the guild
+        // Check if the new role already exists on the guild
         var currentGuild = _bot.GetGuild(args.GuildId);
         var currentGuildUser = currentGuild.GetUser(args.UserId);
-        string newRoleName = guildState.WarningRolePrefix + args.Number;
-        //remove all current warning roles from the user if any are available
-        if (currentGuildUser.Roles.Any(r => 
-                r.Name.Contains(guildState.WarningRolePrefix)))
+        var newRoleName = guildState.WarningRolePrefix + args.Number;
+        // Remove all current warning roles from the user if any are available
+        foreach (var currentRole in currentGuildUser.Roles)
         {
-            foreach (var currentRole in currentGuildUser.Roles)
+            if (currentRole.Name.StartsWith(guildState.WarningRolePrefix))
             {
-                if (currentRole.Name.StartsWith(guildState.WarningRolePrefix))
-                {
-                    //remove the role
-                    await currentGuildUser.RemoveRoleAsync(currentRole);
-                }
+                // Remove the role
+                await currentGuildUser.RemoveRoleAsync(currentRole);
             }
         }
-        //check if the new amount is 0
+        // Check if the new amount is 0
         if (args.Number == 0)
         {
             return false;
         }
-        //check if the new warning as group already exists
+        // Check if the new warning as group already exists
         IRole? newRole;
         if (currentGuild.Roles.Any(r => r.Name != newRoleName))
         {
             try
             {
-                //get custom color if available
+                // Get custom color if available
                 var roleColor = Color.LightGrey;
                 if (!string.IsNullOrWhiteSpace(guildState.WarningRoleColor))
                 {

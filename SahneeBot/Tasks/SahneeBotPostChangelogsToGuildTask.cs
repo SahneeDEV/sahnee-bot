@@ -30,10 +30,9 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
         var set = new HashSet<Version>(enumerable);
         var changelogs = _changelog.Versions.Where(v => set.Contains(v.Version));
         var boundChannel = await _boundChannelTask.Execute(ctx, new GetBoundChannelTask.Args(guildId));
-        var guild = _bot.GetGuild(guildId);
-        var channel = boundChannel.HasValue
-            ? guild?.GetTextChannel(boundChannel.Value)
-            : guild?.DefaultChannel as ITextChannel;
+        var channel = _bot.GetGuild(guildId) is IGuild guild ? boundChannel.HasValue
+            ? await guild.GetTextChannelAsync(boundChannel.Value)
+            : await guild.GetDefaultChannelAsync() : null;
         if (channel == null)
         {
             return false;

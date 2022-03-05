@@ -14,7 +14,6 @@ using SahneeBot.Formatter;
 using SahneeBot.InteractionComponents;
 using SahneeBot.InteractionComponents.SelectMenu;
 using SahneeBot.Jobs;
-using SahneeBot.Jobs.JobTasks;
 using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
@@ -82,6 +81,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<WarningRolePrefixChangedDiscordFormatter>();
         services.AddTransient<TopUserWarnedDiscordFormatter>();
         services.AddTransient<RemovedUsersFromGuildStateDiscordFormatter>();
+        services.AddTransient<JobFailedDiscordFormatter>();
+        services.AddTransient<RoleCleanupFailedDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -113,6 +114,8 @@ var host = CreateHostBuilder(args)
         services.AddTransient<SahneeBotRoleLimitInformationTask>();
         services.AddTransient<SahneeBotReportErrorTask>();
         services.AddTransient<SahneeBotGetLeftGuildUsersTask>();
+        services.AddTransient<SahneeBotCleanupWarningRolesTask>();
+        services.AddTransient<SahneeBotPrivateMessageToGuildMembersTask>();
         // JOBS
         services.AddTransient<CleanupWarningRolesJob>();
         // ACTIVITY
@@ -179,9 +182,8 @@ var guid = jobHandler.RegisterJob(new JobHandler.Args(new JobTimeSpanRepeat(
         TimeSpan.FromMinutes(int.Parse(configuration["BotSettings:Jobs:CleanupWarningRoles"]))),
     async () =>
     {
-        await clearWarningRoles.CleanupWarningRolesRun(host.Services);
+        await clearWarningRoles.Perform();
     }));
-logger.LogDebug(EventIds.Jobs, "Registered Job for cleaning warning roles" +
-                               " with guid: {guid}", guid);
+logger.LogDebug(EventIds.Jobs, "Registered Job for cleaning warning roles with guid: {Guid}", guid);
 
 await host.RunAsync();
