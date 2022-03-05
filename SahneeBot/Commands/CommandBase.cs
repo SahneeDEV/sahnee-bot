@@ -206,6 +206,7 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
             ExecuteImpl
             , new SahneeBotTaskContextFactory.ContextOptions
             {
+                Type = "slash-command",
                 PlaceInQueue = placeInQueue,
                 ErrorReporter = ErrorReporter
             });

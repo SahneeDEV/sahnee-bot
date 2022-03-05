@@ -1,24 +1,21 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SahneeBot.Events;
 using SahneeBot.Tasks;
 using SahneeBotController;
 using SahneeBotController.Tasks;
-using SahneeBotModel;
 
 namespace SahneeBot.Jobs;
 
 public abstract class JobBase : IJob
 {
     protected IServiceProvider ServiceProvider { get; }
-    private readonly ILogger<JobBase> _logger;
+    private readonly SahneeBotReportErrorTask _errorTask;
     private readonly SahneeBotTaskContextFactory _contextFactory;
 
     protected JobBase(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
-        _logger = serviceProvider.GetRequiredService<ILogger<JobBase>>();
         _contextFactory = serviceProvider.GetRequiredService<SahneeBotTaskContextFactory>();
+        _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
     }
 
     public delegate Task JobDelegate(ITaskContext ctx);
@@ -41,14 +38,17 @@ public abstract class JobBase : IJob
             return new Success<bool>(true);
         }
         
-        Task ErrorReporter(ITaskContext ctx, Exception exception)
+        async Task ErrorReporter(ITaskContext ctx, Exception exception)
         {
-            _logger.LogError(EventIds.Jobs, exception, "Error in job {Job}", GetType().Name);
-            return Task.CompletedTask;
+            // Report error
+            await _errorTask.Execute(ctx,
+                new SahneeBotReportErrorTask.Args("Job", GetType().Name, ToString() ?? "", opts.PlaceInQueue, null,
+                    exception));
         }
-
+        
         await _contextFactory.ExecuteWithContextAsync(PerformAsyncImpl, new SahneeBotTaskContextFactory.ContextOptions
         {
+            Type = "job",
             PlaceInQueue = opts.PlaceInQueue,
             ErrorReporter = ErrorReporter
         });

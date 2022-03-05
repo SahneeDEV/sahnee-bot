@@ -41,6 +41,10 @@ public class SahneeBotTaskContextFactory
     public record struct ContextOptions
     {
         /// <summary>
+        /// The type of context.
+        /// </summary>
+        public readonly string Type { get; init; } = "Context";
+        /// <summary>
         /// In which guild queue should the event be placed?
         /// </summary>
         public readonly ulong? PlaceInQueue { get; init; }
@@ -66,7 +70,7 @@ public class SahneeBotTaskContextFactory
             // Create context
             await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
             await using var transaction = await model.Database.BeginTransactionAsync();
-            using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
+            using var ctx = new SahneeBotTaskContext(opts.Type, scope.ServiceProvider, scope, model, transaction);
             ISuccess success;
             try
             {
@@ -77,8 +81,8 @@ public class SahneeBotTaskContextFactory
             {
                 // Report error
                 _logger.LogError(EventIds.Context
-                    , exception, "Error in context on guild {Guild}"
-                    , opts.PlaceInQueue);
+                    , exception, "Error in {Type} on guild {Guild}"
+                    , ctx.Type, opts.PlaceInQueue);
                 if (opts.ErrorReporter != null)
                 {
                     await opts.ErrorReporter(ctx, exception);

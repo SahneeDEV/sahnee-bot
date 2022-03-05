@@ -1,11 +1,7 @@
-﻿using Discord.WebSocket;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SahneeBot.Formatter;
+﻿using Microsoft.Extensions.DependencyInjection;
 using SahneeBot.Tasks;
 using SahneeBotController;
 using SahneeBotController.Tasks;
-using SahneeBotModel;
 
 namespace SahneeBot.Events;
 
@@ -60,6 +56,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
 
         await _contextFactory.ExecuteWithContextAsync(HandleAsyncImpl, new SahneeBotTaskContextFactory.ContextOptions
         {
+            Type = "event",
             PlaceInQueue = opts.PlaceInQueue,
             ErrorReporter = ErrorReporter
         });
