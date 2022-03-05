@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBot.Tasks;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 
@@ -13,17 +14,15 @@ public delegate Task EventDelegate(ITaskContext ctx);
 public abstract class EventBase<TArg> : IEvent<TArg>
 {
     protected IServiceProvider ServiceProvider { get; }
-    private readonly ILogger<EventBase<TArg>> _logger;
-    private readonly GuildQueue _queue;
     private readonly SahneeBotReportErrorTask _errorTask;
+    private readonly SahneeBotTaskContextFactory _contextFactory;
 
     protected EventBase(IServiceProvider serviceProvider)
     {
         ServiceProvider = serviceProvider;
         // We resolve all further classes manually instead of injection to keep the ctor simple for inheritance.
-        _logger = serviceProvider.GetRequiredService<ILogger<EventBase<TArg>>>();
-        _queue = serviceProvider.GetRequiredService<GuildQueue>();
         _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
+        _contextFactory = serviceProvider.GetRequiredService<SahneeBotTaskContextFactory>();
     }
 
     public record struct EventExecutionOptions
@@ -35,7 +34,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
     }
 
     public abstract void Register();
-    
+
     public Task Handle(object arg)
     {
         return Handle((TArg) arg);
@@ -45,44 +44,24 @@ public abstract class EventBase<TArg> : IEvent<TArg>
 
     protected async Task HandleAsync(EventDelegate del, EventExecutionOptions opts = default)
     {
-        // Create scope for event
-        var scope = ServiceProvider.CreateScope();
-
-        // Actual handler, called later
-        async Task ExecuteAsyncImpl()
+        async Task<ISuccess> HandleAsyncImpl(ITaskContext ctx)
         {
-            _logger.LogDebug("Executing event {Event} on guild {Guild}", GetType().Name,
-                opts.PlaceInQueue);
-            // Create context
-            await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
-            await using var transaction = await model.Database.BeginTransactionAsync();
-            using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
-            try
-            {
-                // Run command
-                await del(ctx);
-                // Commit transaction
-                await transaction.CommitAsync();
-            }
-            catch (Exception exception)
-            {
-                // Report error
-                await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args("Event", GetType().Name, 
-                    ToString() ?? "", opts.PlaceInQueue, null, exception));
-            }
-            // Dispose provider scope
-            scope.Dispose();
+            await del(ctx);
+            return new Success<bool>(true);
         }
         
-        // Execute immediately or place in queue
-        if (opts.PlaceInQueue != null)
+        async Task ErrorReporter(ITaskContext ctx, Exception exception)
         {
-            var guildId = opts.PlaceInQueue.Value;
-            _queue.Enqueue(guildId, ExecuteAsyncImpl);
+            // Report error
+            await _errorTask.Execute(ctx,
+                new SahneeBotReportErrorTask.Args("Event", GetType().Name, ToString() ?? "", opts.PlaceInQueue, null,
+                    exception));
         }
-        else
+
+        await _contextFactory.ExecuteWithContextAsync(HandleAsyncImpl, new SahneeBotTaskContextFactory.ContextOptions
         {
-            await ExecuteAsyncImpl();
-        }
+            PlaceInQueue = opts.PlaceInQueue,
+            ErrorReporter = ErrorReporter
+        });
     }
 }

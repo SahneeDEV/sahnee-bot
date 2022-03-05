@@ -13,18 +13,19 @@ using SahneeBotModel;
 namespace SahneeBot.Commands;
 
 public delegate Task CommandDelegate(ITaskContext ctx);
+
 public delegate Task<ISuccess> CommandSuccessDelegate(ITaskContext ctx);
 
 /// <summary>
 /// Base class for commands.
 /// </summary>
-public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
+public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
 {
     /// <summary>
     /// The service provider of the command.
     /// </summary>
     protected readonly IServiceProvider ServiceProvider;
-    
+
     private readonly ILogger<CommandBase> _logger;
     private readonly GuildQueue _queue;
     private readonly GetRolesOfUserTask _roles;
@@ -53,7 +54,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
         _contextFactory = serviceProvider.GetRequiredService<SahneeBotTaskContextFactory>();
     }
-    
+
     /// <summary>
     /// Options for executing a command.
     /// </summary>
@@ -63,18 +64,22 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         /// Should the command be placed in the guild queue?
         /// </summary>
         public readonly bool PlaceInQueue { get; init; }
+
         /// <summary>
         /// Is the defer response ephemeral?
         /// </summary>
         public readonly bool DeferEphemeral { get; init; }
+
         /// <summary>
         /// The request options of the defer response
         /// </summary>
         public readonly RequestOptions? DeferRequest { get; init; }
+
         /// <summary>
         /// The role require for this command.
         /// </summary>
         public readonly RoleType? RequiredRole { get; init; }
+
         /// <summary>
         /// Ignore the channel the bot has been bound to.
         /// </summary>
@@ -111,7 +116,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
 
         return ExecuteAsync(WrapperFunction, opts);
     }
-    
+
     /// <summary>
     /// Executes the command.
     /// </summary>
@@ -120,7 +125,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     protected async Task ExecuteAsync(CommandSuccessDelegate del, CommandExecutionOptions opts = default)
     {
         ulong? placeInQueue = null;
-        
+
         // Execute command immediately or place in queue
         if (opts.PlaceInQueue)
         {
@@ -130,81 +135,82 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                 await ReplyAsync("This command cannot be used outside of a server.");
                 throw new InvalidOperationException("Cannot place global commands in a guild queue");
             }
-        } 
-        // Give us more than three seconds to respond
-        try
-        {
-            await DeferAsync(opts.DeferEphemeral, opts.DeferRequest);
         }
-        catch (Exception e)
-        {
-            _logger.LogCritical(EventIds.Discord, e, "Deferred answer could not be sent!");
-        }
-        await _contextFactory.ExecuteWithContextAsync(
-            async ctx =>
-            {
-                // Check binding
-                if (!opts.IgnoreBoundChannel)
-                {
-                    var channel = Channel;
-                    if (channel == null)
-                    {
-                        throw new InvalidOperationException(
-                            "Cannot ignore bound channel when the interaction does not use channels");
-                    }
-                    if (Context.Guild == null)
-                    {
-                        throw new InvalidOperationException("Cannot ignore bound channel in a global command");
-                    }
 
-                    var boundId = await _boundChannel.Execute(ctx, new GetBoundChannelTask.Args(
-                        Context.Guild.Id));
-                    if (boundId.HasValue && boundId.Value != channel.Id)
-                    {
-                        await _notBoundChannelFmt.FormatAndSend(new NotBoundChannelDiscordFormatter.Args(
-                            Context.Guild.Id, boundId), ModifyOriginalResponseAsync);
-                        DeleteOriginalResponseAfter();
-                        return new Error<bool>("Incorrect channel");
-                    }
-                }
-                // Check permission
-                if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleType.None)
+        // Give us more than three seconds to respond
+        await DeferAsync(opts.DeferEphemeral, opts.DeferRequest);
+
+        async Task<ISuccess> ExecuteImpl(ITaskContext ctx)
+        {
+            // Check binding
+            if (!opts.IgnoreBoundChannel)
+            {
+                var channel = Channel;
+                if (channel == null)
                 {
-                    var role = opts.RequiredRole.Value;
-                    if (Context.Guild == null)
-                    {
-                        throw new InvalidOperationException("Cannot check guild permission in a global command");
-                    }
-                    var allowed = await _roles.HasRoleAsync(ctx, new GetRolesOfUserTask.Args(Context.Guild.Id, 
-                            Context.User.Id), role);
-                    if (!allowed)
-                    {
-                        await _missingPermFmt.FormatAndSend(new MissingPermissionDiscordFormatter.Args(role),
-                            ModifyOriginalResponseAsync);
-                        DeleteOriginalResponseAfter();
-                        return new Error<bool>("Missing permission");
-                    }
+                    throw new InvalidOperationException(
+                        "Cannot ignore bound channel when the interaction does not use channels");
                 }
-                return await del(ctx);
+
+                if (Context.Guild == null)
+                {
+                    throw new InvalidOperationException("Cannot ignore bound channel in a global command");
+                }
+
+                var boundId = await _boundChannel.Execute(ctx, new GetBoundChannelTask.Args(Context.Guild.Id));
+                if (boundId.HasValue && boundId.Value != channel.Id)
+                {
+                    await _notBoundChannelFmt.FormatAndSend(
+                        new NotBoundChannelDiscordFormatter.Args(Context.Guild.Id, boundId),
+                        ModifyOriginalResponseAsync);
+                    DeleteOriginalResponseAfter();
+                    return new Error<bool>("Incorrect channel");
+                }
             }
+
+            // Check permission
+            if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleType.None)
+            {
+                var role = opts.RequiredRole.Value;
+                if (Context.Guild == null)
+                {
+                    throw new InvalidOperationException("Cannot check guild permission in a global command");
+                }
+
+                var allowed = await _roles.HasRoleAsync(ctx,
+                    new GetRolesOfUserTask.Args(Context.Guild.Id, Context.User.Id), role);
+                if (!allowed)
+                {
+                    await _missingPermFmt.FormatAndSend(new MissingPermissionDiscordFormatter.Args(role),
+                        ModifyOriginalResponseAsync);
+                    DeleteOriginalResponseAfter();
+                    return new Error<bool>("Missing permission");
+                }
+            }
+
+            return await del(ctx);
+        }
+
+        async Task ErrorReporter(ITaskContext ctx, Exception exception)
+        {
+            var interaction = (SocketSlashCommand) Context.Interaction;
+            var ticketId = await _errorTask.Execute(ctx,
+                new SahneeBotReportErrorTask.Args("Slash-command", interaction.CommandName, GetDebugString(interaction),
+                    Context.Guild?.Id, Context.User.Id, exception));
+            await _errorFmt.FormatAndSend(
+                new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, GetDebugString(interaction),
+                    Context.Guild?.Id, Context.User.Id, exception, ticketId, false), ModifyOriginalResponseAsync);
+        }
+
+        await _contextFactory.ExecuteWithContextAsync(
+            ExecuteImpl
             , new SahneeBotTaskContextFactory.ContextOptions
             {
                 PlaceInQueue = placeInQueue,
-                ErrorReporter = async (ctx, exception) =>
-                {
-                    var interaction = (SocketSlashCommand) Context.Interaction;
-                    var ticketId = await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args(
-                        "Slash-command", interaction.CommandName, GetDebugString(interaction),
-                        Context.Guild?.Id, Context.User.Id, exception));
-                    await _errorFmt.FormatAndSend(
-                        new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, 
-                            GetDebugString(interaction), Context.Guild?.Id, Context.User.Id, exception, 
-                            ticketId, false), 
-                        ModifyOriginalResponseAsync);
-                }
+                ErrorReporter = ErrorReporter
             });
     }
-    
+
     protected ITextChannel? Channel
     {
         get
@@ -213,7 +219,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             return interaction?.Channel as ITextChannel;
         }
     }
-    
+
     /// <summary>
     /// The delegate to send a message in the current channel.
     /// </summary>
@@ -226,6 +232,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
             {
                 throw new InvalidOperationException("Cannot get channel in this kind of interaction");
             }
+
             return channel.SendMessageAsync;
         }
     }
@@ -254,6 +261,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         {
             sb.Append(interaction);
         }
+
         return sb.ToString();
     }
 }

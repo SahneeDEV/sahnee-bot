@@ -22,11 +22,6 @@ public class SahneeBotTaskContextFactory
     public delegate Task<ISuccess> ContextDelegate(ITaskContext ctx);
 
     /// <summary>
-    /// The delegate to execute the context. Throw an exception to report an error and rollback the transaction.
-    /// </summary>
-    public delegate Task SimpleContextDelegate(ITaskContext ctx);
-
-    /// <summary>
     /// A delegate used to report an error in a context.
     /// </summary>
     public delegate Task ErrorReporterDelegate(ITaskContext ctx, Exception exception);
@@ -53,15 +48,6 @@ public class SahneeBotTaskContextFactory
         /// Called if an error occurs.
         /// </summary>
         public readonly ErrorReporterDelegate? ErrorReporter { get; init; }
-    }
-
-    public Task ExecuteWithContextAsync(SimpleContextDelegate del, ContextOptions opts = default)
-    {
-        return ExecuteWithContextAsync(async ctx =>
-        {
-            await del(ctx);
-            return new Success<bool>(true);
-        }, opts);
     }
     
     /// <summary>
