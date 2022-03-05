@@ -5,15 +5,11 @@ using SahneeBotModel;
 
 namespace SahneeBot;
 
+/// <summary>
+/// Implementation of the task context for the sahnee bot.
+/// </summary>
 public class SahneeBotTaskContext: ITaskContext
 {
-    /*public SahneeBotTaskContext(IServiceProvider provider)
-    { 
-        Provider = provider;
-        Scope = provider.CreateScope();
-        Model = Scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
-    }*/
-
     public SahneeBotTaskContext(IServiceProvider provider, IServiceScope scope, SahneeBotModelContext model, 
         IDbContextTransaction? transaction)
     {

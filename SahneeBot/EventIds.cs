@@ -33,7 +33,11 @@ public static class EventIds
     /// </summary>
     public static readonly EventId Jobs = new(BASE + 5, "Jobs");
     /// <summary>
-    /// Job log events.
+    /// Task log events.
     /// </summary>
     public static readonly EventId Task = new(BASE + 6, "Task");
+    /// <summary>
+    /// Context log events.
+    /// </summary>
+    public static readonly EventId Context = new(BASE + 7, "Context");
 }

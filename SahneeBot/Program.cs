@@ -54,6 +54,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<Changelog>();
         services.AddSingleton<JobHandler>();
         services.AddTransient<SelectMenuExecution>();
+        services.AddTransient<SahneeBotTaskContextFactory>();
         // FORMATTER
         services.AddSingleton<DefaultFormatArguments>();
         services.AddTransient<WarningDiscordFormatter>();

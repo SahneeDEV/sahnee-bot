@@ -3,8 +3,7 @@
 /// <summary>
 /// A success data type.
 /// </summary>
-/// <typeparam name="T">The data type.</typeparam>
-public interface ISuccess<out T>
+public interface ISuccess
 {
     /// <summary>
     /// Was the operation a success?
@@ -13,11 +12,25 @@ public interface ISuccess<out T>
     /// <summary>
     /// The success value.
     /// </summary>
-    public T Value { get; }
+    public object? Value { get; }
     /// <summary>
     /// The actual error.
     /// </summary>
     public string Message { get; }
+}
+
+/// <summary>
+/// A success data type.
+/// </summary>
+/// <typeparam name="T">The data type.</typeparam>
+public interface ISuccess<out T>: ISuccess
+{
+    /// <summary>
+    /// The success value.
+    /// </summary>
+    public new T Value { get; }
+
+    object? ISuccess.Value => Value;
 }
 
 /// <summary>

@@ -13,7 +13,7 @@ using SahneeBotModel;
 namespace SahneeBot.Commands;
 
 public delegate Task CommandDelegate(ITaskContext ctx);
-public delegate Task<ISuccess<T>> CommandSuccessDelegate<T>(ITaskContext ctx);
+public delegate Task<ISuccess> CommandSuccessDelegate(ITaskContext ctx);
 
 /// <summary>
 /// Base class for commands.
@@ -33,6 +33,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     private readonly SahneeBotReportErrorTask _errorTask;
     private readonly GetBoundChannelTask _boundChannel;
     private readonly NotBoundChannelDiscordFormatter _notBoundChannelFmt;
+    private readonly SahneeBotTaskContextFactory _contextFactory;
 
     /// <summary>
     /// Creates a new command base class.
@@ -50,6 +51,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         _boundChannel = serviceProvider.GetRequiredService<GetBoundChannelTask>();
         _notBoundChannelFmt = serviceProvider.GetRequiredService<NotBoundChannelDiscordFormatter>();
         _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
+        _contextFactory = serviceProvider.GetRequiredService<SahneeBotTaskContextFactory>();
     }
     
     /// <summary>
@@ -101,10 +103,10 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
 
     protected Task ExecuteAsync(CommandDelegate del, CommandExecutionOptions opts = default)
     {
-        async Task<ISuccess<string>> WrapperFunction(ITaskContext ctx)
+        async Task<ISuccess> WrapperFunction(ITaskContext ctx)
         {
             await del(ctx);
-            return new Success<string>("");
+            return new Success<bool>(true);
         }
 
         return ExecuteAsync(WrapperFunction, opts);
@@ -115,11 +117,20 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
     /// </summary>
     /// <param name="del">The command delegate.</param>
     /// <param name="opts">Options to customize command execution.</param>
-    protected async Task ExecuteAsync<T>(CommandSuccessDelegate<T> del, CommandExecutionOptions opts = default)
+    protected async Task ExecuteAsync(CommandSuccessDelegate del, CommandExecutionOptions opts = default)
     {
-        // Create the scope
-        var scope = ServiceProvider.CreateScope();
+        ulong? placeInQueue = null;
         
+        // Execute command immediately or place in queue
+        if (opts.PlaceInQueue)
+        {
+            placeInQueue = Context.Guild?.Id;
+            if (!placeInQueue.HasValue)
+            {
+                await ReplyAsync("This command cannot be used outside of a server.");
+                throw new InvalidOperationException("Cannot place global commands in a guild queue");
+            }
+        } 
         // Give us more than three seconds to respond
         try
         {
@@ -129,15 +140,8 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
         {
             _logger.LogCritical(EventIds.Discord, e, "Deferred answer could not be sent!");
         }
-        
-        // Actual handler, called later
-        async Task ExecuteAsyncImpl()
-        {
-            // Create context
-            await using var model = scope.ServiceProvider.GetRequiredService<SahneeBotModelContext>();
-            await using var transaction = await model.Database.BeginTransactionAsync();
-            using var ctx = new SahneeBotTaskContext(scope.ServiceProvider, scope, model, transaction);
-            try
+        await _contextFactory.ExecuteWithContextAsync(
+            async ctx =>
             {
                 // Check binding
                 if (!opts.IgnoreBoundChannel)
@@ -160,7 +164,7 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                         await _notBoundChannelFmt.FormatAndSend(new NotBoundChannelDiscordFormatter.Args(
                             Context.Guild.Id, boundId), ModifyOriginalResponseAsync);
                         DeleteOriginalResponseAfter();
-                        return;
+                        return new Error<bool>("Incorrect channel");
                     }
                 }
                 // Check permission
@@ -178,53 +182,27 @@ public abstract class CommandBase: InteractionModuleBase<IInteractionContext>
                         await _missingPermFmt.FormatAndSend(new MissingPermissionDiscordFormatter.Args(role),
                             ModifyOriginalResponseAsync);
                         DeleteOriginalResponseAfter();
-                        return;
+                        return new Error<bool>("Missing permission");
                     }
                 }
-                // Run command
-                var success = await del(ctx);
-                // Commit transaction or rollback
-                if (success.IsSuccess)
-                {
-                    await transaction.CommitAsync();
-                }
-                else
-                {
-                    await transaction.RollbackAsync();
-                }
+                return await del(ctx);
             }
-            catch (Exception exception)
+            , new SahneeBotTaskContextFactory.ContextOptions
             {
-                await transaction.RollbackAsync();
-                var interaction = (SocketSlashCommand) Context.Interaction;
-                var ticketId = await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args(
-                    "Slash-command", interaction.CommandName, GetDebugString(interaction),
-                    Context.Guild?.Id, Context.User.Id, exception));
-                await _errorFmt.FormatAndSend(
-                    new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, 
-                        GetDebugString(interaction), Context.Guild?.Id, Context.User.Id, exception, 
-                        ticketId, false), 
-                    ModifyOriginalResponseAsync);
-            }
-            // Dispose command provider scope
-            scope.Dispose();
-        }
-        
-        // Execute command immediately or place in queue
-        if (opts.PlaceInQueue)
-        {
-            var guildId = Context.Guild?.Id;
-            if (!guildId.HasValue)
-            {
-                scope.Dispose();
-                throw new InvalidOperationException("Cannot place global commands in a guild queue");
-            }
-            _queue.Enqueue(guildId.Value, ExecuteAsyncImpl);
-        }
-        else
-        {
-            await ExecuteAsyncImpl();
-        }
+                PlaceInQueue = placeInQueue,
+                ErrorReporter = async (ctx, exception) =>
+                {
+                    var interaction = (SocketSlashCommand) Context.Interaction;
+                    var ticketId = await _errorTask.Execute(ctx, new SahneeBotReportErrorTask.Args(
+                        "Slash-command", interaction.CommandName, GetDebugString(interaction),
+                        Context.Guild?.Id, Context.User.Id, exception));
+                    await _errorFmt.FormatAndSend(
+                        new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, 
+                            GetDebugString(interaction), Context.Guild?.Id, Context.User.Id, exception, 
+                            ticketId, false), 
+                        ModifyOriginalResponseAsync);
+                }
+            });
     }
     
     protected ITextChannel? Channel
