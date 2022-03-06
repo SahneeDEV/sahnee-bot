@@ -18,16 +18,16 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, ISuccess<I
     private readonly ILogger<GiveWarningToUserTask> _logger;
     private readonly GetUserGuildStateTask _getUserGuildStateTask;
     private readonly SendWarningMessageToUserTask _message;
-    private readonly ModifyUserWarningGroupTask _modifyUserWarningGroupTask;
+    private readonly ModifyUserWarningRoleTask _modifyUserWarningRoleTask;
 
     public GiveWarningToUserTask(
         ILogger<GiveWarningToUserTask> logger, GetUserGuildStateTask getUserGuildStateTask,
-        SendWarningMessageToUserTask message, ModifyUserWarningGroupTask modifyUserWarningGroupTask)
+        SendWarningMessageToUserTask message, ModifyUserWarningRoleTask modifyUserWarningRoleTask)
     {
         _logger = logger;
         _getUserGuildStateTask = getUserGuildStateTask;
         _message = message;
-        _modifyUserWarningGroupTask = modifyUserWarningGroupTask;
+        _modifyUserWarningRoleTask = modifyUserWarningRoleTask;
     }
 
     public async Task<ISuccess<IWarning>> Execute(ITaskContext ctx, Args arg)
@@ -53,8 +53,8 @@ public class GiveWarningToUserTask: ITask<GiveWarningToUserTask.Args, ISuccess<I
         _logger.LogDebug(EventIds.Warning, "Issuing warning {Warning}", warn);
         ctx.Model.Warnings.Add(warn);
         await ctx.Model.SaveChangesAsync();
-        var groupSuccess = await _modifyUserWarningGroupTask.Execute(ctx, 
-            new ModifyUserWarningGroupTask.Args(warn.Number, warn.UserId,
+        var groupSuccess = await _modifyUserWarningRoleTask.Execute(ctx, 
+            new ModifyUserWarningRoleTask.Args(warn.Number, warn.UserId,
                 warn.GuildId));
         if (!groupSuccess.IsSuccess)
         {

@@ -3,7 +3,7 @@
 /// <summary>
 /// Sets a given warning role to a given user. Returns the new role ID.
 /// </summary>
-public abstract class ModifyUserWarningGroupTask: ITask<ModifyUserWarningGroupTask.Args, ISuccess<ulong>>
+public abstract class ModifyUserWarningRoleTask: ITask<ModifyUserWarningRoleTask.Args, ISuccess<ulong>>
 {
     public struct Args
     {

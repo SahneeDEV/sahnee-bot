@@ -32,7 +32,7 @@ public class FailedToWarnDiscordFormatter : IDiscordFormatter<FailedToWarnDiscor
         var embed = _fmt.GetEmbed();
         var (guildId, userId, type, hint) = arg;
         var guild = await _bot.Client.GetGuildAsync(guildId);
-        var user = await _bot.Client.GetUserAsync(guildId);
+        var user = await _bot.Client.GetUserAsync(userId);
         var typeStr = type == WarningType.Warning ? "warning" : "unwarning";
         embed.Title = $"Cannot issue {typeStr}";
         embed.Color = Color.DarkRed;
