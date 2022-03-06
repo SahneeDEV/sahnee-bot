@@ -19,24 +19,19 @@ public class WarnCommand : CommandBase
     private readonly WarningDiscordFormatter _discordFormatter;
     private readonly SahneeBotRoleLimitInformationTask _sahneeBotRoleLimitInformationTask;
     private readonly CannotUnwarnDiscordFormatter _cannotUnwarnDiscordFormatter;
-    private readonly ModifyUserWarningGroupTask _modifyUserWarningGroupTask;
 
-    public WarnCommand(
-        IServiceProvider serviceProvider,
-        GiveWarningToUserTask task,
-        ILogger<WarnCommand> logger,
-        WarningDiscordFormatter discordFormatter,
-        SahneeBotRoleLimitInformationTask sahneeBotRoleLimitInformationTask,
-        CannotUnwarnDiscordFormatter cannotUnwarnDiscordFormatter,
-        ModifyUserWarningGroupTask modifyUserWarningGroupTask
-        ): base(serviceProvider)
+    public WarnCommand(IServiceProvider serviceProvider
+        , GiveWarningToUserTask task
+        , ILogger<WarnCommand> logger
+        , WarningDiscordFormatter discordFormatter
+        , SahneeBotRoleLimitInformationTask sahneeBotRoleLimitInformationTask
+        , CannotUnwarnDiscordFormatter cannotUnwarnDiscordFormatter): base(serviceProvider)
     {
         _task = task;
         _logger = logger;
         _discordFormatter = discordFormatter;
         _sahneeBotRoleLimitInformationTask = sahneeBotRoleLimitInformationTask;
         _cannotUnwarnDiscordFormatter = cannotUnwarnDiscordFormatter;
-        _modifyUserWarningGroupTask = modifyUserWarningGroupTask;
     }
     
     /// <summary>
@@ -95,9 +90,6 @@ public class WarnCommand : CommandBase
             }
             else
             {
-                await _modifyUserWarningGroupTask.Execute(ctx, 
-                    new ModifyUserWarningGroupTask.Args(unwarning.Number, unwarning.UserId,
-                        unwarning.GuildId));
                 await _discordFormatter.FormatAndSend(unwarning, ModifyOriginalResponseAsync);
             
                 //check for role limit
