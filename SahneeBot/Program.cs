@@ -216,7 +216,7 @@ void Install(IServiceProvider provider)
 
     // Register the jobs
     var guid = jobHandler.RegisterJob(new JobHandler.Args(new JobTimeSpanRepeat(
-            TimeSpan.FromMinutes(int.Parse(cfg["BotSettings:Jobs:CleanupWarningRoles"]))),
+            TimeSpan.Parse(cfg["BotSettings:Jobs:CleanupWarningRoles"])),
         async () => { await clearWarningRoles.Perform(); }));
     log.LogDebug(EventIds.Jobs, "Registered Job for cleaning warning roles with guid: {Guid}", guid);
 
