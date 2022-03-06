@@ -38,12 +38,12 @@ public class SahneeBotTaskContextFactory
     /// <summary>
     /// Context for executing a task.
     /// </summary>
-    public record struct ContextOptions
+    public struct ContextOptions
     {
         /// <summary>
         /// The type of context.
         /// </summary>
-        public readonly string Type { get; init; } = "Context";
+        public readonly string Type { get; init; }
         /// <summary>
         /// In which guild queue should the event be placed?
         /// </summary>
@@ -52,6 +52,13 @@ public class SahneeBotTaskContextFactory
         /// Called if an error occurs.
         /// </summary>
         public readonly ErrorReporterDelegate? ErrorReporter { get; init; }
+
+        public ContextOptions()
+        {
+            Type = "Context";
+            PlaceInQueue = null;
+            ErrorReporter = null;
+        }
     }
     
     /// <summary>
