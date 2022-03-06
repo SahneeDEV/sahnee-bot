@@ -24,11 +24,6 @@ public class SahneeBotGetLeftGuildUsersTask : ITask<SahneeBotGetLeftGuildUsersTa
     public async Task<IEnumerable<IUser>> Execute(ITaskContext ctx, Args args)
     {
         var userIds = await _getGuildGuildUsers.Execute(ctx, new GetGuildGuildUsersTask.Args(args.GuildId));
-        var users = new List<IUser>();
-        foreach (var currentId in userIds)
-        {
-            users.Add(await _bot.GetUserAsync(currentId));
-        }
-        return users;
+        return await Task.WhenAll(userIds.Select(id => _bot.GetUserAsync(id).AsTask()));
     }
 }

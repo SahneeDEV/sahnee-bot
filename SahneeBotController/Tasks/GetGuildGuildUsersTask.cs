@@ -5,7 +5,7 @@ namespace SahneeBotController.Tasks;
 /// <summary>
 /// Returns a list of users with an entry for the guild
 /// </summary>
-public class GetGuildGuildUsersTask : ITask<GetGuildGuildUsersTask.Args, List<ulong>>
+public class GetGuildGuildUsersTask : ITask<GetGuildGuildUsersTask.Args, IEnumerable<ulong>>
 {
     /// <summary>
     /// Arguments to get all users currently having warnings to the guild.
@@ -14,19 +14,13 @@ public class GetGuildGuildUsersTask : ITask<GetGuildGuildUsersTask.Args, List<ul
     public record struct Args(ulong GuildId);
 
     
-    public async Task<List<ulong>> Execute(ITaskContext ctx, Args args)
+    public async Task<IEnumerable<ulong>> Execute(ITaskContext ctx, Args args)
     {
         var usersWithWarningsInGuild = 
             await ctx.Model.UserGuildStates
                 .Where(g => g.GuildId == args.GuildId)
                 .ToListAsync();
 
-        var userIds = new List<ulong>();
-        foreach (var currentGuildState in usersWithWarningsInGuild)
-        {
-            userIds.Add(currentGuildState.UserId);
-        }
-
-        return userIds;
+        return usersWithWarningsInGuild.Select(currentGuildState => currentGuildState.UserId);
     }
 }
