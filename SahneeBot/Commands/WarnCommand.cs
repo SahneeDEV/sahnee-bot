@@ -17,18 +17,15 @@ public class WarnCommand : CommandBase
 {
     private readonly GiveWarningToUserTask _task;
     private readonly WarningDiscordFormatter _fmt;
-    private readonly SahneeBotRoleLimitInformationTask _sahneeBotRoleLimitInformationTask;
     private readonly FailedToWarnDiscordFormatter _failedToWarnFmt;
 
     public WarnCommand(IServiceProvider serviceProvider
         , GiveWarningToUserTask task
         , WarningDiscordFormatter fmt
-        , SahneeBotRoleLimitInformationTask sahneeBotRoleLimitInformationTask
         , FailedToWarnDiscordFormatter failedToWarnFmt): base(serviceProvider)
     {
         _task = task;
         _fmt = fmt;
-        _sahneeBotRoleLimitInformationTask = sahneeBotRoleLimitInformationTask;
         _failedToWarnFmt = failedToWarnFmt;
     }
     
@@ -80,11 +77,6 @@ public class WarnCommand : CommandBase
         if (warning.IsSuccess)
         {
             await _fmt.FormatAndSend(warning.Value, ModifyOriginalResponseAsync);
-            
-            // Check for role limit - TODO: Do this automatically in task
-            await _sahneeBotRoleLimitInformationTask.Execute(ctx
-                , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id
-                    , Context.Interaction as SocketSlashCommand));
         }
         else
         {

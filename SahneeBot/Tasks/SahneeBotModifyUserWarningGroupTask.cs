@@ -12,14 +12,17 @@ public class SahneeBotModifyUserWarningGroupTask : ModifyUserWarningGroupTask
     private readonly GetGuildStateTask _guildState;
     private readonly Bot _bot;
     private readonly ILogger<SahneeBotModifyUserWarningGroupTask> _logger;
+    private readonly CheckRoleLimitTask _checkRoleLimitTask;
 
     public SahneeBotModifyUserWarningGroupTask(GetGuildStateTask guildStateTask
         , Bot bot
-        , ILogger<SahneeBotModifyUserWarningGroupTask> logger)
+        , ILogger<SahneeBotModifyUserWarningGroupTask> logger
+        , CheckRoleLimitTask checkRoleLimitTask)
     {
         _guildState = guildStateTask;
         _bot = bot;
         _logger = logger;
+        _checkRoleLimitTask = checkRoleLimitTask;
     }
 
     public override async Task<ISuccess<ulong>> Execute(ITaskContext ctx, Args args)
@@ -77,6 +80,7 @@ public class SahneeBotModifyUserWarningGroupTask : ModifyUserWarningGroupTask
                         roleColor, false, null);
                 //add the new role to the guild
                 await currentGuildUser.AddRoleAsync(newRole);
+                await _checkRoleLimitTask.Execute(ctx, new CheckRoleLimitTask.Args(currentGuild.Id));
                 return new Success<ulong>(newRole.Id);
             }
             catch (Exception e)
