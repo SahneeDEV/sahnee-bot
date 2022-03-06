@@ -1,5 +1,5 @@
 ﻿using Discord;
-using SahneeBot.Activity;
+using SahneeBot.Tasks;
 
 namespace SahneeBot.Events;
 
@@ -10,14 +10,14 @@ namespace SahneeBot.Events;
 public class ActivityEvent : EventBase<IGuild?>
 {
     private readonly Bot _bot;
-    private readonly BotActivity _botActivity;
+    private readonly SahneeBotActivityTask _sahneeBotActivityTask;
 
     public ActivityEvent(IServiceProvider serviceProvider
         , Bot bot
-        , BotActivity botActivity) : base(serviceProvider)
+        , SahneeBotActivityTask sahneeBotActivityTask) : base(serviceProvider)
     {
         _bot = bot;
-        _botActivity = botActivity;
+        _sahneeBotActivityTask = sahneeBotActivityTask;
     }
 
     public override void Register()
@@ -34,6 +34,6 @@ public class ActivityEvent : EventBase<IGuild?>
 
     public override Task Handle(IGuild? arg) => HandleAsync(async ctx =>
     {
-        await _botActivity.UpdateBotActivity();
+        await _sahneeBotActivityTask.Execute(ctx, new SahneeBotActivityTask.Args());
     });
 }

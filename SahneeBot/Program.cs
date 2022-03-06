@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SahneeBot;
-using SahneeBot.Activity;
 using SahneeBot.Commands;
 using SahneeBot.Events;
 using SahneeBot.Formatter;
@@ -121,7 +120,7 @@ var host = CreateHostBuilder(args)
         // JOBS
         services.AddTransient<CleanupWarningRolesJob>();
         // ACTIVITY
-        services.AddTransient<BotActivity>();
+        services.AddTransient<SahneeBotActivityTask>();
         // SELECT MENUS
         services.AddTransient<RemoveUserFromGuildSelectMenu>();
         // DISCORD
