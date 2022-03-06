@@ -7,15 +7,15 @@ using SahneeBotController.Tasks;
 
 namespace SahneeBot.Tasks;
 
-public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
+public class SahneeBotModifyUserWarningGroupTask : ModifyUserWarningGroupTask
 {
     private readonly GetGuildStateTask _guildState;
     private readonly Bot _bot;
-    private readonly ILogger<SahneeBotModifyWarningGroupTask> _logger;
+    private readonly ILogger<SahneeBotModifyUserWarningGroupTask> _logger;
 
-    public SahneeBotModifyWarningGroupTask(GetGuildStateTask guildStateTask
+    public SahneeBotModifyUserWarningGroupTask(GetGuildStateTask guildStateTask
         , Bot bot
-        , ILogger<SahneeBotModifyWarningGroupTask> logger)
+        , ILogger<SahneeBotModifyUserWarningGroupTask> logger)
     {
         _guildState = guildStateTask;
         _bot = bot;

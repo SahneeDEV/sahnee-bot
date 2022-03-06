@@ -92,7 +92,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<RemoveRoleTask>();
         services.AddTransient<ChangeRoleColorTask, SahneeBotGuildChangeRoleColorTask>();
         services.AddTransient<SendWarningMessageToUserTask, SahneeBotSendWarningMessageToUserTask>();
-        services.AddTransient<ModifyUserWarningGroupTask, SahneeBotModifyWarningGroupTask>();
+        services.AddTransient<ModifyUserWarningGroupTask, SahneeBotModifyUserWarningGroupTask>();
         services.AddTransient<GetRolesOfUserTask, SahneeBotGetRolesOfUserTask>();
         services.AddTransient<GetRolesOfGuildTask>();
         services.AddTransient<GetRandomWarningsTask>();
