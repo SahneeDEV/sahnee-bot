@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Discord;
 using Discord.Net;
-using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using SahneeBotController;
 using SahneeBotController.Tasks;
@@ -19,11 +18,11 @@ public class SahneeBotCleanupWarningRolesTask : ITask<SahneeBotCleanupWarningRol
     /// <param name="GuildId">The guild to clean in.</param>
     public record struct Args(ulong GuildId);
 
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly GetGuildStateTask _guildStateTask;
     private readonly ILogger<SahneeBotCleanupWarningRolesTask> _logger;
 
-    public SahneeBotCleanupWarningRolesTask(DiscordSocketClient bot
+    public SahneeBotCleanupWarningRolesTask(Bot bot
         , GetGuildStateTask guildStateTask
         , ILogger<SahneeBotCleanupWarningRolesTask> logger)
     {
@@ -35,7 +34,7 @@ public class SahneeBotCleanupWarningRolesTask : ITask<SahneeBotCleanupWarningRol
     public async Task<ISuccess<uint>> Execute(ITaskContext ctx, Args arg)
     {
         var guildId = arg.GuildId;
-        IGuild guild = _bot.GetGuild(guildId);
+        var guild = await _bot.Client.GetGuildAsync(guildId);
         if (guild == null)
         {
             return new Error<uint>("The server could not be found.");

@@ -14,7 +14,7 @@ namespace SahneeBot.Tasks;
 /// </summary>
 public class SahneeBotPrivateMessageToGuildMembersTask : ITask<SahneeBotPrivateMessageToGuildMembersTask.Args, ISuccess<uint>>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly ILogger<SahneeBotPrivateMessageToGuildMembersTask> _logger;
     private readonly GetMessageOptOutTask _messageOptOutTask;
     private readonly SendMessageOptOutHintToUserTask _sendMessageOptOutHintToUserTask;
@@ -27,7 +27,7 @@ public class SahneeBotPrivateMessageToGuildMembersTask : ITask<SahneeBotPrivateM
         , bool IgnoreBot = false
         , bool IgnoreOptOut = false);
     
-    public SahneeBotPrivateMessageToGuildMembersTask(DiscordSocketClient bot
+    public SahneeBotPrivateMessageToGuildMembersTask(Bot bot
         , ILogger<SahneeBotPrivateMessageToGuildMembersTask> logger
         , GetMessageOptOutTask messageOptOutTask
         , SendMessageOptOutHintToUserTask sendMessageOptOutHintToUserTask)
@@ -41,7 +41,7 @@ public class SahneeBotPrivateMessageToGuildMembersTask : ITask<SahneeBotPrivateM
 
     public async Task<ISuccess<uint>> Execute(ITaskContext ctx, Args arg)
     {
-        var guild = _bot.GetGuild(arg.GuildId);
+        var guild = await _bot.Client.GetGuildAsync(arg.GuildId);
         if (guild == null)
         {
             return new Error<uint>("Could not find Server");

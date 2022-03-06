@@ -8,7 +8,7 @@ namespace SahneeBot.Formatter;
 /// </summary>
 public class JobFailedDiscordFormatter : IDiscordFormatter<JobFailedDiscordFormatter.Args>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly DefaultFormatArguments _fmt;
 
     /// <summary>
@@ -19,18 +19,17 @@ public class JobFailedDiscordFormatter : IDiscordFormatter<JobFailedDiscordForma
     /// <param name="Hint">Why the job failed.</param>
     public record struct Args(ulong GuildId, string JobName, string Hint);
     
-    public JobFailedDiscordFormatter(DiscordSocketClient bot
+    public JobFailedDiscordFormatter(Bot bot
         , DefaultFormatArguments fmt)
     {
         _bot = bot;
         _fmt = fmt;
     }
 
-    public Task<DiscordFormat> Format(Args arg)
+    public async Task<DiscordFormat> Format(Args arg)
     {
         var (guildId, jobName, hint) = arg;
-        var guild = _bot.GetGuild(guildId);
-        var guildStr = guild != null ? _fmt.GetMention(guild) : "n/a";
+        var guild = await _bot.Client.GetGuildAsync(guildId);
         var embed = _fmt.GetEmbed();
         embed.Title = "Background " + jobName + " failed";
         embed.Color = Color.DarkRed;
@@ -39,7 +38,7 @@ public class JobFailedDiscordFormatter : IDiscordFormatter<JobFailedDiscordForma
             new()
             {
                 Name = "Server",
-                Value = guildStr,
+                Value = _fmt.GetMention(guild),
                 IsInline = true
             },
             new()
@@ -50,6 +49,6 @@ public class JobFailedDiscordFormatter : IDiscordFormatter<JobFailedDiscordForma
             }
         };
 
-        return Task.FromResult(new DiscordFormat(embed));
+        return new DiscordFormat(embed);
     }
 }

@@ -6,7 +6,7 @@ public class RemovedUsersFromGuildStateDiscordFormatter
     : IDiscordFormatter<RemovedUsersFromGuildStateDiscordFormatter.Args>
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
     /// <summary>
     /// Arguments for the formatter
@@ -16,25 +16,27 @@ public class RemovedUsersFromGuildStateDiscordFormatter
     public record struct Args(ulong GuildId, int AmountRemoved, int Failed);
 
     public RemovedUsersFromGuildStateDiscordFormatter(DefaultFormatArguments defaultFormatArguments
-    , DiscordSocketClient bot)
+        , Bot bot)
     {
         _defaultFormatArguments = defaultFormatArguments;
         _bot = bot;
     }
     
-    public Task<DiscordFormat> Format(Args arg)
+    public async Task<DiscordFormat> Format(Args arg)
     {
+        var (guildId, amountRemoved, failed) = arg;
         var embed = _defaultFormatArguments.GetEmbed();
-        embed.Title = arg.AmountRemoved > 0 ? "Removed users from the Database" 
-            : arg.Failed != 0 ? "Could not Remove some users" 
+        var guild = await _bot.Client.GetGuildAsync(guildId);
+        embed.Title = amountRemoved > 0 ? "Removed users from the Database" 
+            : failed != 0 ? "Could not Remove some users" 
             : "No users to remove";
-        embed.AddField("In Server", _bot.GetGuild(arg.GuildId).Name, true);
-        embed.AddField("Amount removed", arg.AmountRemoved.ToString(), true);
-        if (arg.Failed > 0)
+        embed.AddField("In Server", _defaultFormatArguments.GetMention(guild), true);
+        embed.AddField("Amount removed", amountRemoved.ToString(), true);
+        if (failed > 0)
         {
-            embed.AddField("Failed amount",arg.Failed,true);
+            embed.AddField("Failed amount",failed,true);
         }
         
-        return Task.FromResult(new DiscordFormat(embed));
+        return new DiscordFormat(embed);
     }
 }

@@ -11,14 +11,16 @@ namespace SahneeBot.Commands;
 public class CommandHandler: ICommandHandler
 {
     private readonly IServiceProvider _provider;
-    private readonly DiscordSocketClient _client;
+    private readonly Bot _bot;
     private readonly ILogger<CommandHandler> _logger;
     private InteractionService? _service;
 
-    public CommandHandler(IServiceProvider provider, DiscordSocketClient client, ILogger<CommandHandler> logger)
+    public CommandHandler(IServiceProvider provider
+        , Bot bot
+        , ILogger<CommandHandler> logger)
     {
         _provider = provider;
-        _client = client;
+        _bot = bot;
         _logger = logger;
     }
     
@@ -26,12 +28,17 @@ public class CommandHandler: ICommandHandler
     {
         _logger.LogInformation(EventIds.Startup, "Creating interaction handler...");
         // Creates the interaction service
-        _service = new InteractionService(_client.Rest);
+        _service = new InteractionService(_bot.Rest);
         // Dynamically add all command classes. Command classes must be public and inherit from InteractionModuleBase
         await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
         // Hook up events
-        _client.GuildAvailable += GuildAvailable;
-        _client.SlashCommandExecuted += SlashCommandExecuted;
+        _bot.Impl(
+            socket =>
+            {
+                socket.GuildAvailable += GuildAvailable;
+                socket.SlashCommandExecuted += SlashCommandExecuted;
+            }
+            , rest => throw new InvalidOperationException("The command handler only support the socket client."));
     }
 
     /// <summary>
@@ -43,7 +50,7 @@ public class CommandHandler: ICommandHandler
         // Whenever a slash command is executed, create a context for the interaction and then run the command
         if (_service != null)
         {
-            var ctx = new InteractionContext(_client, arg);
+            var ctx = new InteractionContext(_bot.Client, arg);
             await _service.ExecuteCommandAsync(ctx, _provider);
         }
     }
@@ -57,7 +64,7 @@ public class CommandHandler: ICommandHandler
         // Whenever the bot sees a new guild register the commands on it.
         if (_service != null)
         {
-            _logger.LogDebug(EventIds.Startup, "Registering commands on guild {name}", arg.Name);
+            _logger.LogDebug(EventIds.Startup, "Registering commands on guild {Name}", arg.Name);
             await _service.RegisterCommandsToGuildAsync(arg.Id);
         }
     }

@@ -6,11 +6,11 @@ namespace SahneeBot.Events;
 [Event]
 public class InteractionEvent : EventBase<SocketMessageComponent>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly SelectMenuExecution _selectMenuExecution;
 
     public InteractionEvent(IServiceProvider serviceProvider
-        , DiscordSocketClient bot
+        , Bot bot
         , SelectMenuExecution selectMenuExecution) : base(serviceProvider)
     {
         _bot = bot;
@@ -19,7 +19,9 @@ public class InteractionEvent : EventBase<SocketMessageComponent>
 
     public override void Register()
     {
-        _bot.SelectMenuExecuted += Handle;
+        _bot.Impl(socket => socket.SelectMenuExecuted += Handle
+            , rest => 
+                throw new InvalidOperationException("The interaction event only support the socket client."));
     }
 
     public override Task Handle(SocketMessageComponent arg) => HandleAsync(async ctx =>

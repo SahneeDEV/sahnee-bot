@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using SahneeBot.Activity;
 
 namespace SahneeBot.Events;
@@ -10,14 +9,12 @@ namespace SahneeBot.Events;
 [Event]
 public class ActivityEvent : EventBase<IGuild?>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly BotActivity _botActivity;
 
-    public ActivityEvent(
-        IServiceProvider serviceProvider,
-        DiscordSocketClient bot,
-        BotActivity botActivity
-        ) : base(serviceProvider)
+    public ActivityEvent(IServiceProvider serviceProvider
+        , Bot bot
+        , BotActivity botActivity) : base(serviceProvider)
     {
         _bot = bot;
         _botActivity = botActivity;
@@ -25,9 +22,14 @@ public class ActivityEvent : EventBase<IGuild?>
 
     public override void Register()
     {
-        _bot.JoinedGuild += Handle;
-        _bot.LeftGuild += Handle;
-        _bot.Ready += () => Handle(null);
+        _bot.Impl(socket =>
+            {
+                socket.JoinedGuild += Handle;
+                socket.LeftGuild += Handle;
+                socket.Ready += () => Handle(null);
+            }
+            , rest =>
+                throw new InvalidOperationException("The activity event only support the socket client."));
     }
 
     public override Task Handle(IGuild? arg) => HandleAsync(async ctx =>

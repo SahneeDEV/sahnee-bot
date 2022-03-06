@@ -9,11 +9,11 @@ namespace SahneeBot.Tasks;
 public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
 {
     private readonly GetGuildStateTask _guildState;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly ILogger<SahneeBotModifyWarningGroupTask> _logger;
 
-    public SahneeBotModifyWarningGroupTask(
-        GetGuildStateTask guildStateTask, DiscordSocketClient bot
+    public SahneeBotModifyWarningGroupTask(GetGuildStateTask guildStateTask
+        , Bot bot
         , ILogger<SahneeBotModifyWarningGroupTask> logger)
     {
         _guildState = guildStateTask;
@@ -31,12 +31,21 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
             return false;
         }
         // Check if the new role already exists on the guild
-        var currentGuild = _bot.GetGuild(args.GuildId);
-        var currentGuildUser = currentGuild.GetUser(args.UserId);
+        var currentGuild = await _bot.Client.GetGuildAsync(args.GuildId);
+        if (currentGuild == null)
+        {
+            return false;
+        }
+        var currentGuildUser = await currentGuild.GetUserAsync(args.UserId);
+        if (currentGuildUser == null)
+        {
+            return false;
+        }
         var newRoleName = guildState.WarningRolePrefix + args.Number;
         // Remove all current warning roles from the user if any are available
-        foreach (var currentRole in currentGuildUser.Roles)
+        foreach (var currentRoleId in currentGuildUser.RoleIds)
         {
+            var currentRole = currentGuild.GetRole(currentRoleId);
             if (currentRole.Name.StartsWith(guildState.WarningRolePrefix))
             {
                 // Remove the role

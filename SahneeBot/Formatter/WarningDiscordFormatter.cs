@@ -7,10 +7,11 @@ namespace SahneeBot.Formatter;
 
 public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly DefaultFormatArguments _fmt;
 
-    public WarningDiscordFormatter(DiscordSocketClient bot, DefaultFormatArguments fmt)
+    public WarningDiscordFormatter(Bot bot
+        , DefaultFormatArguments fmt)
     {
         _bot = bot;
         _fmt = fmt;
@@ -18,9 +19,9 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
     
     public async Task<DiscordFormat> Format(IWarning arg)
     {
-        var guild = _bot.GetGuild(arg.GuildId);
-        var user = await _bot.GetUserAsync(arg.UserId);
-        var issuer = await _bot.GetUserAsync(arg.IssuerUserId);
+        var guild = await _bot.Client.GetGuildAsync(arg.GuildId);
+        var user = await _bot.Client.GetUserAsync(arg.UserId);
+        var issuer = await _bot.Client.GetUserAsync(arg.IssuerUserId);
         var embed = _fmt.GetEmbed();
         var unwarn = arg.Type == WarningType.Unwarning;
 
@@ -32,13 +33,13 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
             new()
             {
                 Name = unwarn ? "Unwarned" : "Warned",
-                Value = user != null ? _fmt.GetMention(user) : "n/a",
+                Value = _fmt.GetMention(user),
                 IsInline = true
             },
             new()
             {
                 Name = unwarn ? "Unwarned by" : "Warned by",
-                Value = issuer != null ? _fmt.GetMention(issuer) : "n/a",
+                Value = _fmt.GetMention(issuer),
                 IsInline = true
             },
             new()
@@ -50,7 +51,7 @@ public class WarningDiscordFormatter: IDiscordFormatter<IWarning>
             new()
             {
                 Name = "In Server",
-                Value = guild != null ? _fmt.GetMention(guild) : "n/a",
+                Value = _fmt.GetMention(guild),
                 IsInline = true
             },
             new()

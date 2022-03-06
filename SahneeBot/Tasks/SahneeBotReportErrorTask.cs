@@ -25,13 +25,13 @@ public class SahneeBotReportErrorTask : ITask<SahneeBotReportErrorTask.Args, str
     
     private static readonly Random Rng = new();
     private readonly ILogger<SahneeBotReportErrorTask> _logger;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly ErrorWebhook _webhook;
     private readonly ErrorDiscordFormatter _webhookFmt;
 
     public SahneeBotReportErrorTask(
         ILogger<SahneeBotReportErrorTask> logger,
-        DiscordSocketClient bot,
+        Bot bot,
         ErrorWebhook webhook,
         ErrorDiscordFormatter webhookFmt)
     {
@@ -46,8 +46,8 @@ public class SahneeBotReportErrorTask : ITask<SahneeBotReportErrorTask.Args, str
         var (interactionType, interactionName, fullInteraction, guildId, userId, exception) = arg;
         // Create ticket ID & get guild + user
         var ticketId = GenerateTicketId();
-        var guild = guildId.HasValue ? _bot.GetGuild(guildId.Value) : null;
-        var user = userId.HasValue ? await _bot.GetUserAsync(userId.Value) : null;
+        var guild = guildId.HasValue ? await _bot.Client.GetGuildAsync(guildId.Value) : null;
+        var user = userId.HasValue ? await _bot.Client.GetUserAsync(userId.Value) : null;
         // Write log
         _logger.LogError(EventIds.Command, exception, 
             "[TICKET #{TicketId}] Reported error in {Interaction} {InteractionType}\n  Guild: {Guild} (#{GuildId})\n  User: {User}#{Discriminator} (#{UserId})\n  Interaction: {FullInteraction}", 

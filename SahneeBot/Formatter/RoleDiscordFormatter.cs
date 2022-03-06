@@ -11,22 +11,23 @@ public class RoleDiscordFormatter : IDiscordFormatter<IRole>
     private static readonly RoleType[] None = { RoleType.None };
     
     private readonly DefaultFormatArguments _fmt;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
-    public RoleDiscordFormatter(DefaultFormatArguments fmt, DiscordSocketClient bot)
+    public RoleDiscordFormatter(DefaultFormatArguments fmt
+        , Bot bot)
     {
         _fmt = fmt;
         _bot = bot;
     }
     
-    public Task<DiscordFormat> Format(IRole arg)
+    public async Task<DiscordFormat> Format(IRole arg)
     {
-        var guild = _bot.GetGuild(arg.GuildId);
+        var guild = await _bot.Client.GetGuildAsync(arg.GuildId);
         var discordRole = guild.GetRole(arg.RoleId);
         
         if (discordRole == null)
         {
-            return Task.FromResult(new DiscordFormat("The role does not exist."));
+            return new DiscordFormat("The role does not exist.");
         }
         
         var builder = _fmt.GetEmbed();
@@ -37,7 +38,7 @@ public class RoleDiscordFormatter : IDiscordFormatter<IRole>
             new()
             {
                 Name = "Role",
-                Value = discordRole.Mention,
+                Value = _fmt.GetMention(discordRole),
                 IsInline = true
             },
             new()
@@ -54,7 +55,7 @@ public class RoleDiscordFormatter : IDiscordFormatter<IRole>
             },
         };
 
-        return Task.FromResult(new DiscordFormat(builder));
+        return new DiscordFormat(builder);
     }
     
     private static IEnumerable<RoleType> RolesIn(RoleType roleType)

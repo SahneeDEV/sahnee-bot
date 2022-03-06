@@ -10,12 +10,12 @@ namespace SahneeBot.Tasks;
 public class SahneeBotGetLeftGuildUsersTask : ITask<SahneeBotGetLeftGuildUsersTask.Args, IEnumerable<IUser>>
 {
     private readonly GetGuildGuildUsersTask _getGuildGuildUsers;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
     public record struct Args(ulong GuildId);
     
     public SahneeBotGetLeftGuildUsersTask(GetGuildGuildUsersTask getGuildGuildUsers
-        , DiscordSocketClient bot)
+        , Bot bot)
     {
         _getGuildGuildUsers = getGuildGuildUsers;
         _bot = bot;
@@ -24,6 +24,6 @@ public class SahneeBotGetLeftGuildUsersTask : ITask<SahneeBotGetLeftGuildUsersTa
     public async Task<IEnumerable<IUser>> Execute(ITaskContext ctx, Args args)
     {
         var userIds = await _getGuildGuildUsers.Execute(ctx, new GetGuildGuildUsersTask.Args(args.GuildId));
-        return await Task.WhenAll(userIds.Select(id => _bot.GetUserAsync(id).AsTask()));
+        return await Task.WhenAll(userIds.Select(id => _bot.Client.GetUserAsync(id)));
     }
 }

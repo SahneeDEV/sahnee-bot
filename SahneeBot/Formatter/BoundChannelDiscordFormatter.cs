@@ -15,15 +15,15 @@ public class BoundChannelDiscordFormatter : IDiscordFormatter<BoundChannelDiscor
     /// <param name="BoundChannelId">The bound channel.</param>
     public record struct Args(ulong? GuildId, ulong? BoundChannelId);
     
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
-    public BoundChannelDiscordFormatter(DiscordSocketClient bot) => _bot = bot;
+    public BoundChannelDiscordFormatter(Bot bot) => _bot = bot;
 
     public async Task<DiscordFormat> Format(Args arg)
     {
         var (guildId, boundChannelId) = arg;
-        var guild = guildId.HasValue ? _bot.GetGuild(guildId.Value) : null;
-        var channel = boundChannelId.HasValue ? await _bot.GetChannelAsync(boundChannelId.Value) : null;
+        var guild = guildId.HasValue ? await _bot.Client.GetGuildAsync(guildId.Value) : null;
+        var channel = boundChannelId.HasValue ? await _bot.Client.GetChannelAsync(boundChannelId.Value) : null;
         var mentionable = channel as IMentionable;
         var guildPrefix = guild == null ? "Global commands have" : $"{guild.Name} has";
         return channel == null

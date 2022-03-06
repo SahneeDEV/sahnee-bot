@@ -32,13 +32,11 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
     
     private readonly DefaultFormatArguments _fmt;
     private readonly IConfiguration _cfg;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
-    public ErrorDiscordFormatter(
-        DefaultFormatArguments fmt,
-        IConfiguration cfg,
-        DiscordSocketClient bot
-        )
+    public ErrorDiscordFormatter(DefaultFormatArguments fmt
+        , IConfiguration cfg
+        , Bot bot)
     {
         _fmt = fmt;
         _cfg = cfg;
@@ -47,9 +45,10 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
     
     public async Task<DiscordFormat> Format(Args arg)
     {
-        var (interactionType, interactionName, fullInteraction, guildId, userId, error, ticketId, reportSensitive) = arg;
-        var guild = guildId.HasValue ? _bot.GetGuild(guildId.Value) : null;
-        var user = userId.HasValue ? await _bot.GetUserAsync(userId.Value) : null;
+        var (interactionType, interactionName, fullInteraction
+            , guildId, userId, error, ticketId, reportSensitive) = arg;
+        var guild = guildId.HasValue ? await _bot.Client.GetGuildAsync(guildId.Value) : null;
+        var user = userId.HasValue ? await _bot.Client.GetUserAsync(userId.Value) : null;
         var embed = _fmt.GetEmbed();
         var supportServer = _cfg["BotSettings:SupportServer"];
         if (reportSensitive)

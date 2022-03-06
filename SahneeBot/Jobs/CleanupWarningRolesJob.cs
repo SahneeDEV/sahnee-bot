@@ -14,14 +14,14 @@ namespace SahneeBot.Jobs;
 public class CleanupWarningRolesJob : JobBase
 {
     private readonly ILogger<CleanupWarningRolesJob> _logger;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly SahneeBotPrivateMessageToGuildMembersTask _privateMessage;
     private readonly SahneeBotCleanupWarningRolesTask _cleanupWarningRolesTask;
     private readonly JobFailedDiscordFormatter _jobFailedDiscordFormatter;
 
     public CleanupWarningRolesJob(IServiceProvider provider
         , ILogger<CleanupWarningRolesJob> logger
-        , DiscordSocketClient bot
+        , Bot bot
         , SahneeBotPrivateMessageToGuildMembersTask privateMessage
         , SahneeBotCleanupWarningRolesTask cleanupWarningRolesTask
         , JobFailedDiscordFormatter jobFailedDiscordFormatter) : base(provider)
@@ -62,7 +62,7 @@ public class CleanupWarningRolesJob : JobBase
     public override Task Perform() => PerformAsync(async ctx =>
     {
         _logger.LogDebug(EventIds.Jobs, "Starting Role deletion on Guilds");
-        foreach (var currentGuild in _bot.Guilds)
+        foreach (var currentGuild in await _bot.Client.GetGuildsAsync())
         {
             if (currentGuild == null)
             {

@@ -7,7 +7,8 @@ namespace SahneeBot.Formatter;
 /// </summary>
 public class MessageOptOutDiscordFormatter : IDiscordFormatter<MessageOptOutDiscordFormatter.Args>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
+    private readonly DefaultFormatArguments _fmt;
 
     /// <summary>
     /// Arguments for this formatter.
@@ -17,19 +18,21 @@ public class MessageOptOutDiscordFormatter : IDiscordFormatter<MessageOptOutDisc
     /// <param name="OptOut">Has the user opted out?</param>
     public record struct Args(ulong? UserId, ulong? GuildId, bool OptOut);
     
-    public MessageOptOutDiscordFormatter(DiscordSocketClient bot)
+    public MessageOptOutDiscordFormatter(Bot bot
+        , DefaultFormatArguments fmt)
     {
         _bot = bot;
+        _fmt = fmt;
     }
     
     public async Task<DiscordFormat> Format(Args arg)
     {
         var (userId, guildId, optOut) = arg;
-        var user = userId.HasValue ? await _bot.GetUserAsync(userId.Value) : null;
-        var guild = guildId.HasValue ? _bot.GetGuild(guildId.Value) : null;
-        var guildStr = guild != null ? $"for *{guild.Name}*" : "for every server";
+        var user = userId.HasValue ? await _bot.Client.GetUserAsync(userId.Value) : null;
+        var guild = guildId.HasValue ? await _bot.Client.GetGuildAsync(guildId.Value) : null;
+        var guildStr = guild != null ? $"for {_fmt.GetMention(guild)}" : "for every server";
         var optStr = optOut ? "opted out" : "opted in";
-        var userStr = user != null ? $"{user.Mention} has" : "Default opt-out set to";
+        var userStr = user != null ? $"{_fmt.GetMention(user)} has" : "Default opt-out set to";
         return new DiscordFormat($"{userStr} {optStr} to receiving messages {guildStr}");
     }
 }

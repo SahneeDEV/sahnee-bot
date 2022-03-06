@@ -2,9 +2,7 @@
 using ColorHelper;
 using Discord;
 using Discord.Net;
-using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using SahneeBotController;
 using SahneeBotController.Tasks;
 
@@ -12,10 +10,10 @@ namespace SahneeBot.Tasks;
 
 public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private const string HEX_REGEX_PATTERN = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
-    public SahneeBotGuildChangeRoleColorTask(DiscordSocketClient bot)
+    public SahneeBotGuildChangeRoleColorTask(Bot bot)
     {
         _bot = bot;
     }
@@ -41,7 +39,7 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
         var rgb = ColorConverter.HexToRgb(new HEX(arg.RoleColor));
         var customColor = new Color(rgb.R, rgb.G, rgb.B);
         //get all warning roles from the guild
-        var currentGuild = _bot.GetGuild(arg.GuildId);
+        var currentGuild = await _bot.Client.GetGuildAsync(arg.GuildId);
         var allWarningRolesInGuild = currentGuild.Roles
             .Where(r => r.Name.StartsWith(guildState.WarningRolePrefix));
         try

@@ -11,18 +11,16 @@ namespace SahneeBot.Events;
 [Event]
 public class WelcomeMessageEvent : EventBase<IGuild>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly ILogger<WelcomeMessageEvent> _logger;
     private readonly WelcomeOnNewGuildJoinDiscordFormatter _welcomeOnNewGuildJoinDiscordFormatter;
     private readonly PrivateMessageToGuildOwnerFormatter _privateMessageToGuildOwnerFormatter;
 
-    public WelcomeMessageEvent(
-        IServiceProvider serviceProvider,
-        DiscordSocketClient bot,
-        ILogger<WelcomeMessageEvent> logger,
-        WelcomeOnNewGuildJoinDiscordFormatter welcomeOnNewGuildJoinDiscordFormatter,
-        PrivateMessageToGuildOwnerFormatter privateMessageToGuildOwnerFormatter
-        ) : base(serviceProvider)
+    public WelcomeMessageEvent(IServiceProvider serviceProvider
+        , Bot bot
+        , ILogger<WelcomeMessageEvent> logger
+        , WelcomeOnNewGuildJoinDiscordFormatter welcomeOnNewGuildJoinDiscordFormatter
+        , PrivateMessageToGuildOwnerFormatter privateMessageToGuildOwnerFormatter) : base(serviceProvider)
     {
         _bot = bot;
         _logger = logger;
@@ -32,7 +30,9 @@ public class WelcomeMessageEvent : EventBase<IGuild>
 
     public override void Register()
     {
-        _bot.JoinedGuild += Handle;
+        _bot.Impl(socket => socket.JoinedGuild += Handle
+            , rest => 
+                throw new InvalidOperationException("The welcome message event only support the socket client."));
     }
 
     public override Task Handle(IGuild arg) => HandleAsync(async ctx =>

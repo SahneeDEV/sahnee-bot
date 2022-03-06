@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using SahneeBotController.Tasks;
 
 namespace SahneeBot.Events;
@@ -10,13 +9,12 @@ namespace SahneeBot.Events;
 [Event]
 public class ChangelogEvent : EventBase<IGuild>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly UpdateGuildChangelogTask _task;
 
-    public ChangelogEvent(
-        IServiceProvider serviceProvider,
-        DiscordSocketClient bot,
-        UpdateGuildChangelogTask task) : base(serviceProvider)
+    public ChangelogEvent(IServiceProvider serviceProvider
+        , Bot bot
+        , UpdateGuildChangelogTask task) : base(serviceProvider)
     {
         _bot = bot;
         _task = task;
@@ -24,7 +22,9 @@ public class ChangelogEvent : EventBase<IGuild>
 
     public override void Register()
     {
-        _bot.GuildAvailable += Handle;
+        _bot.Impl(socket => socket.GuildAvailable += Handle
+            , rest => 
+                throw new InvalidOperationException("The changelog event only support the socket client."));
     }
 
     public override Task Handle(IGuild arg) => HandleAsync(async ctx =>

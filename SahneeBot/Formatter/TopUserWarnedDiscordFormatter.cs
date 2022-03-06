@@ -10,7 +10,7 @@ namespace SahneeBot.Formatter;
 public class TopUserWarnedDiscordFormatter: IDiscordFormatter<TopUserWarnedDiscordFormatter.Args>
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
     /// <summary>
     /// Arguments for the generation of the format of the warnings top command
@@ -20,7 +20,8 @@ public class TopUserWarnedDiscordFormatter: IDiscordFormatter<TopUserWarnedDisco
     /// <param name="WarningNumber">The amount of warnings of the user.</param>
     public record struct Args(uint Place, ulong UserId, uint WarningNumber);
     
-    public TopUserWarnedDiscordFormatter(DefaultFormatArguments defaultFormatArguments, DiscordSocketClient bot)
+    public TopUserWarnedDiscordFormatter(DefaultFormatArguments defaultFormatArguments
+        , Bot bot)
     {
         _defaultFormatArguments = defaultFormatArguments;
         _bot = bot;
@@ -29,8 +30,8 @@ public class TopUserWarnedDiscordFormatter: IDiscordFormatter<TopUserWarnedDisco
     public async Task<DiscordFormat> Format(Args arg)
     {
         var (place, userId, warningNumber) = arg;
-        var currentUser = await _bot.GetUserAsync(userId);
-        var userString = currentUser != null ? _defaultFormatArguments.GetMention(currentUser) : "Not Found";
+        var currentUser = await _bot.Client.GetUserAsync(userId);
+        var userString = _defaultFormatArguments.GetMention(currentUser);
         var emoji = place switch
         {
             1 => "🥇 ",

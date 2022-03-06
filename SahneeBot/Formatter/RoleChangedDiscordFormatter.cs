@@ -18,13 +18,11 @@ public class RoleChangedDiscordFormatter : IDiscordFormatter<RoleChangedDiscordF
     /// <param name="Added">Was the role added (true) or removed (false)?</param>
     public record struct Args(IRole? Role, RoleType? Changed, bool Added);
     
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
     private readonly RoleDiscordFormatter _roleFmt;
 
-    public RoleChangedDiscordFormatter(
-        DiscordSocketClient bot,
-        RoleDiscordFormatter roleFmt
-        )
+    public RoleChangedDiscordFormatter(Bot bot
+        , RoleDiscordFormatter roleFmt)
     {
         _bot = bot;
         _roleFmt = roleFmt;
@@ -37,7 +35,7 @@ public class RoleChangedDiscordFormatter : IDiscordFormatter<RoleChangedDiscordF
         {
             return new DiscordFormat("The role does not exist.");
         }
-        var guild = _bot.GetGuild(role.GuildId);
+        var guild = await _bot.Client.GetGuildAsync(role.GuildId);
         var discordRole = guild.GetRole(role.RoleId);
         if (discordRole == null)
         {

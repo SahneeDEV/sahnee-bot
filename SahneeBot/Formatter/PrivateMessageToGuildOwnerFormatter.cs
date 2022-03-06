@@ -2,6 +2,9 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// DEPRECATED
+/// </summary>
 public class PrivateMessageToGuildOwnerFormatter : IDiscordFormatter<PrivateMessageToGuildOwnerFormatter.Args>
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;

@@ -14,12 +14,10 @@ public class NotBoundChannelDiscordFormatter : IDiscordFormatter<NotBoundChannel
     /// <param name="BoundChannelId">The actual bound channel.</param>
     public record struct Args(ulong? GuildId, ulong? BoundChannelId);
     
-    private readonly DiscordSocketClient _bot;
     private readonly BoundChannelDiscordFormatter _fmt;
 
-    public NotBoundChannelDiscordFormatter(DiscordSocketClient bot, BoundChannelDiscordFormatter fmt)
+    public NotBoundChannelDiscordFormatter(BoundChannelDiscordFormatter fmt)
     {
-        _bot = bot;
         _fmt = fmt;
     }
 

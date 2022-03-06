@@ -7,29 +7,33 @@ namespace SahneeBot.Formatter;
 /// </summary>
 public class NoWarningFoundDiscordFormatter: IDiscordFormatter<NoWarningFoundDiscordFormatter.Args>
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
+    private readonly DefaultFormatArguments _fmt;
 
     public record struct Args(ulong GuildId, ulong? UserId, bool Issuer);
     
-    public NoWarningFoundDiscordFormatter(DiscordSocketClient bot)
+    public NoWarningFoundDiscordFormatter(Bot bot
+        , DefaultFormatArguments fmt)
     {
         _bot = bot;
+        _fmt = fmt;
     }
     
-    public Task<DiscordFormat> Format(Args arg)
+    public async Task<DiscordFormat> Format(Args arg)
     {
         var (guildId, userId, issuer) = arg;
-        var guild = _bot.GetGuild(guildId);
+        var guild = await _bot.Client.GetGuildAsync(guildId);
         if (guild == null)
         {
-            return Task.FromResult(new DiscordFormat("No warnings found."));
+            return new DiscordFormat("No warnings found.");
         }
-        var user = userId.HasValue ? guild.GetUser(userId.Value) : null;
+        var user = userId.HasValue ? await guild.GetUserAsync(userId.Value) : null;
         if (user == null)
         {
-            return Task.FromResult(new DiscordFormat($"No warnings found on *{guild.Name}*."));
+            return new DiscordFormat($"No warnings found on *{_fmt.GetMention(guild)}*.");
         }
         var issuerStr = issuer ? "issued by" : "issued to";
-        return Task.FromResult(new DiscordFormat($"No warnings found on *{guild.Name}* {issuerStr} {user.Mention}."));
+        return new DiscordFormat($"No warnings found on {_fmt.GetMention(guild)} {issuerStr} " +
+                                 $"{_fmt.GetMention(user)}.");
     }
 }

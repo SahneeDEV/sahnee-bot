@@ -1,6 +1,5 @@
 ﻿using Discord;
 using Discord.Net;
-using Discord.WebSocket;
 using SahneeBotController;
 using SahneeBotController.Tasks;
 
@@ -8,10 +7,10 @@ namespace SahneeBot.Tasks;
 
 public class SahneeBotChangeWarningRoleNameTask : ChangeWarningRoleNameTask
 {
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
     public SahneeBotChangeWarningRoleNameTask(IServiceProvider provider
-        , DiscordSocketClient bot) : base(provider)
+        , Bot bot) : base(provider)
     {
         _bot = bot;
     }
@@ -26,7 +25,7 @@ public class SahneeBotChangeWarningRoleNameTask : ChangeWarningRoleNameTask
         }
         
         //change the warning roles in the current guild
-        var currentGuild = _bot.GetGuild(args.GuildId);
+        var currentGuild = await _bot.Client.GetGuildAsync(args.GuildId);
         var allWarningRoles = currentGuild.Roles.Where(r => r.Name.StartsWith(oldPrefix.Value));
         if (!args.WarningRolePrefix.EndsWith(" "))
         {

@@ -1,5 +1,4 @@
-﻿using Discord.WebSocket;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace SahneeBot.Activity;
 
@@ -9,9 +8,10 @@ namespace SahneeBot.Activity;
 public class BotActivity
 {
     private readonly ILogger<BotActivity> _logger;
-    private readonly DiscordSocketClient _bot;
+    private readonly Bot _bot;
 
-    public BotActivity(ILogger<BotActivity> logger, DiscordSocketClient bot)
+    public BotActivity(ILogger<BotActivity> logger
+        , Bot bot)
     {
         _logger = logger;
         _bot = bot;
@@ -20,16 +20,19 @@ public class BotActivity
     /// <summary>
     /// Updates the bot activity
     /// </summary>
-    public async Task UpdateBotActivity()
+    public Task UpdateBotActivity()
     {
-        try
+        return _bot.ImplAsync(async socket =>
         {
-            await _bot.SetActivityAsync(new ActivityWatchingGuildsAmount(_bot.Guilds.Count));
-        }
-        catch (Exception e)
-        {
-            _logger.LogCritical(EventIds.Discord, e, "Could not update the bot activity!");
-        }
+            try
+            {
+                await socket.SetActivityAsync(new ActivityWatchingGuildsAmount(socket.Guilds.Count));
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(EventIds.Discord, e, "Could not update the bot activity!");
+            }
+        }, rest => Task.CompletedTask);
     }
     
 }
