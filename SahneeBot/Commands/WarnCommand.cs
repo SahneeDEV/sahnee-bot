@@ -1,11 +1,12 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBot.Tasks;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
+using SahneeBotModel.Contract;
 
 namespace SahneeBot.Commands;
 
@@ -15,23 +16,20 @@ namespace SahneeBot.Commands;
 public class WarnCommand : CommandBase
 {
     private readonly GiveWarningToUserTask _task;
-    private readonly ILogger<WarnCommand> _logger;
-    private readonly WarningDiscordFormatter _discordFormatter;
+    private readonly WarningDiscordFormatter _fmt;
     private readonly SahneeBotRoleLimitInformationTask _sahneeBotRoleLimitInformationTask;
-    private readonly CannotUnwarnDiscordFormatter _cannotUnwarnDiscordFormatter;
+    private readonly FailedToWarnDiscordFormatter _failedToWarnFmt;
 
     public WarnCommand(IServiceProvider serviceProvider
         , GiveWarningToUserTask task
-        , ILogger<WarnCommand> logger
-        , WarningDiscordFormatter discordFormatter
+        , WarningDiscordFormatter fmt
         , SahneeBotRoleLimitInformationTask sahneeBotRoleLimitInformationTask
-        , CannotUnwarnDiscordFormatter cannotUnwarnDiscordFormatter): base(serviceProvider)
+        , FailedToWarnDiscordFormatter failedToWarnFmt): base(serviceProvider)
     {
         _task = task;
-        _logger = logger;
-        _discordFormatter = discordFormatter;
+        _fmt = fmt;
         _sahneeBotRoleLimitInformationTask = sahneeBotRoleLimitInformationTask;
-        _cannotUnwarnDiscordFormatter = cannotUnwarnDiscordFormatter;
+        _failedToWarnFmt = failedToWarnFmt;
     }
     
     /// <summary>
@@ -39,40 +37,27 @@ public class WarnCommand : CommandBase
     /// </summary>
     /// <param name="user">The user that is warned.</param>
     /// <param name="reason">The warn reason.</param>
+    /// <returns>Once the warning has been issued</returns>
     [SlashCommand("warn", "Warns a user. Adds one to the current warning count")]
     public Task Warn(
         [Summary(description: "the user to warn")]
         IUser user,
         [Summary(description: "the reason why the user was warned")]
-        string reason
-        ) => ExecuteAsync(async ctx =>
+        string reason) => ExecuteAsync(async ctx =>
     {
-        var warning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(false, Context.Guild.Id, 
-            Context.User.Id, user.Id, reason));
-        if (warning == null)
-        {
-            throw new Exception("Warning is null");
-        }
-        try
-        {
-            await _discordFormatter.FormatAndSend(warning, ModifyOriginalResponseAsync);
-            
-            //check for role limit
-            await _sahneeBotRoleLimitInformationTask.Execute(ctx
-                , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id
-                , Context.Interaction as SocketSlashCommand));
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(EventIds.Command, e, "Failed to send warning message: {Warning}", 
-                warning);
-        }
+        await HelperIssueWarning(ctx, WarningType.Warning, Context.Guild, Context.User, user, reason);
     }, new CommandExecutionOptions
     {
         PlaceInQueue = true,
         RequiredRole = RoleType.Moderator
     });
 
+    /// <summary>
+    /// Unwarns a user
+    /// </summary>
+    /// <param name="user">The user to unwarn</param>
+    /// <param name="reason">The unwarning reason</param>
+    /// <returns>Once the unwarning has been issued</returns>
     [SlashCommand("unwarn", "Unwarns a user. Removes one from the current warning count")]
     public Task Unwarn(
         [Summary(description: "the user to unwarn")]
@@ -80,32 +65,33 @@ public class WarnCommand : CommandBase
         [Summary(description: "the reason why the user has been unwarned")]
         string reason) => ExecuteAsync(async ctx =>
     {
-        var unwarning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(true, Context.Guild.Id, 
-            Context.User.Id, user.Id, reason));
-        try
-        {
-            if (unwarning == null)
-            {
-                await _cannotUnwarnDiscordFormatter.FormatAndSend(user, ModifyOriginalResponseAsync);
-            }
-            else
-            {
-                await _discordFormatter.FormatAndSend(unwarning, ModifyOriginalResponseAsync);
-            
-                //check for role limit
-                await _sahneeBotRoleLimitInformationTask.Execute(ctx
-                    , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id
-                        , Context.Interaction as SocketSlashCommand));
-            }
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(EventIds.Command, e, "Failed to send unwarning message: {Unwarning}",
-                unwarning);
-        }
+        await HelperIssueWarning(ctx, WarningType.Unwarning, Context.Guild, Context.User, user, reason);
     }, new CommandExecutionOptions
     {
         PlaceInQueue = true,
         RequiredRole = RoleType.Moderator
     });
+
+    private async Task<ISuccess<IWarning>> HelperIssueWarning(ITaskContext ctx, WarningType type, IGuild guild
+        , IUser issuer, IUser user, string reason)
+    {
+        var warning = await _task.Execute(ctx, new GiveWarningToUserTask.Args(type, guild.Id
+            , issuer.Id, user.Id, reason));
+        if (warning.IsSuccess)
+        {
+            await _fmt.FormatAndSend(warning.Value, ModifyOriginalResponseAsync);
+            
+            // Check for role limit - TODO: Do this automatically in task
+            await _sahneeBotRoleLimitInformationTask.Execute(ctx
+                , new SahneeBotRoleLimitInformationTask.Args(Context.Guild.Roles.Count, Context.Guild.Id
+                    , Context.Interaction as SocketSlashCommand));
+        }
+        else
+        {
+            await _failedToWarnFmt.FormatAndSend(new FailedToWarnDiscordFormatter.Args(Context.Guild.Id, user.Id,
+                type, warning.Message), ModifyOriginalResponseAsync);
+        }
+
+        return warning;
+    }
 }
