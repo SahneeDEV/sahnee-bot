@@ -21,7 +21,7 @@ public abstract class JobBase : IJob
     public delegate Task JobDelegate(ITaskContext ctx);
     
     public abstract Task Perform();
-    public virtual IJobTimeSpan Time { get; protected init; }
+    public virtual IJobTimeSpan Time { get; protected init; } = JobTimeSpanNever.Instance;
 
     public record struct JobExecutionOptions
     {

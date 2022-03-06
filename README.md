@@ -106,7 +106,7 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
         "Changelog": "./CHANGELOG.md",
         "ErrorWebhookUrl": "https://discord.com/api/webhooks/12345/abcde",
         "Jobs": {
-            "CleanupWarningRoles": 60
+            "CleanupWarningRoles": "1:00:00"
         }
     }
 }
@@ -123,4 +123,6 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
 * `BotSettings:SupportServer` - A link to the support page for the bot.
 * `BotSettings:Changelog` - The path to the changelog file on disk. Will be scanned for a new version of bot startup.
 * `BotSettings:ErrorWebhookUrl` - A webhook errors will be sent to.
-* `BotSettings:Jobs:CleanupWarningRoles` - The frequency in minutes how often warnings created by the bot that are no longer used will be deleted.
+* `BotSettings:Jobs:CleanupWarningRoles` - The frequency in how often warnings created by the bot that are no longer used will be deleted.
+
+Time spans for jobs are formatted in the format documented [here](https://docs.microsoft.com/en-us/dotnet/api/system.timespan.parse?view=net-6.0#system-timespan-parse(system-string)) under the section "Remarks" (`[ws][-]{ d | [d.]hh:mm[:ss[.ff]] }[ws]`).

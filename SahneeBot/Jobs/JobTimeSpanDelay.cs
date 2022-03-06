@@ -1,12 +1,13 @@
 ﻿namespace SahneeBot.Jobs;
 
+/// <summary>
+/// A time span that executes once after the given delay.
+/// </summary>
 public class JobTimeSpanDelay : IJobTimeSpan
 {
-    //Variables
     private readonly TimeSpan _delay;
     private bool _fresh;
-        
-        
+
     public JobTimeSpanDelay(TimeSpan delay)
     {
         _delay = delay;
@@ -24,6 +25,6 @@ public class JobTimeSpanDelay : IJobTimeSpan
 
     public override string ToString()
     {
-        return $"{nameof(_delay)}: {_delay}, {nameof(_fresh)}: {_fresh}";
+        return $"JobTimeSpanDelay(Delay: {_delay}, Fresh: {_fresh})";
     }
 }
