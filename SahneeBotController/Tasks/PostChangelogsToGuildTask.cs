@@ -1,9 +1,9 @@
 ﻿namespace SahneeBotController.Tasks;
 
 /// <summary>
-/// This task posts the list of given changelog versions to a guild. Returns if the message could be posted.
+/// This task posts the list of given changelog versions to a guild. Returns the amount of changelogs sent.
 /// </summary>
-public abstract class PostChangelogsToGuildTask : ITask<PostChangelogsToGuildTask.Args, bool>
+public abstract class PostChangelogsToGuildTask : ITask<PostChangelogsToGuildTask.Args, ISuccess<uint>>
 {
     /// <summary>
     /// Arguments for this task.
@@ -12,5 +12,5 @@ public abstract class PostChangelogsToGuildTask : ITask<PostChangelogsToGuildTas
     /// <param name="Versions">The changelog versions to post.</param>
     public record struct Args(ulong GuildId, IEnumerable<Version> Versions);
 
-    public abstract Task<bool> Execute(ITaskContext ctx, Args arg);
+    public abstract Task<ISuccess<uint>> Execute(ITaskContext ctx, Args arg);
 }

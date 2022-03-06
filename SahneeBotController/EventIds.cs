@@ -16,4 +16,9 @@ public static class EventIds
     /// Logs related to warnings.
     /// </summary>
     public static readonly EventId Warning = new(Base + 1, "Warning");
+    
+    /// <summary>
+    /// Logs related to chanelogs.
+    /// </summary>
+    public static readonly EventId Changelog = new(Base + 2, "Changelog");
 }

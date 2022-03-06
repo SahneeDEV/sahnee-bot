@@ -38,16 +38,24 @@ public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.
         if (lastVersion != null && lastVersion < latestVersion)
         {
             var newVersions = (await GetVersionsAfter(lastVersion)).ToArray();
-            _logger.LogDebug("Posting {Count} changelogs from {OldVersion} to {NewVersion} to guild {Guild}", 
-                newVersions.Length, lastVersion, latestVersion, arg.GuildId);
+            _logger.LogDebug(EventIds.Changelog
+                , "Posting {Count} changelogs from {OldVersion} to {NewVersion} to guild {Guild}"
+                , newVersions.Length, lastVersion, latestVersion, arg.GuildId);
             if (newVersions.Length > 0)
             {
-                await _postChangelogsToGuildTask.Execute(ctx, new PostChangelogsToGuildTask.Args(arg.GuildId, newVersions));
+                var success = await _postChangelogsToGuildTask.Execute(ctx, new PostChangelogsToGuildTask.Args(arg.GuildId, newVersions));
+                if (!success.IsSuccess)
+                {
+                    _logger.LogWarning(EventIds.Changelog
+                        , "Failed to post warnings to guild {Guild}: {Error}"
+                        , arg.GuildId, success.Message);
+                }
             }
         }
 
-        _logger.LogInformation("Changing changelog version from {OldVersion} to {NewVersion} in guild {Guild}", 
-            lastVersion, latestVersion, arg.GuildId);
+        _logger.LogInformation(EventIds.Changelog
+            , "Changing changelog version from {OldVersion} to {NewVersion} in guild {Guild}"
+            , lastVersion, latestVersion, arg.GuildId);
         state.LastChangelogVersion = latestVersion;
         await ctx.Model.SaveChangesAsync();
         return latestVersion;

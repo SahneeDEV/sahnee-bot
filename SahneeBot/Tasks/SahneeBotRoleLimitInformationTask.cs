@@ -42,7 +42,7 @@ public class SahneeBotRoleLimitInformationTask : ITask<SahneeBotRoleLimitInforma
                 var channel = (ITextChannel)socketSlashCommand?.Channel!;
                 await _informRoleLimitDiscordFormatter.FormatAndSend(
                     new InformRoleLimitDiscordFormatter.Args(guildCurrentRoleCount)
-                    ,channel.SendMessageAsync);
+                    , channel.SendMessageAsync);
                 return false;
             }
         }

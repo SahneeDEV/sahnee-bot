@@ -1,9 +1,9 @@
 ﻿namespace SahneeBotController.Tasks;
 
 /// <summary>
-/// Sets a given warning role to a given user
+/// Sets a given warning role to a given user. Returns the new role ID.
 /// </summary>
-public abstract class ModifyUserWarningGroupTask: ITask<ModifyUserWarningGroupTask.Args, bool>
+public abstract class ModifyUserWarningGroupTask: ITask<ModifyUserWarningGroupTask.Args, ISuccess<ulong>>
 {
     public struct Args
     {
@@ -30,5 +30,5 @@ public abstract class ModifyUserWarningGroupTask: ITask<ModifyUserWarningGroupTa
         }
     }
 
-    public abstract Task<bool> Execute(ITaskContext ctx, Args arg);
+    public abstract Task<ISuccess<ulong>> Execute(ITaskContext ctx, Args arg);
 }

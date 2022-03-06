@@ -2,6 +2,7 @@
 using Discord;
 using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
+using SahneeBotController;
 using SahneeBotController.Tasks;
 
 namespace SahneeBot.Tasks;
@@ -21,25 +22,25 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
         _logger = logger;
     }
 
-    public override async Task<bool> Execute(ITaskContext ctx, Args args)
+    public override async Task<ISuccess<ulong>> Execute(ITaskContext ctx, Args args)
     {
         // Don't set a role if the guild opted out
         var guildState = await _guildState.Execute(ctx,
             new GetGuildStateTask.Args(args.GuildId));
         if (!guildState.SetRoles)
         {
-            return false;
+            return new Error<ulong>("Role handling has been disabled for this server.");
         }
         // Check if the new role already exists on the guild
         var currentGuild = await _bot.Client.GetGuildAsync(args.GuildId);
         if (currentGuild == null)
         {
-            return false;
+            return new Error<ulong>("Could not find server.");
         }
         var currentGuildUser = await currentGuild.GetUserAsync(args.UserId);
         if (currentGuildUser == null)
         {
-            return false;
+            return new Error<ulong>("Could not find user.");
         }
         var newRoleName = guildState.WarningRolePrefix + args.Number;
         // Remove all current warning roles from the user if any are available
@@ -55,7 +56,7 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
         // Check if the new amount is 0
         if (args.Number == 0)
         {
-            return false;
+            return new Error<ulong>("The user does not have any warnings.");
         }
         // Check if the new warning as group already exists
         IRole? newRole;
@@ -76,13 +77,13 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
                         roleColor, false, null);
                 //add the new role to the guild
                 await currentGuildUser.AddRoleAsync(newRole);
-                return true;
+                return new Success<ulong>(newRole.Id);
             }
             catch (Exception e)
             {
                 _logger.LogError(EventIds.Command, e, 
-                    "Failed to create and add a new role to a guid {guild}", args.GuildId);
-                return false;
+                    "Failed to create and add a new role to a guid {Guild}", args.GuildId);
+                return new Error<ulong>(e.Message);
             }
         }
         //check if the role got created or needs to be received from the guild
@@ -91,13 +92,13 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
         try
         {
             await currentGuildUser.AddRoleAsync(newRole);
-            return true;
+            return new Success<ulong>(newRole.Id);
         }
         catch (Exception e)
         {
             _logger.LogError(EventIds.Command, e,
-                "Failed to add a role to a user in guild {guild}", args.GuildId);
-            return false;
+                "Failed to add a role to a user in guild {Guild}", args.GuildId);
+            return new Error<ulong>(e.Message);
         }
     }
 }
