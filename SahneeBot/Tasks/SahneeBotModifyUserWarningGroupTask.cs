@@ -60,7 +60,7 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
         }
         // Check if the new warning as group already exists
         IRole? newRole;
-        if (currentGuild.Roles.Any(r => r.Name != newRoleName))
+        if (currentGuild.Roles.All(r => r.Name != newRoleName))
         {
             try
             {
