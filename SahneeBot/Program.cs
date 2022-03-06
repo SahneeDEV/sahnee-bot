@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Discord.Rest;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
@@ -126,12 +127,26 @@ var host = CreateHostBuilder(args)
         // DISCORD
         services.AddSingleton(provider =>
         {
-            var discordConfig = new DiscordSocketConfig
+            var cfg = provider.GetRequiredService<IConfiguration>();
+            IDiscordClient client;
+            switch (cfg["Discord:Implementation"])
             {
-                GatewayIntents = GatewayIntents.All,
-                AlwaysDownloadUsers = true
-            };
-            return new Bot(new DiscordSocketClient(discordConfig));
+                case "Socket":
+                    var socketConfig = new DiscordSocketConfig
+                    {
+                        GatewayIntents = GatewayIntents.All,
+                        AlwaysDownloadUsers = true
+                    };
+                    client = new DiscordSocketClient(socketConfig);
+                    break;
+                case "Rest":
+                    var restConfig = new DiscordRestConfig();
+                    client = new DiscordRestClient(restConfig);
+                    break;
+                default:
+                    throw new NotImplementedException("Not supported implementation type");
+            }
+            return new Bot(client);
         });
         services.AddSingleton(provider =>
         {
@@ -145,8 +160,6 @@ var host = CreateHostBuilder(args)
 var bot = host.Services.GetRequiredService<Bot>();
 var logger = host.Services.GetRequiredService<ILogger<Program>>();
 var discordLogger = host.Services.GetRequiredService<DiscordLogger>();
-var jobHandler = host.Services.GetRequiredService<JobHandler>();
-var clearWarningRoles = host.Services.GetRequiredService<CleanupWarningRolesJob>();
 var configuration = host.Services.GetRequiredService<IConfiguration>();
 
 using (var scope = host.Services.CreateScope())
@@ -173,25 +186,42 @@ await bot.ImplAsync(async socket =>
         await socket.LoginAsync(TokenType.Bot, configuration["Discord:Token"]);
         logger.LogInformation(EventIds.Startup, "Starting bot");
         await socket.StartAsync();
+        logger.LogInformation(EventIds.Startup, "Started bot");
+        socket.Ready += () =>
+        {
+            Install(host.Services);
+            return Task.CompletedTask;
+        };
     }
     , async rest =>
     {
         logger.LogInformation(EventIds.Startup, "Logging into discord API");
         await rest.LoginAsync(TokenType.Bot, configuration["Discord:Token"]);
+        logger.LogInformation(EventIds.Startup, "Started bot");
+        Install(host.Services);
     });
-logger.LogInformation(EventIds.Startup, "Started bot");
 
+void Install(IServiceProvider provider)
+{
+    logger.LogInformation(EventIds.Startup, "Installing bot");
+    var jobHandler = provider.GetRequiredService<JobHandler>();
+    var clearWarningRoles = provider.GetRequiredService<CleanupWarningRolesJob>();
+    var cfg = provider.GetRequiredService<IConfiguration>();
+    var log = provider.GetRequiredService<ILogger<Program>>();
+    
+    var commandHandler = provider.GetRequiredService<ICommandHandler>();
+    commandHandler.Install();
 
-var commandHandler = host.Services.GetRequiredService<ICommandHandler>();
-commandHandler.Install();
+    var eventHandler = provider.GetRequiredService<IEventHandler>();
+    eventHandler.Install();
 
-var eventHandler = host.Services.GetRequiredService<IEventHandler>();
-eventHandler.Install();
+    // Register the jobs
+    var guid = jobHandler.RegisterJob(new JobHandler.Args(new JobTimeSpanRepeat(
+            TimeSpan.FromMinutes(int.Parse(cfg["BotSettings:Jobs:CleanupWarningRoles"]))),
+        async () => { await clearWarningRoles.Perform(); }));
+    log.LogDebug(EventIds.Jobs, "Registered Job for cleaning warning roles with guid: {Guid}", guid);
 
-//register the jobs
-var guid = jobHandler.RegisterJob(new JobHandler.Args(new JobTimeSpanRepeat(
-        TimeSpan.FromMinutes(int.Parse(configuration["BotSettings:Jobs:CleanupWarningRoles"]))),
-    async () => { await clearWarningRoles.Perform(); }));
-logger.LogDebug(EventIds.Jobs, "Registered Job for cleaning warning roles with guid: {Guid}", guid);
+    logger.LogInformation(EventIds.Startup, "Installed bot");
+}
 
 await host.RunAsync();

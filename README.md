@@ -95,7 +95,8 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
       "SahneeBotModelContext": "Host=host;Database=database;Username=username;Password=password"
     },
     "Discord": {
-      "Token": "ABCD1234"
+      "Token": "ABCD1234",
+      "Implementation": "Socket"
     },
     "BotSettings": {
         "IconUrl": "https://sahnee.dev/wp-content/uploads/2020/04/sahnee-bot-150x150.png",
@@ -115,6 +116,7 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
 * `MachineId` - Used to modify the key generation of the bot. When using multiple bots in the same database every bot instance needs a unique `MachineId`.
 * `ConnectionStrings:SahneeBotModelContext` - The credentials to the PostgreSQL database of the bot.
 * `Discord:Token` - The discord token of your bot.
+* `Discord:Implementation` - Allows you to set if you want to use the `Socket` or `Rest` discord API implementation. Don't change unless you know what you are doing and absolutely need it.
 * `BotSettings:IconUrl` - The icon of the bot used in messages.
 * `BotSettings:Url` - The homepage the bot links to.
 * `BotSettings:WarningRolePrefix` - The default prefix for warning roles of servers that have not configured their own.
