@@ -51,8 +51,8 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<GuildQueue>();
         services.AddSingleton<ICommandHandler, CommandHandler>();
         services.AddSingleton<IEventHandler, EventHandler>();
+        services.AddSingleton<IJobHandler, JobHandler>();
         services.AddSingleton<Changelog>();
-        services.AddSingleton<JobHandler>();
         services.AddTransient<SelectMenuExecution>();
         services.AddTransient<SahneeBotTaskContextFactory>();
         // FORMATTER
@@ -117,8 +117,6 @@ var host = CreateHostBuilder(args)
         services.AddTransient<SahneeBotGetLeftGuildUsersTask>();
         services.AddTransient<SahneeBotCleanupWarningRolesTask>();
         services.AddTransient<SahneeBotPrivateMessageToGuildMembersTask>();
-        // JOBS
-        services.AddTransient<CleanupWarningRolesJob>();
         // ACTIVITY
         services.AddTransient<SahneeBotActivityTask>();
         // SELECT MENUS
@@ -203,10 +201,6 @@ await bot.ImplAsync(async socket =>
 void Install(IServiceProvider provider)
 {
     logger.LogInformation(EventIds.Startup, "Installing bot");
-    var jobHandler = provider.GetRequiredService<JobHandler>();
-    var clearWarningRoles = provider.GetRequiredService<CleanupWarningRolesJob>();
-    var cfg = provider.GetRequiredService<IConfiguration>();
-    var log = provider.GetRequiredService<ILogger<Program>>();
     
     var commandHandler = provider.GetRequiredService<ICommandHandler>();
     commandHandler.Install();
@@ -214,11 +208,8 @@ void Install(IServiceProvider provider)
     var eventHandler = provider.GetRequiredService<IEventHandler>();
     eventHandler.Install();
 
-    // Register the jobs
-    var guid = jobHandler.RegisterJob(new JobHandler.Args(new JobTimeSpanRepeat(
-            TimeSpan.Parse(cfg["BotSettings:Jobs:CleanupWarningRoles"])),
-        async () => { await clearWarningRoles.Perform(); }));
-    log.LogDebug(EventIds.Jobs, "Registered Job for cleaning warning roles with guid: {Guid}", guid);
+    var jobHandler = provider.GetRequiredService<IJobHandler>();
+    jobHandler.Install();
 
     logger.LogInformation(EventIds.Startup, "Installed bot");
 }

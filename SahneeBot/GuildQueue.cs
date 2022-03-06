@@ -37,7 +37,8 @@ public class GuildQueue
             _guildId = guildId;
             _thread = new Thread(Loop)
             {
-                IsBackground = true
+                IsBackground = true,
+                Priority = ThreadPriority.AboveNormal
             };
             Start();
         }

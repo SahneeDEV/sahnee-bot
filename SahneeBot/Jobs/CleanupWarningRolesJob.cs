@@ -1,5 +1,5 @@
 ﻿using Discord;
-using Discord.WebSocket;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBot.Tasks;
@@ -11,7 +11,9 @@ namespace SahneeBot.Jobs;
 /// <summary>
 /// The cleanup warning job regularly cleans all warnings roles in the system that are no longer used.
 /// </summary>
-public class CleanupWarningRolesJob : JobBase
+
+[Job]
+public sealed class CleanupWarningRolesJob : JobBase
 {
     private readonly ILogger<CleanupWarningRolesJob> _logger;
     private readonly Bot _bot;
@@ -20,6 +22,7 @@ public class CleanupWarningRolesJob : JobBase
     private readonly JobFailedDiscordFormatter _jobFailedDiscordFormatter;
 
     public CleanupWarningRolesJob(IServiceProvider provider
+        , IConfiguration cfg
         , ILogger<CleanupWarningRolesJob> logger
         , Bot bot
         , SahneeBotPrivateMessageToGuildMembersTask privateMessage
@@ -31,6 +34,7 @@ public class CleanupWarningRolesJob : JobBase
         _privateMessage = privateMessage;
         _cleanupWarningRolesTask = cleanupWarningRolesTask;
         _jobFailedDiscordFormatter = jobFailedDiscordFormatter;
+        Time = new JobTimeSpanRepeat(TimeSpan.Parse(cfg["BotSettings:Jobs:CleanupWarningRoles"]));
     }
 
     /// <summary>
