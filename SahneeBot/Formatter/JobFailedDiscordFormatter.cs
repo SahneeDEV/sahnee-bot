@@ -11,6 +11,12 @@ public class JobFailedDiscordFormatter : IDiscordFormatter<JobFailedDiscordForma
     private readonly DiscordSocketClient _bot;
     private readonly DefaultFormatArguments _fmt;
 
+    /// <summary>
+    /// Arguments for the formatter.
+    /// </summary>
+    /// <param name="GuildId">The guild on which the job failed.</param>
+    /// <param name="JobName">The name of the job that failed.</param>
+    /// <param name="Hint">Why the job failed.</param>
     public record struct Args(ulong GuildId, string JobName, string Hint);
     
     public JobFailedDiscordFormatter(DiscordSocketClient bot

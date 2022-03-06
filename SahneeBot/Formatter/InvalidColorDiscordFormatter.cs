@@ -9,6 +9,11 @@ public class InvalidColorDiscordFormatter : IDiscordFormatter<InvalidColorDiscor
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;
 
+    /// <summary>
+    /// Arguments for the formatter.
+    /// </summary>
+    /// <param name="Color">The attempted color.</param>
+    /// <param name="Hint">Why setting the color failed.</param>
     public record struct Args(string Color, string Hint);
 
     public InvalidColorDiscordFormatter(DefaultFormatArguments defaultFormatArguments)

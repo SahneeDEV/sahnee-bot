@@ -2,6 +2,9 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Prints that a user cannot be unwarned.
+/// </summary>
 public class CannotUnwarnDiscordFormatter: IDiscordFormatter<IUser>
 {
     private readonly DefaultFormatArguments _fmt;

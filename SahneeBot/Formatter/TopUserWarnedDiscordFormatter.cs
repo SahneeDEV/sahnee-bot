@@ -4,6 +4,9 @@ using SahneeBotController.Tasks;
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Formats a single place in the top board.
+/// </summary>
 public class TopUserWarnedDiscordFormatter: IDiscordFormatter<TopUserWarnedDiscordFormatter.Args>
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;
@@ -12,6 +15,9 @@ public class TopUserWarnedDiscordFormatter: IDiscordFormatter<TopUserWarnedDisco
     /// <summary>
     /// Arguments for the generation of the format of the warnings top command
     /// </summary>
+    /// <param name="Place">The warning place.</param>
+    /// <param name="UserId">The user ID.</param>
+    /// <param name="WarningNumber">The amount of warnings of the user.</param>
     public record struct Args(uint Place, ulong UserId, uint WarningNumber);
     
     public TopUserWarnedDiscordFormatter(DefaultFormatArguments defaultFormatArguments, DiscordSocketClient bot)

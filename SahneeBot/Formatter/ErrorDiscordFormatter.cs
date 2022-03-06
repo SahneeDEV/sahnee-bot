@@ -21,7 +21,14 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
     /// <param name="Error">The actual error.</param>
     /// <param name="TicketId">The ticket ID</param>
     /// <param name="ReportSensitive">Also report sensitive information?</param>
-    public record struct Args(string InteractionType, string InteractionName, string FullInteraction, ulong? GuildId, ulong? UserId, Exception Error, string TicketId, bool ReportSensitive);
+    public record struct Args(string InteractionType
+        , string InteractionName
+        , string FullInteraction
+        , ulong? GuildId
+        , ulong? UserId
+        , Exception Error
+        , string TicketId
+        , bool ReportSensitive);
     
     private readonly DefaultFormatArguments _fmt;
     private readonly IConfiguration _cfg;
@@ -47,11 +54,14 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
         var supportServer = _cfg["BotSettings:SupportServer"];
         if (reportSensitive)
         {
-            embed.Title = $"Error in {interactionName} {interactionType.ToLowerInvariant()} on " + (guild != null ? _fmt.GetMention(guild) : "a global interaction");
+            embed.Title = $"Error in {interactionName} {interactionType.ToLowerInvariant()} on " + 
+                          (guild != null ? _fmt.GetMention(guild) : "a global interaction");
             embed.Color = Color.DarkRed;
             embed.AddField("Ticket Id", ticketId + " (" + supportServer + ")", true);
-            embed.AddField("User", user != null ? _fmt.GetMention(user) + " `(#" + user.Id + ")`" : "n/a", true);
-            embed.AddField("Server", guild != null ? _fmt.GetMention(guild) + " `(#" + guild.Id + ")`" : "n/a", true);
+            embed.AddField("User", user != null ? _fmt.GetMention(user) 
+                                                  + " `(#" + user.Id + ")`" : "n/a", true);
+            embed.AddField("Server", guild != null ? _fmt.GetMention(guild) 
+                                                     + " `(#" + guild.Id + ")`" : "n/a", true);
             embed.AddField(interactionType, "`" + fullInteraction + "`");
             embed.AddField(error.GetType().Name, error.Message[..Math.Min(error.Message.Length, 1000)]);
             embed.AddField("Stack trace",
@@ -64,8 +74,9 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
             embed.AddField(interactionType, interactionName, true);
             embed.AddField("Support Server", supportServer, true);
             embed.AddField("Ticket Id", ticketId, true);
-            embed.AddField("Sorry!", $"The Sahnee-Bot encountered an error while processing your {interactionType.ToLowerInvariant()}! Please " +
-                                     "join our support server and post a screenshot of this message or your ticket ID.");
+            embed.AddField("Sorry!", "The Sahnee-Bot encountered an error while processing your " +
+                                     $"{interactionType.ToLowerInvariant()}! Please join our support server and post " +
+                                     "a screenshot of this message or your ticket ID.");
         }
         return new DiscordFormat(embed);
     }

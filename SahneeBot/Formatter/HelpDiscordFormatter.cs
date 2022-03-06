@@ -2,13 +2,19 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Formats the bot help.
+/// </summary>
 public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
 {
+    /// <summary>
+    /// Arguments for the help formatter.
+    /// </summary>
     public record struct Args();
     
     private readonly DefaultFormatArguments _defaultFormatArguments;
-    private readonly string _website = "https://sahnee.dev/en/project/sahnee-bot/";
-    private readonly string _github = "https://github.com/Sahnee-DE/sahnee-bot";
+    private const string WEBSITE = "https://sahnee.dev/en/project/sahnee-bot/";
+    private const string GITHUB = "https://github.com/Sahnee-DE/sahnee-bot";
 
     public HelpDiscordFormatter(DefaultFormatArguments defaultFormatArguments)
     {
@@ -24,13 +30,13 @@ public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
             new()
             {
                 Name = "Website of the bot",
-                Value = _website,
+                Value = WEBSITE,
                 IsInline = true
             },
             new()
             {
                 Name = "GitHub Repository of the bot",
-                Value = _github,
+                Value = GITHUB,
                 IsInline = true
             }
         };

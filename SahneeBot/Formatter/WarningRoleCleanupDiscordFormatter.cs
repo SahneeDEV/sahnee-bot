@@ -2,6 +2,9 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Prints information about unused roles having been cleaned up.
+/// </summary>
 public class WarningRoleCleanupDiscordFormatter : IDiscordFormatter<WarningRoleCleanupDiscordFormatter.Args>
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;

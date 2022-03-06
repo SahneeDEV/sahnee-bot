@@ -2,10 +2,17 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Prints information about the prefix having been changed.
+/// </summary>
 public class WarningRolePrefixChangedDiscordFormatter : IDiscordFormatter<WarningRolePrefixChangedDiscordFormatter.Args>
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;
 
+    /// <summary>
+    /// Arguments for this formatter.
+    /// </summary>
+    /// <param name="NewPrefix">The new prefix.</param>
     public record struct Args(string NewPrefix);
     
     public WarningRolePrefixChangedDiscordFormatter(DefaultFormatArguments defaultFormatArguments)

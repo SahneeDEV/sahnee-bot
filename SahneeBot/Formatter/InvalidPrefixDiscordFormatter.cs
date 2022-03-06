@@ -9,6 +9,11 @@ public class InvalidPrefixDiscordFormatter: IDiscordFormatter<InvalidPrefixDisco
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;
 
+    /// <summary>
+    /// Arguments for the formatter.
+    /// </summary>
+    /// <param name="Prefix">The attempted prefix.</param>
+    /// <param name="Hint">Why setting the prefix failed.</param>
     public record struct Args(string Prefix, string Hint);
 
     public InvalidPrefixDiscordFormatter(DefaultFormatArguments defaultFormatArguments)

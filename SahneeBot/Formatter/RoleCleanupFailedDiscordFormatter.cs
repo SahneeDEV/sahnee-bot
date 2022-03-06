@@ -9,6 +9,10 @@ public class RoleCleanupFailedDiscordFormatter: IDiscordFormatter<RoleCleanupFai
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;
 
+    /// <summary>
+    /// Arguments for the formatter.
+    /// </summary>
+    /// <param name="Hint">Why the cleanup failed</param>
     public record struct Args(string Hint);
 
     public RoleCleanupFailedDiscordFormatter(DefaultFormatArguments defaultFormatArguments)

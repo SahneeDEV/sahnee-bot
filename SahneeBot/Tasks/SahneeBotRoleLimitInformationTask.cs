@@ -12,7 +12,7 @@ public class SahneeBotRoleLimitInformationTask : ITask<SahneeBotRoleLimitInforma
 {
     private readonly GetGuildStateTask _getGuildStateTask;
     private readonly InformRoleLimitDiscordFormatter _informRoleLimitDiscordFormatter;
-    private readonly int _discordGuildRoleLimitThreshold = 245;
+    private const int DISCORD_GUILD_ROLE_LIMIT_THRESHOLD = 245;
 
     public record struct Args(int GuildCurrentRoleCount, ulong GuildId, SocketSlashCommand? SocketSlashCommand);
 
@@ -31,16 +31,17 @@ public class SahneeBotRoleLimitInformationTask : ITask<SahneeBotRoleLimitInforma
     /// <returns>true for yes, false for no</returns>
     public async Task<bool> Execute(ITaskContext context, Args args)
     {
-        var guildState = await _getGuildStateTask.Execute(context, new GetGuildStateTask.Args(args.GuildId));
+        var (guildCurrentRoleCount, guildId, socketSlashCommand) = args;
+        var guildState = await _getGuildStateTask.Execute(context, new GetGuildStateTask.Args(guildId));
         if (guildState.SetRoles)
         {
             //check if the current count is higher than the threshold percent
-            if (_discordGuildRoleLimitThreshold <= args.GuildCurrentRoleCount)
+            if (DISCORD_GUILD_ROLE_LIMIT_THRESHOLD <= guildCurrentRoleCount)
             {
                 //error
-                var channel = (ITextChannel)args.SocketSlashCommand?.Channel!;
+                var channel = (ITextChannel)socketSlashCommand?.Channel!;
                 await _informRoleLimitDiscordFormatter.FormatAndSend(
-                    new InformRoleLimitDiscordFormatter.Args(args.GuildCurrentRoleCount)
+                    new InformRoleLimitDiscordFormatter.Args(guildCurrentRoleCount)
                     ,channel.SendMessageAsync);
                 return false;
             }

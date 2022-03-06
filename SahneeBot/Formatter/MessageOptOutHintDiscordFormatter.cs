@@ -2,6 +2,9 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Formats a hint about how to opt out of bot messages for a guild.
+/// </summary>
 public class MessageOptOutHintDiscordFormatter : IDiscordFormatter<MessageOptOutHintDiscordFormatter.Args>
 {
     private readonly DiscordSocketClient _bot;

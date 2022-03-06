@@ -2,6 +2,9 @@
 
 namespace SahneeBot.Formatter;
 
+/// <summary>
+/// Prints information that the warning role settings have changed.
+/// </summary>
 public class WarningRoleSetDiscordFormatter : IDiscordFormatter<WarningRoleSetDiscordFormatter.Args>
 {
     private readonly DefaultFormatArguments _defaultFormatArguments;

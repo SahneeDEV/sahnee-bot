@@ -9,11 +9,11 @@ namespace SahneeBot.Formatter;
 /// </summary>
 public class DefaultFormatArguments
 {
-    private readonly string _defaultName = "SahneeBot";
-    private readonly string _defaultWebsiteUrl = "https://sahnee.dev/en/project/sahnee-bot/";
-    private readonly string _defaultIconUrl = "https://sahnee.dev/wp-content/uploads/2020/04/sahnee-bot-150x150.png";
-    private readonly string _defaultFooterText = "proudly presented by sahnee.dev";
-    private readonly Color _color = new Color(243, 9, 131);
+    private const string DEFAULT_NAME = "SahneeBot";
+    private const string DEFAULT_WEBSITE_URL = "https://sahnee.dev/en/project/sahnee-bot/";
+    private const string DEFAULT_ICON_URL = "https://sahnee.dev/wp-content/uploads/2020/04/sahnee-bot-150x150.png";
+    private const string DEFAULT_FOOTER_TEXT = "proudly presented by sahnee.dev";
+    private readonly Color _color = new(243, 9, 131);
 
     private readonly IConfiguration _configuration;
     
@@ -30,13 +30,13 @@ public class DefaultFormatArguments
     {
         return new EmbedAuthorBuilder()
         {
-            Name = _defaultName,
+            Name = DEFAULT_NAME,
             Url = !string.IsNullOrWhiteSpace(_configuration["BotSettings:Url"])
                 ? _configuration["BotSettings:Url"]
-                : _defaultWebsiteUrl,
+                : DEFAULT_WEBSITE_URL,
             IconUrl = !string.IsNullOrWhiteSpace(_configuration["BotSettings:IconUrl"])
                 ? _configuration["BotSettings:IconUrl"]
-                : _defaultIconUrl
+                : DEFAULT_ICON_URL
         };
     }
 
@@ -48,10 +48,10 @@ public class DefaultFormatArguments
     {
         return new EmbedFooterBuilder()
         {
-            Text = _defaultFooterText,
+            Text = DEFAULT_FOOTER_TEXT,
             IconUrl = !string.IsNullOrWhiteSpace(_configuration["BotSettings:IconUrl"])
                 ? _configuration["BotSettings:IconUrl"]
-                : _defaultIconUrl
+                : DEFAULT_ICON_URL
         };
     }
     
@@ -71,19 +71,28 @@ public class DefaultFormatArguments
     /// <returns>The mention.</returns>
     // ReSharper disable MemberCanBeMadeStatic.Global
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    public string GetMention(IUser user)
+    public string GetMention(IUser? user)
     {
-        return user.Mention;
+        return user == null ? "n/a" : user.Mention;
     }
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    public string GetMention(IGuild guild)
+    public string GetMention(IGuild? guild)
     {
-        return $"*{guild.Name}*";
+        return guild == null ? "n/a" : $"*{guild.Name}*";
     }
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    public string GetMention(ulong userId)
+    public string GetMention(IRole? role)
     {
-        return "<@" + userId + ">";
+        return role == null ? "n/a" : role.Mention;
+    }
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public string GetMention(ulong? userId)
+    {
+        if (!userId.HasValue)
+        {
+            return "n/a";
+        }
+        return "<@" + userId.Value + ">";
     }
     // ReSharper enable MemberCanBeMadeStatic.Global
 

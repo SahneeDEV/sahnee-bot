@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 
 namespace SahneeBot.Activity;
 
+/// <summary>
+/// Updates the bot activity.
+/// </summary>
 public class BotActivity
 {
     private readonly ILogger<BotActivity> _logger;
