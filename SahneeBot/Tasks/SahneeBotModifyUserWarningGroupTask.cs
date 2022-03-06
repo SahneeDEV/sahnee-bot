@@ -29,7 +29,7 @@ public class SahneeBotModifyWarningGroupTask : ModifyUserWarningGroupTask
             new GetGuildStateTask.Args(args.GuildId));
         if (!guildState.SetRoles)
         {
-            return new Error<ulong>("Role handling has been disabled for this server.");
+            return new Success<ulong>(0);
         }
         // Check if the new role already exists on the guild
         var currentGuild = await _bot.Client.GetGuildAsync(args.GuildId);

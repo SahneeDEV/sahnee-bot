@@ -26,8 +26,6 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
     /// </summary>
     protected readonly IServiceProvider ServiceProvider;
 
-    private readonly ILogger<CommandBase> _logger;
-    private readonly GuildQueue _queue;
     private readonly GetRolesOfUserTask _roles;
     private readonly MissingPermissionDiscordFormatter _missingPermFmt;
     private readonly ErrorDiscordFormatter _errorFmt;
@@ -44,8 +42,6 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
     {
         ServiceProvider = serviceProvider;
         // We resolve all further classes manually instead of injection to keep the ctor simple for inheritance.
-        _logger = serviceProvider.GetRequiredService<ILogger<CommandBase>>();
-        _queue = serviceProvider.GetRequiredService<GuildQueue>();
         _roles = serviceProvider.GetRequiredService<GetRolesOfUserTask>();
         _missingPermFmt = serviceProvider.GetRequiredService<MissingPermissionDiscordFormatter>();
         _errorFmt = serviceProvider.GetRequiredService<ErrorDiscordFormatter>();

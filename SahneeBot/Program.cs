@@ -58,7 +58,6 @@ var host = CreateHostBuilder(args)
         // FORMATTER
         services.AddSingleton<DefaultFormatArguments>();
         services.AddTransient<WarningDiscordFormatter>();
-        services.AddTransient<CannotUnwarnDiscordFormatter>();
         services.AddTransient<HelpDiscordFormatter>();
         services.AddTransient<MissingPermissionDiscordFormatter>();
         services.AddTransient<RoleDiscordFormatter>();
@@ -84,6 +83,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<RemovedUsersFromGuildStateDiscordFormatter>();
         services.AddTransient<JobFailedDiscordFormatter>();
         services.AddTransient<RoleCleanupFailedDiscordFormatter>();
+        services.AddTransient<FailedToWarnDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
