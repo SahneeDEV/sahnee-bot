@@ -55,7 +55,8 @@ public class JobHandler : IJobHandler
         _jobThread = new Thread(JobThread)
         {
             IsBackground = true,
-            Priority = ThreadPriority.AboveNormal
+            Priority = ThreadPriority.AboveNormal,
+            Name = "JobHandler"
         };
     }
 

@@ -12,6 +12,8 @@ public class DiscordFormat
     /// Voids the message.
     /// </summary>
     public static readonly CustomDelegate Void = (fmt, opts) => Task.CompletedTask;
+
+    private const int MAX_EMBED_COUNT = 10;
     
     /// <summary>
     /// The text of the message.
@@ -172,7 +174,7 @@ public class DiscordFormat
     }
     public Task Send(ModifyOriginalResponseAsyncDelegate del, SendOptions sendOptions = default)
     {
-        del(properties =>
+        return del(properties =>
         {
             properties.Content = Opt(Text);
             properties.Embed = Opt(Embed?.Build());
@@ -180,11 +182,10 @@ public class DiscordFormat
             properties.AllowedMentions = Opt(AllowedMentions);
             properties.Components = Opt(Components);
         }, sendOptions.Request);
-        return Task.CompletedTask;
     }
     public Task Send(ModifyOriginalResponseAsyncDelegate2 del, SendOptions sendOptions = default)
     {
-        del(properties =>
+        return del(properties =>
         {
             properties.Content = Opt(Text);
             properties.Embed = Opt(Embed?.Build());
@@ -192,7 +193,6 @@ public class DiscordFormat
             properties.AllowedMentions = Opt(AllowedMentions);
             properties.Components = Opt(Components);
         }, sendOptions.Request);
-        return Task.CompletedTask;
     }
     public Task Send(CustomDelegate del, SendOptions sendOptions = default)
     {
@@ -242,7 +242,7 @@ public class DiscordFormat
                 var newEmbeds = oldEmbeds != null 
                     ? oldEmbeds.Concat(embeds).ToArray() 
                     : embeds;
-                if (newEmbeds.Length > 25)
+                if (newEmbeds.Length > MAX_EMBED_COUNT)
                 {
                     result.Add(new DiscordFormat());
                     result.Last().Embeds = embeds;
