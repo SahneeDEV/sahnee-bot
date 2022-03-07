@@ -21,14 +21,17 @@ public class SahneeBotCleanupWarningRolesTask : ITask<SahneeBotCleanupWarningRol
     private readonly Bot _bot;
     private readonly GetGuildStateTask _guildStateTask;
     private readonly ILogger<SahneeBotCleanupWarningRolesTask> _logger;
+    private readonly SahneeBotDiscordError _discordError;
 
     public SahneeBotCleanupWarningRolesTask(Bot bot
         , GetGuildStateTask guildStateTask
-        , ILogger<SahneeBotCleanupWarningRolesTask> logger)
+        , ILogger<SahneeBotCleanupWarningRolesTask> logger
+        , SahneeBotDiscordError discordError)
     {
         _bot = bot;
         _guildStateTask = guildStateTask;
         _logger = logger;
+        _discordError = discordError;
     }
 
     public async Task<ISuccess<uint>> Execute(ITaskContext ctx, Args arg)
@@ -89,23 +92,20 @@ public class SahneeBotCleanupWarningRolesTask : ITask<SahneeBotCleanupWarningRol
             }
             catch (Exception exception)
             {
-                // Remember that we failed to delete at least one role, but keep going
-                if (exception is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+                error = await _discordError.TryGetError<uint>(ctx, new SahneeBotDiscordError.ErrorOptions
                 {
-                    // Bot is below managed role
-                    error = SahneeBotDiscordError.GetMissingRolePermissionsError<uint>(prefix);
-                    continue;
-                }
-
-                if (exception is HttpException {HttpCode: HttpStatusCode.Forbidden})
+                    Exception = exception,
+                    GuildId = guildId
+                });
+                if (error == null)
                 {
-                    // Bot cannot manage roles
-                    error = SahneeBotDiscordError.GetMissingRolePermissionsError<uint>(prefix);
-                    continue;
+                    throw;
                 }
-
-                throw;
             }
+        }
+        if (error != null)
+        {
+            return error;
         }
         if (deleted > 0)
         {

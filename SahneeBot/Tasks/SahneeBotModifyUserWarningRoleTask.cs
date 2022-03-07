@@ -14,16 +14,19 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
     private readonly Bot _bot;
     private readonly ILogger<SahneeBotModifyUserWarningRoleTask> _logger;
     private readonly CheckRoleLimitTask _checkRoleLimitTask;
+    private readonly SahneeBotDiscordError _discordError;
 
     public SahneeBotModifyUserWarningRoleTask(GetGuildStateTask guildStateTask
         , Bot bot
         , ILogger<SahneeBotModifyUserWarningRoleTask> logger
-        , CheckRoleLimitTask checkRoleLimitTask)
+        , CheckRoleLimitTask checkRoleLimitTask
+        , SahneeBotDiscordError discordError)
     {
         _guildState = guildStateTask;
         _bot = bot;
         _logger = logger;
         _checkRoleLimitTask = checkRoleLimitTask;
+        _discordError = discordError;
     }
 
     public override async Task<ISuccess<ulong>> Execute(ITaskContext ctx, Args args)
@@ -83,23 +86,20 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
             {
                 await removeRolesCommand.Undo();
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 // ignored
             }
-
-            if (exception is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+            var error = await _discordError.TryGetError<ulong>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                // Bot is below managed role
-                return SahneeBotDiscordError.GetMissingRolePermissionsError<ulong>(guildState.WarningRolePrefix);
-            }
-
-            if (exception is HttpException {HttpCode: HttpStatusCode.Forbidden})
+                Exception = exception,
+                GuildId = args.GuildId
+            });
+            if (error != null)
             {
-                // Bot cannot manage roles
-                return SahneeBotDiscordError.GetMissingRolePermissionsError<ulong>(guildState.WarningRolePrefix);
+                return error;
             }
-            return new Error<ulong>(exception.Message);
+            throw;
         }
         
         // Check if the new amount is 0
@@ -121,11 +121,11 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
                     var rgb = ColorConverter.HexToRgb(new HEX(guildState.WarningRoleColor));
                     roleColor = new Color(rgb.R, rgb.G, rgb.B);
                 }
-                //create the new role
+                // Create the new role
                 newRole = await currentGuild
                     .CreateRoleAsync(newRoleName, default,
                         roleColor, false, null);
-                //add the new role to the guild
+                // Add the new role to the guild
                 await currentGuildUser.AddRoleAsync(newRole);
                 await _checkRoleLimitTask.Execute(ctx, new CheckRoleLimitTask.Args(currentGuild.Id));
                 return new Success<ulong>(newRole.Id);
@@ -136,24 +136,21 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
                     , exception, "Failed to create and add a new role to a guid {Guild}"
                     , args.GuildId);
                 await removeRolesCommand.Undo();
-                if (exception is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+                var error = await _discordError.TryGetError<ulong>(ctx, new SahneeBotDiscordError.ErrorOptions
                 {
-                    // Bot is below managed role
-                    return SahneeBotDiscordError.GetMissingRolePermissionsError<ulong>(guildState.WarningRolePrefix);
-                }
-
-                if (exception is HttpException {HttpCode: HttpStatusCode.Forbidden})
+                    Exception = exception,
+                    GuildId = args.GuildId
+                });
+                if (error != null)
                 {
-                    // Bot cannot manage roles
-                    return SahneeBotDiscordError.GetMissingRolePermissionsError<ulong>(guildState.WarningRolePrefix);
+                    return error;
                 }
-                
-                return new Error<ulong>(exception.Message);
+                throw;
             }
         }
-        //check if the role got created or needs to be received from the guild
+        // Check if the role got created or needs to be received from the guild
         newRole = currentGuild.Roles.First(r => r.Name == newRoleName);
-        //add the role to the user
+        // Add the role to the user
         try
         {
             await currentGuildUser.AddRoleAsync(newRole);
@@ -165,18 +162,16 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
                 , exception, "Failed to add a role to a user in guild {Guild}"
                 , args.GuildId);
             await removeRolesCommand.Undo();
-            if (exception is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+            var error = await _discordError.TryGetError<ulong>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                // Bot is below managed role
-                return SahneeBotDiscordError.GetMissingRolePermissionsError<ulong>(guildState.WarningRolePrefix);
-            }
-
-            if (exception is HttpException {HttpCode: HttpStatusCode.Forbidden})
+                Exception = exception,
+                GuildId = args.GuildId
+            });
+            if (error != null)
             {
-                // Bot cannot manage roles
-                return SahneeBotDiscordError.GetMissingRolePermissionsError<ulong>(guildState.WarningRolePrefix);
+                return error;
             }
-            return new Error<ulong>(exception.Message);
+            throw;
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using Discord;
-using Discord.Net;
 using SahneeBotController;
 using SahneeBotController.Tasks;
 
@@ -8,11 +7,14 @@ namespace SahneeBot.Tasks;
 public class SahneeBotChangeWarningRoleNameTask : ChangeWarningRoleNameTask
 {
     private readonly Bot _bot;
+    private readonly SahneeBotDiscordError _discordError;
 
     public SahneeBotChangeWarningRoleNameTask(IServiceProvider provider
-        , Bot bot) : base(provider)
+        , Bot bot
+        , SahneeBotDiscordError discordError) : base(provider)
     {
         _bot = bot;
+        _discordError = discordError;
     }
 
     public override async Task<ISuccess<string>> Execute(ITaskContext ctx, Args args)
@@ -50,13 +52,18 @@ public class SahneeBotChangeWarningRoleNameTask : ChangeWarningRoleNameTask
             });
             await Command.DoAll(commands);
         }
-        catch (Exception error)
+        catch (Exception exception)
         {
-            if (error is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+            var error = await _discordError.TryGetError<string>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                return SahneeBotDiscordError.GetMissingRolePermissionsError<string>(oldPrefix.Value);
+                Exception = exception,
+                GuildId = args.GuildId
+            });
+            if (error != null)
+            {
+                return error;
             }
-            return new Error<string>(error.Message);
+            throw;
         }
 
         return oldPrefix;

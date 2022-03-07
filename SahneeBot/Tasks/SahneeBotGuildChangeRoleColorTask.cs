@@ -1,7 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 using ColorHelper;
 using Discord;
-using Discord.Net;
 using Microsoft.EntityFrameworkCore;
 using SahneeBotController;
 using SahneeBotController.Tasks;
@@ -11,11 +10,14 @@ namespace SahneeBot.Tasks;
 public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
 {
     private readonly Bot _bot;
+    private readonly SahneeBotDiscordError _discordError;
     private const string HEX_REGEX_PATTERN = "^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$";
 
-    public SahneeBotGuildChangeRoleColorTask(Bot bot)
+    public SahneeBotGuildChangeRoleColorTask(Bot bot
+        , SahneeBotDiscordError discordError)
     {
         _bot = bot;
+        _discordError = discordError;
     }
     
     public override async Task<ISuccess<string>> Execute(ITaskContext ctx, Args arg)
@@ -60,13 +62,18 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
             });
             await Command.DoAll(commands);
         }
-        catch (Exception error)
+        catch (Exception exception)
         {
-            if (error is HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions})
+            var error = await _discordError.TryGetError<string>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                return SahneeBotDiscordError.GetMissingRolePermissionsError<string>(guildState.WarningRolePrefix);
+                Exception = exception,
+                GuildId = arg.GuildId
+            });
+            if (error != null)
+            {
+                return error;
             }
-            return new Error<string>(error.Message);
+            throw;
         }
 
         return new Success<string>(arg.RoleColor);
