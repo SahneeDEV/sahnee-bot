@@ -30,7 +30,7 @@ public class NoWarningFoundDiscordFormatter: IDiscordFormatter<NoWarningFoundDis
         var user = userId.HasValue ? await guild.GetUserAsync(userId.Value) : null;
         if (user == null)
         {
-            return new DiscordFormat($"No warnings found on *{_fmt.GetMention(guild)}*.");
+            return new DiscordFormat($"No warnings found on {_fmt.GetMention(guild)}.");
         }
         var issuerStr = issuer ? "issued by" : "issued to";
         return new DiscordFormat($"No warnings found on {_fmt.GetMention(guild)} {issuerStr} " +
