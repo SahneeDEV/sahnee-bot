@@ -1,4 +1,10 @@
-﻿Version 0.9.95:
+﻿Version 0.9.96:
+-- Attention --
+We are about to release a major update for the Sahnee-Bot. Among several overall improvements we have implemented the new Discord slash-command feature.
+Therefore for maintenance and database migration, the Sahnee-Bot will not be available on 03/11/2022 from 8:00 PM CET until about 10:00 PM CET.
+You will get a changelog message once the Sahnee-Bot is up and running again.
+#%&
+Version 0.9.95:
 + Added a link to the [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/) in the `/help` command.
 + The Bot now mentions the [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/) in the tutorial.
 #%&
