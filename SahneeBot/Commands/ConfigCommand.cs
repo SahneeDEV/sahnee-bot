@@ -1,7 +1,6 @@
 ﻿using Discord;
 using Discord.Interactions;
 using SahneeBot.Formatter;
-using SahneeBot.InteractionComponents.SelectMenu;
 using SahneeBot.Tasks;
 using SahneeBotController;
 using SahneeBotController.Tasks;
@@ -391,16 +390,16 @@ public class ConfigCommand : CommandBase
     public class RemoveUsersCommand : CommandBase
     {
         private readonly SahneeBotGetLeftGuildUsersTask _sahneeBotGetLeftGuildUsersTask;
-        private readonly RemoveUserFromGuildSelectMenu _removeUserFromGuildSelectMenu;
+        private readonly RemoveUserFromGuildSelectMenuDiscordFormatter _removeUserFromGuildSelectMenuFmt;
         private readonly RemovedUsersFromGuildStateDiscordFormatter _removedUsersFromGuildStateDiscordFormatter;
 
         public RemoveUsersCommand(IServiceProvider serviceProvider
         , SahneeBotGetLeftGuildUsersTask sahneeBotGetLeftGuildUsersTask
-        , RemoveUserFromGuildSelectMenu removeUserFromGuildSelectMenu
+        , RemoveUserFromGuildSelectMenuDiscordFormatter removeUserFromGuildSelectMenuFmt
         , RemovedUsersFromGuildStateDiscordFormatter removedUsersFromGuildStateDiscordFormatter) : base(serviceProvider)
         {
             _sahneeBotGetLeftGuildUsersTask = sahneeBotGetLeftGuildUsersTask;
-            _removeUserFromGuildSelectMenu = removeUserFromGuildSelectMenu;
+            _removeUserFromGuildSelectMenuFmt = removeUserFromGuildSelectMenuFmt;
             _removedUsersFromGuildStateDiscordFormatter = removedUsersFromGuildStateDiscordFormatter;
         }
         
@@ -409,25 +408,21 @@ public class ConfigCommand : CommandBase
                                     ", that can be removed")]
         public Task RemoveOldUsersFromDatabase() => ExecuteAsync(async ctx =>
         {
-            var usersToRemove = await _sahneeBotGetLeftGuildUsersTask.Execute(
-                ctx
+            var usersToRemove = await _sahneeBotGetLeftGuildUsersTask.Execute(ctx
                 , new SahneeBotGetLeftGuildUsersTask.Args(Context.Guild.Id));
             var toRemove = usersToRemove.ToList();
             if (toRemove.ToList().Count > 0)
             {
-                var builder = new ComponentBuilder()
-                    .WithSelectMenu(await _removeUserFromGuildSelectMenu.SelectMenu(
-                        new RemoveUserFromGuildSelectMenu.Args(toRemove)));
-                await ModifyOriginalResponseAsync(func: properties =>
-                {
-                    properties.Content = "Please select all users you want to have removed";
-                    properties.Components = builder.Build();
-                });
-                return;
+               await _removeUserFromGuildSelectMenuFmt.FormatAndSend(
+                        new RemoveUserFromGuildSelectMenuDiscordFormatter.Args(toRemove)
+                        , ModifyOriginalResponseAsync);
             }
-            await _removedUsersFromGuildStateDiscordFormatter.FormatAndSend(
-                new RemovedUsersFromGuildStateDiscordFormatter.Args(Context.Guild.Id, 0, 0)
-                , ModifyOriginalResponseAsync);
+            else
+            {
+                await _removedUsersFromGuildStateDiscordFormatter.FormatAndSend(
+                    new RemovedUsersFromGuildStateDiscordFormatter.Args(Context.Guild.Id, 0, 0)
+                    , ModifyOriginalResponseAsync);
+            }
         }, new CommandExecutionOptions
         {
             RequiredRole = RoleType.Administrator,

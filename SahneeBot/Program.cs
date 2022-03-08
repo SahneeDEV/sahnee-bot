@@ -12,7 +12,6 @@ using SahneeBot.Commands;
 using SahneeBot.Events;
 using SahneeBot.Formatter;
 using SahneeBot.InteractionComponents;
-using SahneeBot.InteractionComponents.SelectMenu;
 using SahneeBot.Jobs;
 using SahneeBot.Tasks;
 using SahneeBotController.Tasks;
@@ -85,6 +84,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<JobFailedDiscordFormatter>();
         services.AddTransient<RoleCleanupFailedDiscordFormatter>();
         services.AddTransient<FailedToWarnDiscordFormatter>();
+        services.AddTransient<RemoveUserFromGuildSelectMenuDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -120,8 +120,6 @@ var host = CreateHostBuilder(args)
         services.AddTransient<SahneeBotPrivateMessageToGuildMembersTask>();
         // ACTIVITY
         services.AddTransient<SahneeBotActivityTask>();
-        // SELECT MENUS
-        services.AddTransient<RemoveUserFromGuildSelectMenu>();
         // DISCORD
         services.AddSingleton(provider =>
         {

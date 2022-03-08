@@ -1,0 +1,12 @@
+﻿namespace SahneeBot.InteractionComponents;
+
+/// <summary>
+/// The interaction handler for all interactions.
+/// </summary>
+public interface IInteractionHandler
+{
+    /// <summary>
+    /// Installs the interaction handler.
+    /// </summary>
+    void Install();
+}

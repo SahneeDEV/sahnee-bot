@@ -1,13 +1,12 @@
 ﻿using Discord;
 
-namespace SahneeBot.InteractionComponents.SelectMenu;
+namespace SahneeBot.Formatter;
 
-public class RemoveUserFromGuildSelectMenu : ISelectMenu<RemoveUserFromGuildSelectMenu.Args>
+public class RemoveUserFromGuildSelectMenuDiscordFormatter : IDiscordFormatter<RemoveUserFromGuildSelectMenuDiscordFormatter.Args>
 {
-
     public record struct Args(IEnumerable<IUser> Users);
-
-    public Task<SelectMenuBuilder> SelectMenu(Args arg)
+    
+    public Task<DiscordFormat> Format(Args arg)
     {
         var menuBuilder = new SelectMenuBuilder()
             .WithPlaceholder("Select one or more Users that will be removed")
@@ -21,6 +20,12 @@ public class RemoveUserFromGuildSelectMenu : ISelectMenu<RemoveUserFromGuildSele
                 , currentUser.Id.ToString());
         }
 
-        return Task.FromResult(menuBuilder);
+        var builder = new ComponentBuilder().WithSelectMenu(menuBuilder);
+
+        return Task.FromResult(new DiscordFormat
+        {
+            Text = "Please select all users you want to have removed"
+            , Components = builder
+        });
     }
 }

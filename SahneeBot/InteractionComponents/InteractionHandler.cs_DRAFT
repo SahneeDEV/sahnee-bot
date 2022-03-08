@@ -1,0 +1,41 @@
+﻿using System.Reflection;
+using Microsoft.Extensions.Logging;
+using SahneeBot.Jobs;
+
+namespace SahneeBot.InteractionComponents;
+
+public class InteractionHandler : IInteractionHandler
+{
+    private readonly IServiceProvider _provider;
+    private readonly ILogger<JobHandler> _logger;
+    private IJob[] _discoveredJobs;
+
+    public InteractionHandler(IServiceProvider provider, ILogger<InteractionHandler> logger)
+    {
+        _provider = provider;
+        _logger = logger;
+    }
+    
+    public void Install()
+    {
+        AddModulesAsync(Assembly.GetEntryAssembly()!, _provider);
+    }
+
+    private Task AddModulesAsync(Assembly assembly, IServiceProvider provider)
+    {
+        _discoveredJobs = assembly
+            .GetTypes()
+            .Where(type => type.GetCustomAttribute<JobAttribute>() != null)
+            .Select(type => ReflectionUtils<IJob>.CreateBuilder<IJobHandler>(type.GetTypeInfo(), this))
+            .Select(func => func(provider))
+            .ToArray();
+        foreach (var job in _discoveredJobs)
+        {
+            _logger.LogInformation(EventIds.Jobs, "Registering job {Job} - {Time}", job, job.Time);
+            var guid = Register(new JobHandler.JobRegistrationOptions(job.Time, job.Perform));
+            _logger.LogDebug(EventIds.Jobs, "Registered job {Job} with ID {Guid}", job, guid);
+        }
+
+        return Task.CompletedTask;
+    }
+}

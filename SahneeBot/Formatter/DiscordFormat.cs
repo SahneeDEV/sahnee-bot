@@ -30,7 +30,7 @@ public class DiscordFormat
     /// <summary>
     /// The message components.
     /// </summary>
-    public MessageComponent? Components = null;
+    public ComponentBuilder? Components = null;
     /// <summary>
     /// A single embed of the message. Alias for creating an Embed array with a single element.
     /// </summary>
@@ -59,6 +59,15 @@ public class DiscordFormat
     public DiscordFormat(EmbedBuilder embed)
     {
         Embed = embed;
+    }
+
+    /// <summary>
+    /// Creates a format with the given component.
+    /// </summary>
+    /// <param name="components">The component.</param>
+    public DiscordFormat(ComponentBuilder components)
+    {
+        Components = components;
     }
 
     /// <summary>
@@ -150,17 +159,17 @@ public class DiscordFormat
     public async Task Send(RespondAsyncDelegate del, SendOptions sendOptions = default)
     {
         await del(Text, Embeds?.Select(e => e.Build()).ToArray(), sendOptions.IsTts, sendOptions.Ephemeral,
-            AllowedMentions, sendOptions.Request, Components, Embed?.Build());
+            AllowedMentions, sendOptions.Request, Components?.Build(), Embed?.Build());
     }
     public async Task Send(SendMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
-        await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, Components,
+        await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, Components?.Build(),
             Embeds?.Select(e => e.Build()).ToArray());
     }
     public async Task Send(SendChannelMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
         await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, null,
-            Components, null, Embeds?.Select(e => e.Build()).ToArray());
+            Components?.Build(), null, Embeds?.Select(e => e.Build()).ToArray());
     }
     public async Task Send(SendWebhookMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
@@ -170,7 +179,7 @@ public class DiscordFormat
                 ? new[] {Embed.Build()} 
                 : null;
         await del(Text, sendOptions.IsTts, embeds, sendOptions.Username, sendOptions.AvatarUrl, sendOptions.Request,
-            AllowedMentions, Components);
+            AllowedMentions, Components?.Build());
     }
     public Task Send(ModifyOriginalResponseAsyncDelegate del, SendOptions sendOptions = default)
     {
@@ -180,7 +189,7 @@ public class DiscordFormat
             properties.Embed = Opt(Embed?.Build());
             properties.Embeds = Opt(Embeds?.Select(e => e.Build()).ToArray());
             properties.AllowedMentions = Opt(AllowedMentions);
-            properties.Components = Opt(Components);
+            properties.Components = Opt(Components?.Build());
         }, sendOptions.Request);
     }
     public Task Send(ModifyOriginalResponseAsyncDelegate2 del, SendOptions sendOptions = default)
@@ -191,7 +200,7 @@ public class DiscordFormat
             properties.Embed = Opt(Embed?.Build());
             properties.Embeds = Opt(Embeds?.Select(e => e.Build()).ToArray());
             properties.AllowedMentions = Opt(AllowedMentions);
-            properties.Components = Opt(Components);
+            properties.Components = Opt(Components?.Build());
         }, sendOptions.Request);
     }
     public Task Send(CustomDelegate del, SendOptions sendOptions = default)

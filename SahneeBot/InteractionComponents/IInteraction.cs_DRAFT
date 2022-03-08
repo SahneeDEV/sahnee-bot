@@ -1,0 +1,24 @@
+﻿using SahneeBot.Formatter;
+using SahneeBotController;
+using SahneeBotController.Tasks;
+
+namespace SahneeBot.InteractionComponents;
+
+public delegate Task<ISuccess> InteractionSendDelegate(ITaskContext ctx, DiscordFormat fmt);
+
+/// <summary>
+/// Interface for implementing interactions.
+/// </summary>
+/// <typeparam name="TArg">Arguments for the interaction.</typeparam>
+/// <typeparam name="TRes">The result of the interaction.</typeparam>
+public interface IInteraction<in TArg, TRes>
+{
+    /// <summary>
+    /// Handles the interaction.
+    /// </summary>
+    /// <param name="ctx">The context.</param>
+    /// <param name="arg">The argument.</param>
+    /// <param name="del">The delegate to send data.</param>
+    /// <returns>The task result.</returns>
+    public Task<ISuccess<TRes>> Interact(ITaskContext ctx, TArg arg, InteractionSendDelegate del);
+}
