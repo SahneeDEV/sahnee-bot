@@ -3,14 +3,12 @@
 on:
   push:
     branches: [ next ]
-  pull_request:
-    branches: [ next ]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET
@@ -20,4 +18,13 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet publish --no-restore --self-contained true --runtime linux-x64 -o SahneeBot-Linux64
+      - name: Zip
+        run: zip -r SahneeBot-Linux64.zip SahneeBot-Linux64
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "SahneeBot-Linux64.zip"
+          bodyFile: "README.md"
+          tag: ${{ github.run_number }}
+          token: ${{ secrets.GITHUB_TOKEN }}

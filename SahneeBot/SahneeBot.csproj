@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
       <UserSecretsId>50b2d7a5-5011-4689-a0e9-dabaccba980a</UserSecretsId>
+      <RuntimeIdentifiers>win10-x64;linux-x64</RuntimeIdentifiers>
   </PropertyGroup>
 
     <ItemGroup>
