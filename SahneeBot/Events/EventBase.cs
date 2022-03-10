@@ -57,6 +57,7 @@ public abstract class EventBase<TArg> : IEvent<TArg>
         await _contextFactory.ExecuteWithContextAsync(HandleAsyncImpl, new SahneeBotTaskContextFactory.ContextOptions
         {
             Type = "event",
+            Name = GetType().Name,
             PlaceInQueue = opts.PlaceInQueue,
             ErrorReporter = ErrorReporter
         });
