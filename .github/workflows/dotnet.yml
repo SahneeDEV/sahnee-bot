@@ -2,8 +2,6 @@
 
 on:
   push:
-    tags:
-      - '*'
     branches: [ next ]
 
 jobs:
@@ -28,4 +26,5 @@ jobs:
         with:
           artifacts: "SahneeBot-Linux64.zip"
           bodyFile: "README.md"
+          tag: ${{ github.sha }}
           token: ${{ secrets.GITHUB_TOKEN }}
