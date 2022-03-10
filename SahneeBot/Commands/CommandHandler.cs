@@ -27,18 +27,19 @@ public class CommandHandler: ICommandHandler
     public async void Install()
     {
         _logger.LogInformation(EventIds.Startup, "Creating interaction handler...");
-        // Creates the interaction service
-        _service = new InteractionService(_bot.Rest);
-        // Dynamically add all command classes. Command classes must be public and inherit from InteractionModuleBase
-        await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
+
         // Hook up events
-        _bot.Impl(
-            socket =>
+        await _bot.ImplAsync(
+            async socket =>
             {
+                // Creates the interaction service
+                _service = new InteractionService(socket.Rest);
+                // Dynamically add all command classes. Command classes must be public and inherit from InteractionModuleBase
+                await _service.AddModulesAsync(Assembly.GetEntryAssembly(), _provider);
                 socket.GuildAvailable += GuildAvailable;
                 socket.SlashCommandExecuted += SlashCommandExecuted;
             }
-            , rest => throw new InvalidOperationException("The command handler only support the socket client."));
+            , async rest => throw new InvalidOperationException("The command handler only support the socket client."));
     }
 
     /// <summary>
