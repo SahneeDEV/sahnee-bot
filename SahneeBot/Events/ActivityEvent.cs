@@ -26,7 +26,7 @@ public class ActivityEvent : EventBase<IGuild?>
             {
                 socket.JoinedGuild += Handle;
                 socket.LeftGuild += Handle;
-                socket.Ready += () => Handle(null);
+                Handle(null);
             }
             , rest =>
                 throw new InvalidOperationException("The activity event only support the socket client."));
@@ -35,5 +35,6 @@ public class ActivityEvent : EventBase<IGuild?>
     public override Task Handle(IGuild? arg) => HandleAsync(async ctx =>
     {
         await _sahneeBotActivityTask.Execute(ctx, new SahneeBotActivityTask.Args());
+        
     });
 }

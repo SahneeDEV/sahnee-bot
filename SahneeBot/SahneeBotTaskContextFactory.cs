@@ -82,6 +82,8 @@ public class SahneeBotTaskContextFactory
             try
             {
                 // Run context
+                _logger.LogDebug(EventIds.Context, "Executing {Type} on guild {Guild}"
+                    , ctx.Type, opts.PlaceInQueue);
                 success = await del(ctx);
             }
             catch (Exception exception)
