@@ -102,6 +102,7 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
         "IconUrl": "https://sahnee.dev/wp-content/uploads/2020/04/sahnee-bot-150x150.png",
         "Url": "https://sahnee.dev/en/project/sahnee-bot/",
         "WarningRolePrefix": "warning: ",
+        "WarningRoleColor": "#607D8B",
         "SupportServer": "https://discord.gg/FfVurUzVfE",
         "Changelog": "./CHANGELOG.md",
         "ErrorWebhookUrl": "https://discord.com/api/webhooks/12345/abcde",
@@ -120,6 +121,7 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
 * `BotSettings:IconUrl` - The icon of the bot used in messages.
 * `BotSettings:Url` - The homepage the bot links to.
 * `BotSettings:WarningRolePrefix` - The default prefix for warning roles of servers that have not configured their own.
+* `BotSettings:WarningRoleColor` - The default color for warning roles on a server.
 * `BotSettings:SupportServer` - A link to the support page for the bot.
 * `BotSettings:Changelog` - The path to the changelog file on disk. Will be scanned for a new version of bot startup.
 * `BotSettings:ErrorWebhookUrl` - A webhook errors will be sent to.
