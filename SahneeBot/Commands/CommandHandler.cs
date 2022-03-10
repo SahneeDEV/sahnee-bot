@@ -39,7 +39,7 @@ public class CommandHandler: ICommandHandler
                 socket.GuildAvailable += GuildAvailable;
                 socket.SlashCommandExecuted += SlashCommandExecuted;
             }
-            , async rest => throw new InvalidOperationException("The command handler only support the socket client."));
+            , rest => throw new InvalidOperationException("The command handler only support the socket client."));
     }
 
     /// <summary>

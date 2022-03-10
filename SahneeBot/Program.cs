@@ -183,11 +183,7 @@ await bot.ImplAsync(async socket =>
         logger.LogInformation(EventIds.Startup, "Starting bot");
         await socket.StartAsync();
         logger.LogInformation(EventIds.Startup, "Started bot");
-        socket.Ready += () =>
-        {
-            Install(host.Services);
-            return Task.CompletedTask;
-        };
+        Install(host.Services);
     }
     , async rest =>
     {
