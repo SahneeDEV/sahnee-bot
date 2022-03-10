@@ -26,5 +26,5 @@ jobs:
         with:
           artifacts: "SahneeBot-Linux64.zip"
           bodyFile: "README.md"
-          tag: ${{ github.sha }}
+          tag: ${{ github.run_number }}
           token: ${{ secrets.GITHUB_TOKEN }}
