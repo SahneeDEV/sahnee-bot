@@ -50,6 +50,7 @@ public abstract class JobBase : IJob
         await _contextFactory.ExecuteWithContextAsync(PerformAsyncImpl, new SahneeBotTaskContextFactory.ContextOptions
         {
             Type = "job",
+            Name = GetType().Name,
             PlaceInQueue = opts.PlaceInQueue,
             ErrorReporter = ErrorReporter
         });

@@ -45,6 +45,10 @@ public class SahneeBotTaskContextFactory
         /// </summary>
         public readonly string Type { get; init; }
         /// <summary>
+        /// The name of context.
+        /// </summary>
+        public readonly string Name { get; init; }
+        /// <summary>
         /// In which guild queue should the event be placed?
         /// </summary>
         public readonly ulong? PlaceInQueue { get; init; }
@@ -56,6 +60,7 @@ public class SahneeBotTaskContextFactory
         public ContextOptions()
         {
             Type = "Context";
+            Name = "Context";
             PlaceInQueue = null;
             ErrorReporter = null;
         }
@@ -82,16 +87,16 @@ public class SahneeBotTaskContextFactory
             try
             {
                 // Run context
-                _logger.LogDebug(EventIds.Context, "Executing {Type} on guild {Guild}"
-                    , ctx.Type, opts.PlaceInQueue);
+                _logger.LogDebug(EventIds.Context, "Executing {Name} {Type} on guild {Guild}"
+                    , opts.Name, ctx.Type, opts.PlaceInQueue);
                 success = await del(ctx);
             }
             catch (Exception exception)
             {
                 // Report error
                 _logger.LogError(EventIds.Context
-                    , exception, "Error in {Type} on guild {Guild}"
-                    , ctx.Type, opts.PlaceInQueue);
+                    , exception, "Error in {Name} {Type} on guild {Guild}"
+                    , opts.Name, ctx.Type, opts.PlaceInQueue);
                 if (opts.ErrorReporter != null)
                 {
                     await opts.ErrorReporter(ctx, exception);

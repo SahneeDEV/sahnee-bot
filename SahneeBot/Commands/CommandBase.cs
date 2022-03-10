@@ -191,10 +191,10 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
         {
             var interaction = (SocketSlashCommand) Context.Interaction;
             var ticketId = await _errorTask.Execute(ctx,
-                new SahneeBotReportErrorTask.Args("Slash-command", interaction.CommandName, GetDebugString(interaction),
+                new SahneeBotReportErrorTask.Args("Slash-command", interaction.CommandName, GetDebugString(interaction, true),
                     Context.Guild?.Id, Context.User.Id, exception));
             await _errorFmt.FormatAndSend(
-                new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, GetDebugString(interaction),
+                new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, GetDebugString(interaction, true),
                     Context.Guild?.Id, Context.User.Id, exception, ticketId, false), ModifyOriginalResponseAsync);
         }
 
@@ -203,6 +203,7 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
             , new SahneeBotTaskContextFactory.ContextOptions
             {
                 Type = "slash-command",
+                Name = GetDebugString((SocketSlashCommand) Context.Interaction),
                 PlaceInQueue = placeInQueue,
                 ErrorReporter = ErrorReporter
             });
@@ -234,20 +235,23 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
         }
     }
 
-    private static string GetDebugString(IDiscordInteraction interaction)
+    private static string GetDebugString(IDiscordInteraction interaction, bool full = false)
     {
         var sb = new StringBuilder();
         if (interaction is ISlashCommandInteraction slashInteraction)
         {
             sb.Append('/');
             sb.Append(slashInteraction.Data.Name);
-            foreach (var option in slashInteraction.Data.Options)
+            if (full)
             {
-                sb.Append(" <");
-                sb.Append(option.Name);
-                sb.Append(':');
-                sb.Append(option.Value);
-                sb.Append('>');
+                foreach (var option in slashInteraction.Data.Options)
+                {
+                    sb.Append(" <");
+                    sb.Append(option.Name);
+                    sb.Append(':');
+                    sb.Append(option.Value);
+                    sb.Append('>');
+                }
             }
 
             sb.Append(" (#");
