@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: dotnet publish --no-restore --self-contained true --runtime linux-x64 -o output
       - name: Zip
-        run: zip -r output SahneeBot-Linux64.zip
+        run: zip -r SahneeBot-Linux64.zip output
       - name: Release
         uses: ncipollo/release-action@v1
         with:
