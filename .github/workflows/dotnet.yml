@@ -20,4 +20,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
       - name: Build
-        run: dotnet build --no-restore
+        run: dotnet publish --no-restore --self-contained true --runtime linux-x64 -o output
+      - name: Zip
+        run: zip -r output SahneeBot-Linux64.zip
+      - name: Release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "SahneeBot-Linux64.zip"
+          bodyFile: "README.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
