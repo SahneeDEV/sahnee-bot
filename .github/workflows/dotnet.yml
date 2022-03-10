@@ -2,8 +2,8 @@
 
 on:
   push:
-    branches: [ next ]
-  pull_request:
+    tags:
+      - '*'
     branches: [ next ]
 
 jobs:
