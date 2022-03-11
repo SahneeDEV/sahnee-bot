@@ -5,7 +5,7 @@ namespace sahnee_bot.Util
     public static class StaticBot
     {
         private static IDiscordClient sahneeBot;
-        private static string BotVersion = "Version 0.9.97:";
+        private static string BotVersion = "Version 0.9.98:";
 
         /// <summary>
         /// Sets the current bot
