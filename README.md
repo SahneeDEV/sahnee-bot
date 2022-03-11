@@ -45,7 +45,7 @@ The following commands can be used to customize the bot on your server:
 * `/config sahnee-permission list` - Lists all roles on your server that have permissions for the bot attached to them. *(Administrator permission required)*
 * `/config role enable` - Enables role creating, causing every user to be assigned a role that displays the amount of warnings they have. (Enabled by default) *(Administrator permission required)*
 * `/config role disable` - Disables the role handling. *(Administrator permission required)*
-* `/config role color <color>` - Sets the color of warning roles created by the bot. *(Administrator permission required)*
+* `/config role color <color>` - Sets the color of warning roles created by the bot. The role color has to he a hex string *(Administrator permission required)*
 * `/config role prefix <prefix>` - Sets the prefix of the role names created by the bot (Defaults to `warning: `). *(Administrator permission required)*
 * `/config role status` - Prints the current configuration of the role handling (if roles are created and the prefix). *(Administrator permission required)*
 * `/config pm opt-out` - Opts out of receiving messages from this bot on the current server. *(This command ignores the bound channel)*
@@ -75,7 +75,50 @@ If the default permissions assigned do not suffice you can assign permissions to
 
 You can also host the bot on your own hardware if you want.
 
-TODO TODO TODO
+Currently we are building the sahnee-bot for linux-x64.
+If you want to run the sahnee-bot on a Windows-system, you have to build the sahnee-bot on your own.
+
+### Migrating from Version 0.9.X to Version > 1.0.0
+
+Because of the change from LiteDb as Database to PostgreSQL as Database, you need to migrate you database to the new schema.
+
+This will be a step by step guide.
+1. Install a PostgreSQL server and create a database with a user that has full access to this database.
+2. Get the modified version of the [LiteDbStudio](https://github.com/Sahnee-DE/LiteDB.Studio) and extract it. (We only increased the limit of entries that can be displayed at once)
+3. Get our [migration tool](https://github.com/Sahnee-DE/sahnee-bot-migrator) and extract it.
+4. Stop your bot.
+5. Download the latest version of the sahnee-bot and run it once, so the database gets initialized with the default tables and columns.
+6. Download the LiteDb files (If the log rotation hasn't been running since the last change there will be two files, one for the database and one log file)
+7. Open the .db file (Make sure you have the log file in the same folder as the db file if you happen to have one)
+8. Now double-click on a table and hit `Run`, next change the tab to `Text`, copy all of the content into the matching file in the migration-tools `db` folder. Repeat this for every table.
+9. The tricky part: in your sahnee-bot-migrator folder there is a `appsettings.json` that needs the `ConnectionStrings:SahneeBotModelContext` to be configured with your PostgreSQL connection data. Please note, that this string differs from the `appsettings.json` used by the bot. If you use non-alphanumerical characters in your password, you need to encode them. Encoding can be done via [this page](https://www.w3schools.com/tags/ref_urlencode.asp). 
+10. Now you run the migration tool. You need to launch the application via a command line (CMD and Powershell work as well).
+11. After the successful migration you are ready to go. Start your bot and have fun!
+
+### Prerequisites
+
+Starting with version 1.0.0 the sahnee-bot switched from the previously used NoSQL LiteDb to a PostgreSQL.
+Thus, for the sahnee-bot to work you now also need to setup a PostgreSQL database.
+Please be aware, that we cannot provide support for your PostgreSQL server.
+
+You need:
+* PostgreSQL `Version 13.X` and later.
+* A user that has full access to a database.
+
+### How to get the bot up and running on linux
+
+* Download the .zip file to your server with for example `wget`.
+* Extract the zip file in a directory. `unzip SahneeBot.zip -d <your destination directory>` (For this you can use the `unzip` package. This can be installed via `sudo apt install unzip`)
+* Copy the example configuration json from below in the `appsettings.json` file of the unzipped SahneeBot folder.
+* If you haven't done so far, you need to create a `Discord Application`. A guide can be found here: [Creating a Discord Bot](https://discordnet.dev/guides/getting_started/first-bot.html) - (To be able to use all features you need to have the following Permission integer: `1101927607366`)
+* Insert the Discord Application Token into the `Discord:Token` string.
+* The next step would be to configure the `ConnectionStrings:SahneeBotModelContext`. (Please be aware, that if you use characters like \` or ; in your password, you need to wrap your password string in `'special;password:'`).
+* Also required is the `BotSettings:ErrorWebhookUrl` parameter. You __need__ to provide this. [How to create a Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
+* For further configuration customization please refer to the *__Configuration__* part of this Readme.
+* It's recommended to run the bot as a service. Please refer to a guide that suits your OS.
+* Finally you can start the bot.
+
+If you encounter any errors, you can join our [support server](https://discord.gg/kuFQZxkS)
 
 ### Configuration
 
