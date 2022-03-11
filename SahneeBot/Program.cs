@@ -52,6 +52,7 @@ var host = CreateHostBuilder(args)
         services.AddSingleton<IEventHandler, EventHandler>();
         services.AddSingleton<IJobHandler, JobHandler>();
         services.AddSingleton<Changelog>();
+        services.AddSingleton<Release>();
         services.AddTransient<SelectMenuExecution>();
         services.AddTransient<SahneeBotTaskContextFactory>();
         services.AddSingleton<SahneeBotDiscordError>();

@@ -1,5 +1,4 @@
-﻿using Discord;
-using Discord.Interactions;
+﻿using Discord.Interactions;
 using SahneeBot.Formatter;
 
 namespace SahneeBot.Commands;
@@ -9,10 +8,10 @@ namespace SahneeBot.Commands;
 /// </summary>
 public class HelpCommand: CommandBase
 {
-   
     private readonly HelpDiscordFormatter _discordFormatter;
 
-    public HelpCommand(HelpDiscordFormatter discordFormatter, IServiceProvider serviceProvider): base(serviceProvider)
+    public HelpCommand(HelpDiscordFormatter discordFormatter
+        , IServiceProvider serviceProvider): base(serviceProvider)
     {
         _discordFormatter = discordFormatter;
     }
@@ -23,6 +22,8 @@ public class HelpCommand: CommandBase
     [SlashCommand("help", "Gives a details about the bot")]
     public Task Help() => ExecuteAsync(async ctx =>
     {
-        await _discordFormatter.FormatAndSend(new HelpDiscordFormatter.Args(), ModifyOriginalResponseAsync);
+        await _discordFormatter.FormatAndSend(
+            new HelpDiscordFormatter.Args(Context.Guild?.Id, Context.User?.Id)
+            , ModifyOriginalResponseAsync);
     });
 }

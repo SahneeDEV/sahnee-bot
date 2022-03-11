@@ -17,6 +17,13 @@ jobs:
           dotnet-version: 6.0.x
       - name: Restore dependencies
         run: dotnet restore
+      - name: Generate release information
+        run: |
+          echo "Build Nr: ${{ github.run_number }}" > ./SahneeBot/ReleaseInformation.txt
+          echo "Build Timestamp: $(date --rfc-3339=ns)" >>  ./SahneeBot/ReleaseInformation.txt
+          echo "Runner: ${{ runner.name }} (${{ runner.os }} ${{ runner.arch }})" >> ./SahneeBot/ReleaseInformation.txt
+          echo "Commit: ${{ github.sha }}" >> ./SahneeBot/ReleaseInformation.txt
+          echo "Repository: ${{ github.repository }}" >> ./SahneeBot/ReleaseInformation.txt
       - name: Build
         run: dotnet publish --no-restore --self-contained true --runtime linux-x64 -o SahneeBot-Linux64
       - name: Zip
