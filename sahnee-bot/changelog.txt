@@ -1,4 +1,10 @@
-﻿Version 0.9.97:
+﻿Version 0.9.98:
+-- Attention --
+Due to unexpected complications we had to roll-back to the previous configuration.
+That means, currently nothing changed for you.
+Therefore we will postpone the release.
+#%&
+Version 0.9.97:
 --- Attention ---
 This is a kind reminder, that today, 03/11/2022 starting at 8:00 PM CET until about 10:00 PM CET the sahnee-bot will be unavailable due to maintanance and database migration.
 #%&
