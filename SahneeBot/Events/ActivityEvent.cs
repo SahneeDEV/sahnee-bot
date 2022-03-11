@@ -26,7 +26,7 @@ public class ActivityEvent : EventBase<IGuild?>
             {
                 socket.JoinedGuild += Handle;
                 socket.LeftGuild += Handle;
-                Handle(null);
+                socket.Ready += () => Handle(null);
             }
             , rest =>
                 throw new InvalidOperationException("The activity event only support the socket client."));

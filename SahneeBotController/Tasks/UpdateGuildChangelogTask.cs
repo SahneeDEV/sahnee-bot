@@ -32,6 +32,8 @@ public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.
         var latestVersion = await GetLatestVersion();
         if (lastVersion == latestVersion)
         {
+            _logger.LogDebug(EventIds.Changelog, "Guild {Guild} already got the latest" +
+                                                 " changelog: {Version}", arg.GuildId, latestVersion);
             return lastVersion;
         }
         // Don't post a changelog for new guilds and also don't post old versions we skipped
