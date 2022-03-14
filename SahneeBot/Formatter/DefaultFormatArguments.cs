@@ -68,31 +68,32 @@ public class DefaultFormatArguments
     /// Mentions the given user.
     /// </summary>
     /// <param name="user">The user.</param>
+    /// <param name="sensitive">Include sensitive information?</param>
     /// <returns>The mention.</returns>
     // ReSharper disable MemberCanBeMadeStatic.Global
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    public string GetMention(IUser? user)
+    public string GetMention(IUser? user, bool sensitive = false)
     {
-        return user == null ? "n/a" : user.Mention;
+        return user == null ? "n/a" : user.Mention + (sensitive ? " (#" + user.Id + ")" : "");
     }
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    public string GetMention(IGuild? guild)
+    public string GetMention(IGuild? guild, bool sensitive = false)
     {
-        return guild == null ? "n/a" : $"*{guild.Name}*";
+        return guild == null ? "n/a" : $"*{guild.Name}*" + (sensitive ? " (#" + guild.Id + ")" : "");
     }
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    public string GetMention(IRole? role)
+    public string GetMention(IRole? role, bool sensitive = false)
     {
-        return role == null ? "n/a" : role.Mention;
+        return role == null ? "n/a" : role.Mention + (sensitive ? " (#" + role.Id + ")" : "");
     }
     [SuppressMessage("Performance", "CA1822:Mark members as static")]
-    public string GetMention(ulong? userId)
+    public string GetMention(ulong? userId, bool sensitive = false)
     {
         if (!userId.HasValue)
         {
             return "n/a";
         }
-        return "<@" + userId.Value + ">";
+        return "<@" + userId.Value + ">" + (sensitive ? " (#" + userId + ")" : "");
     }
     // ReSharper enable MemberCanBeMadeStatic.Global
 

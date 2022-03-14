@@ -11,9 +11,11 @@ using SahneeBot;
 using SahneeBot.Commands;
 using SahneeBot.Events;
 using SahneeBot.Formatter;
+using SahneeBot.Formatter.Error;
 using SahneeBot.InteractionComponents;
 using SahneeBot.Jobs;
 using SahneeBot.Tasks;
+using SahneeBot.Tasks.Error;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 using EventHandler = SahneeBot.Events.EventHandler;
@@ -48,7 +50,6 @@ var host = CreateHostBuilder(args)
         // SYSTEM
         services.AddSingleton<DiscordLogger>();
         services.AddSingleton<GuildQueue>();
-        services.AddSingleton<ICommandHandler, CommandHandler>();
         services.AddSingleton<IEventHandler, EventHandler>();
         services.AddSingleton<IJobHandler, JobHandler>();
         services.AddSingleton<Changelog>();
@@ -64,6 +65,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<RoleDiscordFormatter>();
         services.AddTransient<RoleChangedDiscordFormatter>();
         services.AddTransient<NoWarningFoundDiscordFormatter>();
+        services.AddTransient<ExceptionDiscordFormatter>();
         services.AddTransient<ErrorDiscordFormatter>();
         services.AddTransient<RoleColorChangeDiscordFormatter>();
         services.AddTransient<InvalidColorDiscordFormatter>();
@@ -86,6 +88,7 @@ var host = CreateHostBuilder(args)
         services.AddTransient<RoleCleanupFailedDiscordFormatter>();
         services.AddTransient<FailedToWarnDiscordFormatter>();
         services.AddTransient<RemoveUserFromGuildSelectMenuDiscordFormatter>();
+        services.AddTransient<SlashCommandRegistryFailedDiscordFormatter>();
         // TASKS
         services.AddTransient<GiveWarningToUserTask>();
         services.AddTransient<GetUserGuildStateTask>();
@@ -114,8 +117,9 @@ var host = CreateHostBuilder(args)
         services.AddTransient<GetGuildGuildUsersTask>();
         services.AddTransient<SahneeBotRemoveUserFromGuildState>();
         services.AddTransient<CheckRoleLimitTask, SahneeBotCheckRoleLimitTask>();
+        services.AddTransient<SahneeBotReportErrorToGuildAdministratorsTask>();
         // TASKS (BOT ONLY)
-        services.AddTransient<SahneeBotReportErrorTask>();
+        services.AddTransient<SahneeBotReportExceptionTask>();
         services.AddTransient<SahneeBotGetLeftGuildUsersTask>();
         services.AddTransient<SahneeBotCleanupWarningRolesTask>();
         services.AddTransient<SahneeBotPrivateMessageToGuildMembersTask>();
@@ -131,7 +135,7 @@ var host = CreateHostBuilder(args)
                 case "Socket":
                     var socketConfig = new DiscordSocketConfig
                     {
-                        GatewayIntents = GatewayIntents.All,
+                        GatewayIntents = GatewayIntents.AllUnprivileged,
                         AlwaysDownloadUsers = true
                     };
                     client = new DiscordSocketClient(socketConfig);
@@ -198,9 +202,6 @@ void Install(IServiceProvider provider)
 {
     logger.LogInformation(EventIds.Startup, "Installing bot");
     
-    var commandHandler = provider.GetRequiredService<ICommandHandler>();
-    commandHandler.Install();
-
     var eventHandler = provider.GetRequiredService<IEventHandler>();
     eventHandler.Install();
 

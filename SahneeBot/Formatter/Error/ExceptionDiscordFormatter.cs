@@ -1,15 +1,12 @@
-﻿using System.Text;
-using Discord;
-using Discord.WebSocket;
+﻿using Discord;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 
-namespace SahneeBot.Formatter;
+namespace SahneeBot.Formatter.Error;
 
 /// <summary>
-/// Used to format an error in a command.
+/// Used to format an exception in a context.
 /// </summary>
-public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Args>
+public class ExceptionDiscordFormatter : IDiscordFormatter<ExceptionDiscordFormatter.Args>
 {
     /// <summary>
     /// Arguments for the formatter.
@@ -18,7 +15,7 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
     /// <param name="InteractionName">The name of the command that was executed.</param>
     /// <param name="GuildId">The guild the command was executed on. null if global command.</param>
     /// <param name="UserId">The user that executed the command.</param>
-    /// <param name="Error">The actual error.</param>
+    /// <param name="Exception">The actual error.</param>
     /// <param name="TicketId">The ticket ID</param>
     /// <param name="ReportSensitive">Also report sensitive information?</param>
     public record struct Args(string InteractionType
@@ -26,7 +23,7 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
         , string FullInteraction
         , ulong? GuildId
         , ulong? UserId
-        , Exception Error
+        , Exception Exception
         , string TicketId
         , bool ReportSensitive);
     
@@ -34,7 +31,7 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
     private readonly IConfiguration _cfg;
     private readonly Bot _bot;
 
-    public ErrorDiscordFormatter(DefaultFormatArguments fmt
+    public ExceptionDiscordFormatter(DefaultFormatArguments fmt
         , IConfiguration cfg
         , Bot bot)
     {
@@ -46,33 +43,36 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
     public async Task<DiscordFormat> Format(Args arg)
     {
         var (interactionType, interactionName, fullInteraction
-            , guildId, userId, error, ticketId, reportSensitive) = arg;
+            , guildId, userId, exception, ticketId, reportSensitive) = arg;
         var guild = guildId.HasValue ? await _bot.Client.GetGuildAsync(guildId.Value) : null;
         var user = userId.HasValue ? await _bot.Client.GetUserAsync(userId.Value) : null;
         var embed = _fmt.GetEmbed();
         var supportServer = _cfg["BotSettings:SupportServer"];
+        var timestamp = DateTime.UtcNow;
         if (reportSensitive)
         {
             embed.Title = $"Error in {interactionName} {interactionType.ToLowerInvariant()} on " + 
                           (guild != null ? _fmt.GetMention(guild) : "a global interaction");
             embed.Color = Color.DarkRed;
             embed.AddField("Ticket Id", ticketId + " (" + supportServer + ")", true);
-            embed.AddField("User", user != null ? _fmt.GetMention(user) 
-                                                  + " `(#" + user.Id + ")`" : "n/a", true);
-            embed.AddField("Server", guild != null ? _fmt.GetMention(guild) 
-                                                     + " `(#" + guild.Id + ")`" : "n/a", true);
-            embed.AddField(interactionType, "`" + fullInteraction + "`");
-            embed.AddField(error.GetType().Name, error.Message[..Math.Min(error.Message.Length, 1000)]);
+            embed.AddField("User", _fmt.GetMention(user, reportSensitive), true);
+            embed.AddField("Server", _fmt.GetMention(guild, reportSensitive), true);
+            embed.AddField("Timestamp", timestamp, true);
+            embed.AddField(interactionType, "`" + fullInteraction + "`", true);
+            embed.AddField(exception.GetType().Name, exception.Message[..Math.Min(exception.Message.Length, 1000)], true);
             embed.AddField("Stack trace",
-                "```\n" + error.StackTrace?[..Math.Min(error.StackTrace?.Length ?? 0, 1000)] + "\n```");
+                "```\n" + exception.StackTrace?[..Math.Min(exception.StackTrace?.Length ?? 0, 1000)] + "\n```");
         }
         else
         {
             embed.Title = $"Error in {interactionName} {interactionType.ToLowerInvariant()}";
             embed.Color = Color.DarkRed;
-            embed.AddField(interactionType, interactionName, true);
+            embed.AddField(interactionType, "`" + interactionName + "`", true);
             embed.AddField("Support Server", supportServer, true);
             embed.AddField("Ticket Id", ticketId, true);
+            embed.AddField("User", _fmt.GetMention(user, reportSensitive), true);
+            embed.AddField("Server", _fmt.GetMention(guild, reportSensitive), true);
+            embed.AddField("Timestamp", timestamp, true);
             embed.AddField("Sorry!", "The Sahnee-Bot encountered an error while processing your " +
                                      $"{interactionType.ToLowerInvariant()}! Please join our support server and post " +
                                      "a screenshot of this message or your ticket ID.");

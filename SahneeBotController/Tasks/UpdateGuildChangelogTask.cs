@@ -6,7 +6,7 @@ namespace SahneeBotController.Tasks;
 /// <summary>
 /// Updates the changelog version of a guild to the latest and returns the new version of the guild.
 /// </summary>
-public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.Args, Version?>
+public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.Args, ISuccess<Version?>>
 {
     private readonly GetGuildStateTask _getGuildStateTask;
     private readonly PostChangelogsToGuildTask _postChangelogsToGuildTask;
@@ -25,16 +25,17 @@ public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.
         _logger = provider.GetRequiredService<ILogger<UpdateGuildChangelogTask>>();
     }
 
-    public async Task<Version?> Execute(ITaskContext ctx, Args arg)
+    public async Task<ISuccess<Version?>> Execute(ITaskContext ctx, Args arg)
     {
         var state = await _getGuildStateTask.Execute(ctx, new GetGuildStateTask.Args(arg.GuildId));
         var lastVersion = state.LastChangelogVersion;
         var latestVersion = await GetLatestVersion();
+        ISuccess<Version?>? success = null;
         if (lastVersion == latestVersion)
         {
             _logger.LogDebug(EventIds.Changelog, "Guild {Guild} already got the latest" +
                                                  " changelog: {Version}", arg.GuildId, latestVersion);
-            return lastVersion;
+            return new Success<Version?>(lastVersion);
         }
         // Don't post a changelog for new guilds and also don't post old versions we skipped
         if (lastVersion != null && lastVersion < latestVersion)
@@ -45,12 +46,13 @@ public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.
                 , newVersions.Length, lastVersion, latestVersion, arg.GuildId);
             if (newVersions.Length > 0)
             {
-                var success = await _postChangelogsToGuildTask.Execute(ctx, new PostChangelogsToGuildTask.Args(arg.GuildId, newVersions));
-                if (!success.IsSuccess)
+                var post = await _postChangelogsToGuildTask.Execute(ctx, new PostChangelogsToGuildTask.Args(arg.GuildId, newVersions));
+                if (!post.IsSuccess)
                 {
                     _logger.LogWarning(EventIds.Changelog
                         , "Failed to post warnings to guild {Guild}: {Error}"
-                        , arg.GuildId, success.Message);
+                        , arg.GuildId, post.Message);
+                    success = new Error<Version?>(post.Message);
                 }
             }
         }
@@ -60,7 +62,7 @@ public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.
             , lastVersion, latestVersion, arg.GuildId);
         state.LastChangelogVersion = latestVersion;
         await ctx.Model.SaveChangesAsync();
-        return latestVersion;
+        return success ?? new Success<Version?>(latestVersion);
     }
 
     /// <summary>

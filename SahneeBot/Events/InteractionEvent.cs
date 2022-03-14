@@ -1,5 +1,6 @@
 ﻿using Discord.WebSocket;
 using SahneeBot.InteractionComponents;
+using SahneeBotController;
 
 namespace SahneeBot.Events;
 
@@ -27,5 +28,12 @@ public class InteractionEvent : EventBase<SocketMessageComponent>
     public override Task Handle(SocketMessageComponent arg) => HandleAsync(async ctx =>
     {
         await _selectMenuExecution.Execute(ctx, arg);
+        return new Success<bool>(true);
+    }, new EventExecutionOptions
+    {
+        // TODO: Guild
+        RelatedUserId = arg.User.Id
+        , Name = "interaction"
+        , Debug = arg.Id.ToString()
     });
 }

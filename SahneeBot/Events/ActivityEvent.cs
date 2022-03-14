@@ -33,8 +33,9 @@ public class ActivityEvent : EventBase<IGuild?>
     }
 
     public override Task Handle(IGuild? arg) => HandleAsync(async ctx =>
+        await _sahneeBotActivityTask.Execute(ctx, new SahneeBotActivityTask.Args()), new EventExecutionOptions
     {
-        await _sahneeBotActivityTask.Execute(ctx, new SahneeBotActivityTask.Args());
-        
+        Name = "activity"
+        , Debug = arg?.Id.ToString() ?? "startup"
     });
 }

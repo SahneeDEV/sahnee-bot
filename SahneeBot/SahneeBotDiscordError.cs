@@ -3,6 +3,7 @@ using SahneeBotController;
 using SahneeBotController.Tasks;
 using Discord;
 using System.Net;
+using Microsoft.Extensions.Configuration;
 
 namespace SahneeBot;
 
@@ -12,10 +13,13 @@ namespace SahneeBot;
 public class SahneeBotDiscordError
 {
     private readonly GetGuildStateTask _getGuildStateTask;
-    
-    public SahneeBotDiscordError(GetGuildStateTask getGuildStateTask)
+    private readonly IConfiguration _cfg;
+
+    public SahneeBotDiscordError(GetGuildStateTask getGuildStateTask
+        , IConfiguration cfg)
     {
         _getGuildStateTask = getGuildStateTask;
+        _cfg = cfg;
     }
 
     /// <summary>
@@ -75,6 +79,11 @@ public class SahneeBotDiscordError
                 var prefix = await GetGuildPrefix(ctx, options.GuildId);
                 return GetMissingRolePermissionsError<T>(prefix);
             }
+            // Missing intent when invited
+            case HttpException {DiscordCode: DiscordErrorCode.MissingPermissions}:
+            {
+                return GetMissingPermissionsError<T>();
+            }
             default:
             {
                 return null;
@@ -90,12 +99,19 @@ public class SahneeBotDiscordError
         return guildState?.WarningRolePrefix.Trim() ?? "n/a";
     }
     
-    private static ISuccess<T> GetMissingRolePermissionsError<T>(string prefix)
+    private ISuccess<T> GetMissingRolePermissionsError<T>(string prefix)
     {
         return new Error<T>("The Sahnee-Bot does not have the required permissions to edit the warning roles on your " +
                             "server. Please drag the Sahnee-Bot role above all other roles starting with " +
                             $"\"{prefix.TrimEnd()}\" in your Server Settings and make sure that it has the \"Manage " +
                             "Roles\" permission.");
+    }
+    
+    private ISuccess<T> GetMissingPermissionsError<T>()
+    {
+        var inviteUrl = _cfg["BotSettings:InviteUrl"];
+        return new Error<T>("The Sahnee-Bot does not have the required permissions when it was invited. Please " +
+                            $"re-invite the bot again using [this link]({inviteUrl}).");
     }
 
     /*private static ISuccess<T> GetMissingBotPermissionError<T>(string permission)

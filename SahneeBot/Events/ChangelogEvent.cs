@@ -27,11 +27,12 @@ public class ChangelogEvent : EventBase<IGuild>
                 throw new InvalidOperationException("The changelog event only support the socket client."));
     }
 
-    public override Task Handle(IGuild arg) => HandleAsync(async ctx =>
-    {
-        await _task.Execute(ctx, new UpdateGuildChangelogTask.Args(arg.Id));
-    }, new EventExecutionOptions
+    public override Task Handle(IGuild arg) => HandleAsync(async ctx => 
+        await _task.Execute(ctx, new UpdateGuildChangelogTask.Args(arg.Id)), new EventExecutionOptions
     {
         PlaceInQueue = arg.Id
+        , RelatedGuildId = arg.Id
+        , Name = "changelog"
+        , Debug = arg.Id.ToString()
     });
 }

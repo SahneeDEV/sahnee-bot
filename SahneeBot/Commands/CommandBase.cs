@@ -5,7 +5,9 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
+using SahneeBot.Formatter.Error;
 using SahneeBot.Tasks;
+using SahneeBot.Tasks.Error;
 using SahneeBotController;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
@@ -28,8 +30,9 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
 
     private readonly GetRolesOfUserTask _roles;
     private readonly MissingPermissionDiscordFormatter _missingPermFmt;
+    private readonly ExceptionDiscordFormatter _exceptionFmt;
     private readonly ErrorDiscordFormatter _errorFmt;
-    private readonly SahneeBotReportErrorTask _errorTask;
+    private readonly SahneeBotReportExceptionTask _exceptionTask;
     private readonly GetBoundChannelTask _boundChannel;
     private readonly NotBoundChannelDiscordFormatter _notBoundChannelFmt;
     private readonly SahneeBotTaskContextFactory _contextFactory;
@@ -44,10 +47,11 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
         // We resolve all further classes manually instead of injection to keep the ctor simple for inheritance.
         _roles = serviceProvider.GetRequiredService<GetRolesOfUserTask>();
         _missingPermFmt = serviceProvider.GetRequiredService<MissingPermissionDiscordFormatter>();
+        _exceptionFmt = serviceProvider.GetRequiredService<ExceptionDiscordFormatter>();
         _errorFmt = serviceProvider.GetRequiredService<ErrorDiscordFormatter>();
         _boundChannel = serviceProvider.GetRequiredService<GetBoundChannelTask>();
         _notBoundChannelFmt = serviceProvider.GetRequiredService<NotBoundChannelDiscordFormatter>();
-        _errorTask = serviceProvider.GetRequiredService<SahneeBotReportErrorTask>();
+        _exceptionTask = serviceProvider.GetRequiredService<SahneeBotReportExceptionTask>();
         _contextFactory = serviceProvider.GetRequiredService<SahneeBotTaskContextFactory>();
     }
 
@@ -187,15 +191,24 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
             return await del(ctx);
         }
 
-        async Task ErrorReporter(ITaskContext ctx, Exception exception)
+        async Task ErrorReporter(ITaskContext ctx, SahneeBotTaskContextFactory.ErrorReport report
+            , SahneeBotTaskContextFactory.ContextOptions ctxOpts)
         {
-            var interaction = (SocketSlashCommand) Context.Interaction;
-            var ticketId = await _errorTask.Execute(ctx,
-                new SahneeBotReportErrorTask.Args("Slash-command", interaction.CommandName, GetDebugString(interaction, true),
-                    Context.Guild?.Id, Context.User.Id, exception));
-            await _errorFmt.FormatAndSend(
-                new ErrorDiscordFormatter.Args("Slash-command", interaction.CommandName, GetDebugString(interaction, true),
-                    Context.Guild?.Id, Context.User.Id, exception, ticketId, false), ModifyOriginalResponseAsync);
+            var (crash, error) = report;
+            if (crash != null)
+            {
+                await _exceptionFmt.FormatAndSend(
+                    new ExceptionDiscordFormatter.Args(ctxOpts.Type, ctxOpts.Name,
+                        ctxOpts.Debug, Context.Guild?.Id, Context.User?.Id, crash.Value.Exception
+                        , crash.Value.TicketId, false)
+                    , ModifyOriginalResponseAsync);
+            }
+            else if (error != null)
+            {
+                await _errorFmt.FormatAndSend(new ErrorDiscordFormatter.Args(ctxOpts.Type, ctxOpts.Name,
+                        ctxOpts.Debug, Context.Guild?.Id, Context.User?.Id, error, false)
+                , ModifyOriginalResponseAsync);
+            }
         }
 
         await _contextFactory.ExecuteWithContextAsync(
@@ -204,6 +217,9 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
             {
                 Type = "slash-command",
                 Name = GetDebugString((SocketSlashCommand) Context.Interaction),
+                Debug = GetDebugString((SocketSlashCommand) Context.Interaction, true),
+                RelatedGuildId = Context.Guild?.Id,
+                RelatedUserId = Context.User?.Id,
                 PlaceInQueue = placeInQueue,
                 ErrorReporter = ErrorReporter
             });
@@ -235,14 +251,14 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
         }
     }
 
-    private static string GetDebugString(IDiscordInteraction interaction, bool full = false)
+    private static string GetDebugString(IDiscordInteraction interaction, bool sensitive = false)
     {
         var sb = new StringBuilder();
         if (interaction is ISlashCommandInteraction slashInteraction)
         {
             sb.Append('/');
             sb.Append(slashInteraction.Data.Name);
-            if (full)
+            if (sensitive)
             {
                 foreach (var option in slashInteraction.Data.Options)
                 {
@@ -252,11 +268,11 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
                     sb.Append(option.Value);
                     sb.Append('>');
                 }
-            }
 
-            sb.Append(" (#");
-            sb.Append(slashInteraction.Data.Id);
-            sb.Append(')');
+                sb.Append(" (#");
+                sb.Append(slashInteraction.Data.Id);
+                sb.Append(')');
+            }
         }
         else
         {

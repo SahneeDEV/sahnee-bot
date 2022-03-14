@@ -1,7 +1,7 @@
 ﻿using Discord;
-using Discord.WebSocket;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
+using SahneeBotController;
 
 namespace SahneeBot.Events;
 
@@ -12,20 +12,17 @@ namespace SahneeBot.Events;
 public class WelcomeMessageEvent : EventBase<IGuild>
 {
     private readonly Bot _bot;
-    private readonly ILogger<WelcomeMessageEvent> _logger;
     private readonly WelcomeOnNewGuildJoinDiscordFormatter _welcomeOnNewGuildJoinDiscordFormatter;
-    private readonly PrivateMessageToGuildOwnerFormatter _privateMessageToGuildOwnerFormatter;
+    private readonly SahneeBotDiscordError _discordError;
 
     public WelcomeMessageEvent(IServiceProvider serviceProvider
         , Bot bot
-        , ILogger<WelcomeMessageEvent> logger
         , WelcomeOnNewGuildJoinDiscordFormatter welcomeOnNewGuildJoinDiscordFormatter
-        , PrivateMessageToGuildOwnerFormatter privateMessageToGuildOwnerFormatter) : base(serviceProvider)
+        , SahneeBotDiscordError discordError) : base(serviceProvider)
     {
         _bot = bot;
-        _logger = logger;
         _welcomeOnNewGuildJoinDiscordFormatter = welcomeOnNewGuildJoinDiscordFormatter;
-        _privateMessageToGuildOwnerFormatter = privateMessageToGuildOwnerFormatter;
+        _discordError = discordError;
     }
 
     public override void Register()
@@ -39,28 +36,29 @@ public class WelcomeMessageEvent : EventBase<IGuild>
     {
         //get the default message channel
         var channel = await arg.GetDefaultChannelAsync();
-        if (channel == null)
+        try
         {
-            var guildOwner = await arg.GetOwnerAsync();
-            if (guildOwner == null)
+            await _welcomeOnNewGuildJoinDiscordFormatter.FormatAndSend(
+                new WelcomeOnNewGuildJoinDiscordFormatter.Args(arg.Name), channel.SendMessageAsync);
+            return new Success<bool>(true);
+        }
+        catch (Exception exception)
+        {
+            var error = await _discordError.TryGetError<bool>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                _logger.LogCritical(EventIds.Discord, "Could not even find a guild owner to notify" +
-                                                      " that I cannot send a message!");
-                throw new Exception($"Failed getting Guild Owner in guild: {arg.Id}");
+                Exception = exception, GuildId = arg.Id
+            });
+            if (error != null)
+            {
+                return error;
             }
 
-            await _privateMessageToGuildOwnerFormatter.FormatAndSend(
-                new PrivateMessageToGuildOwnerFormatter.Args(arg.Name, "Cannot send initial message!"
-                    , "An error with the bot permissions"
-                    , "You invited the bot with not enough permissions. Please re-invite the" +
-                      " bot with the suggested permissions. If you are worried about our data processing," +
-                      "you can refer to our [privacy policy](https://sahnee.dev/en/sahnee-bot-privacy-policy/)")
-                , guildOwner.SendMessageAsync);
-            return;
+            throw;
         }
-
-        await _welcomeOnNewGuildJoinDiscordFormatter.FormatAndSend(
-            new WelcomeOnNewGuildJoinDiscordFormatter.Args(arg.Name)
-            , channel.SendMessageAsync);
+    }, new EventExecutionOptions
+    {
+        RelatedGuildId = arg.Id
+        , Name = "welcome"
+        , Debug = arg.Id.ToString()
     });
 }
