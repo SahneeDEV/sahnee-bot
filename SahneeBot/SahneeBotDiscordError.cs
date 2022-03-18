@@ -14,12 +14,15 @@ public class SahneeBotDiscordError
 {
     private readonly GetGuildStateTask _getGuildStateTask;
     private readonly IConfiguration _cfg;
+    private readonly Release _release;
 
     public SahneeBotDiscordError(GetGuildStateTask getGuildStateTask
-        , IConfiguration cfg)
+        , IConfiguration cfg
+        , Release release)
     {
         _getGuildStateTask = getGuildStateTask;
         _cfg = cfg;
+        _release = release;
     }
 
     /// <summary>
@@ -82,7 +85,8 @@ public class SahneeBotDiscordError
             // Missing intent when invited
             case HttpException {DiscordCode: DiscordErrorCode.MissingPermissions}:
             {
-                return GetMissingPermissionsError<T>();
+                var prefix = await GetGuildPrefix(ctx, options.GuildId);
+                return GetMissingRolePermissionsError<T>(prefix);
             }
             default:
             {
@@ -101,23 +105,18 @@ public class SahneeBotDiscordError
     
     private ISuccess<T> GetMissingRolePermissionsError<T>(string prefix)
     {
-        return new Error<T>("The Sahnee-Bot does not have the required permissions to edit the warning roles on your " +
-                            "server. Please drag the Sahnee-Bot role above all other roles starting with " +
+        var inviteUrl = _cfg["BotSettings:InviteUrl"];
+        return new Error<T>("Either the Sahnee-Bot does not have the required permissions to edit the warning roles " +
+                            "on your server or does not have the required permissions when it was invited.\n" +
+                            "-----------------\n" +
+                            $"**Due to the update of the Sahnee-Bot on {_release.StartedAt} the bot may no have all " +
+                            $"permissions required.\n Please re-invite the bot using [this link]({inviteUrl}).**\n" +
+                            "-----------------\n" +
+                            "Please drag the Sahnee-Bot role above all other roles starting with " +
                             $"\"{prefix.TrimEnd()}\" in your Server Settings and make sure that it has the \"Manage " +
-                            "Roles\" permission.");
+                            "Roles\" permission.\n" +
+                            "-----------------\n" +
+                            $"If this does not help please re-invite the bot again using [this link]({inviteUrl}).");
     }
     
-    private ISuccess<T> GetMissingPermissionsError<T>()
-    {
-        var inviteUrl = _cfg["BotSettings:InviteUrl"];
-        return new Error<T>("The Sahnee-Bot does not have the required permissions when it was invited. Please " +
-                            $"re-invite the bot again using [this link]({inviteUrl}).");
-    }
-
-    /*private static ISuccess<T> GetMissingBotPermissionError<T>(string permission)
-    {
-        return new Error<T>("The Sahnee-Bot does not have the required permissions to " + permission + " on your " +
-                            "server. Please edit the permissions of the Sahnee-Bot in your Server Settings and try " +
-                            "again.");
-    }*/
 }

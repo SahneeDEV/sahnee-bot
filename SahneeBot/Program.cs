@@ -135,7 +135,7 @@ var host = CreateHostBuilder(args)
                 case "Socket":
                     var socketConfig = new DiscordSocketConfig
                     {
-                        GatewayIntents = GatewayIntents.AllUnprivileged,
+                        GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.GuildMembers,
                         AlwaysDownloadUsers = true
                     };
                     client = new DiscordSocketClient(socketConfig);
