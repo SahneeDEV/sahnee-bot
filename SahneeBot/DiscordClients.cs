@@ -1,4 +1,5 @@
-﻿using Discord;
+﻿using System.Reflection;
+using Discord;
 using Discord.Rest;
 using Discord.Webhook;
 using Discord.WebSocket;
@@ -94,5 +95,27 @@ public record Bot(IDiscordClient Client)
             DiscordRestClient rest => restDel(rest),
             _ => throw new NotImplementedException("Non supported discord client type.")
         };
+    }
+}
+
+public static class BotExtensions
+{
+    private static readonly PropertyInfo SocketEntityDiscord = typeof(SocketGuild)
+        .GetProperty("Discord", BindingFlags.Instance | BindingFlags.NonPublic)!;
+
+    public static async Task<IGuildUser?> GetGuildUserAsync(this IGuild guild, ulong userId)
+    {
+        if (guild is SocketGuild socketGuild)
+        {
+            var discord = (DiscordSocketClient) SocketEntityDiscord.GetValue(socketGuild)!;
+            var user = await discord.Rest.GetGuildUserAsync(guild.Id, userId);
+            return user;
+        }
+        else
+        {
+            var restGuild = (RestGuild) guild;
+            var user = await restGuild.GetUserAsync(userId);
+            return user;
+        }
     }
 }

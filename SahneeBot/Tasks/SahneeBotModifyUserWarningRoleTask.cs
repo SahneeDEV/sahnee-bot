@@ -46,7 +46,7 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
         }
         
         // Does the user exist in the guild?
-        var currentGuildUser = await currentGuild.GetUserAsync(args.UserId);
+        var currentGuildUser = await currentGuild.GetGuildUserAsync(args.UserId);
         if (currentGuildUser == null)
         {
             return new Error<ulong>("Could not find user.");

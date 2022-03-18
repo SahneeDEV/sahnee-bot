@@ -27,7 +27,7 @@ public class NoWarningFoundDiscordFormatter: IDiscordFormatter<NoWarningFoundDis
         {
             return new DiscordFormat("No warnings found.");
         }
-        var user = userId.HasValue ? await guild.GetUserAsync(userId.Value) : null;
+        var user = userId.HasValue ? await guild.GetGuildUserAsync(userId.Value) : null;
         if (user == null)
         {
             return new DiscordFormat($"No warnings found on {_fmt.GetMention(guild)}.");

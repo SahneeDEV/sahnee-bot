@@ -24,8 +24,8 @@ public class SahneeBotGetRolesOfUserTask: GetRolesOfUserTask
         {
             return None;
         }
-        
-        var user = await guild.GetUserAsync(userId);
+
+        var user = await guild.GetGuildUserAsync(userId);
         if (user == null)
         {
             return None;

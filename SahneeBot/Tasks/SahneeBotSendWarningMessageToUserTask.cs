@@ -30,7 +30,7 @@ public class SahneeBotSendWarningMessageToUserTask : SendWarningMessageToUserTas
                 arg.Warning.GuildId,
                 async guild =>
                 {
-                    var user = await guild.GetUserAsync(warning.UserId);
+                    var user = await guild.GetGuildUserAsync(warning.UserId);
                     if (user != null)
                     {
                         return new[] {user};
