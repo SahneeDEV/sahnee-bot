@@ -106,17 +106,18 @@ public class SahneeBotDiscordError
     private ISuccess<T> GetMissingRolePermissionsError<T>(string prefix)
     {
         var inviteUrl = _cfg["BotSettings:InviteUrl"];
-        return new Error<T>("Either the Sahnee-Bot does not have the required permissions to edit the warning roles " +
-                            "on your server or does not have the required permissions when it was invited.\n" +
+        return new Error<T>("The Sahnee-Bot has not enough permissions on your server.\n" +
                             "-----------------\n" +
-                            $"**Due to the update of the Sahnee-Bot on {_release.StartedAt} the bot may no have all " +
-                            $"permissions required.\n Please re-invite the bot using [this link]({inviteUrl}).**\n" +
+                            $"**Due to the update of the Sahnee-Bot on {_release.StartedAt.ToShortDateString()} " +
+                            "the bot does not have all permissions required.\n" +
+                            $"Please kick the bot and re-invite it using [this link]({inviteUrl}).**\n" +
                             "-----------------\n" +
                             "Please drag the Sahnee-Bot role above all other roles starting with " +
                             $"\"{prefix.TrimEnd()}\" in your Server Settings and make sure that it has the \"Manage " +
                             "Roles\" permission.\n" +
                             "-----------------\n" +
-                            $"If this does not help please re-invite the bot again using [this link]({inviteUrl}).");
+                            "If this does not help please kick the bot and re-invite it again using " +
+                            $"[this link]({inviteUrl}).");
     }
     
 }
