@@ -64,6 +64,6 @@ public class SahneeBotReportErrorToGuildAdministratorsTask : ITask<SahneeBotRepo
                     var users = await guild.GetUsersAsync();
                     return users.Where(user => user.GuildPermissions.Administrator);
                 },
-                new[] {message}));
+                new[] {message}, false, true));
     }
 }
