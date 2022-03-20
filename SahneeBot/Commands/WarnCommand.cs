@@ -40,10 +40,8 @@ public class WarnCommand : CommandBase
         [Summary(description: "the user to warn")]
         IUser user,
         [Summary(description: "the reason why the user was warned")]
-        string reason) => ExecuteAsync(async ctx =>
-    {
-        await HelperIssueWarning(ctx, WarningType.Warning, Context.Guild, Context.User, user, reason);
-    }, new CommandExecutionOptions
+        string reason) => ExecuteAsync(async ctx => await HelperIssueWarning(ctx, WarningType.Warning
+        , Context.Guild, Context.User, user, reason), new CommandExecutionOptions
     {
         PlaceInQueue = true,
         RequiredRole = RoleType.Moderator
@@ -60,10 +58,8 @@ public class WarnCommand : CommandBase
         [Summary(description: "the user to unwarn")]
         IUser user,
         [Summary(description: "the reason why the user has been unwarned")]
-        string reason) => ExecuteAsync(async ctx =>
-    {
-        await HelperIssueWarning(ctx, WarningType.Unwarning, Context.Guild, Context.User, user, reason);
-    }, new CommandExecutionOptions
+        string reason) => ExecuteAsync(async ctx => await HelperIssueWarning(ctx, WarningType.Unwarning
+        , Context.Guild, Context.User, user, reason), new CommandExecutionOptions
     {
         PlaceInQueue = true,
         RequiredRole = RoleType.Moderator
@@ -77,11 +73,6 @@ public class WarnCommand : CommandBase
         if (warning.IsSuccess)
         {
             await _fmt.FormatAndSend(warning.Value, ModifyOriginalResponseAsync);
-        }
-        else
-        {
-            await _failedToWarnFmt.FormatAndSend(new FailedToWarnDiscordFormatter.Args(Context.Guild.Id, user.Id,
-                type, warning.Message), ModifyOriginalResponseAsync);
         }
 
         return warning;
