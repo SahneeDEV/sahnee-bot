@@ -9,16 +9,19 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
     private readonly Changelog _changelog;
     private readonly ChangelogVersionDiscordFormatter _fmt;
     private readonly Bot _bot;
+    private readonly SahneeBotDiscordError _discordError;
     private readonly GetBoundChannelTask _boundChannelTask;
 
     public SahneeBotPostChangelogsToGuildTask(Changelog changelog
         , ChangelogVersionDiscordFormatter fmt
         , GetBoundChannelTask boundChannelTask
-        , Bot bot)
+        , Bot bot
+        , SahneeBotDiscordError discordError)
     {
         _changelog = changelog;
         _fmt = fmt;
         _bot = bot;
+        _discordError = discordError;
         _boundChannelTask = boundChannelTask;
     }
     
@@ -44,9 +47,23 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
             return new Error<uint>("Could not find a channel to post the changelogs in.");
         }
 
-        if (await _fmt.FormatAndSendMany(changelogs, channel.SendMessageAsync))
+        try
         {
-            return new Success<uint>((uint) changelogs.Count);
+            if (await _fmt.FormatAndSendMany(changelogs, channel.SendMessageAsync))
+            {
+                return new Success<uint>((uint) changelogs.Count);
+            }
+        }
+        catch(Exception exception)
+        {
+            var error = await _discordError.TryGetError<uint>(
+                ctx, new SahneeBotDiscordError.ErrorOptions {Exception = exception, GuildId = guildId});
+            if (error != null)
+            {
+                return error;
+            }
+
+            throw;
         }
 
         return new Error<uint>("No changelogs to post.");
