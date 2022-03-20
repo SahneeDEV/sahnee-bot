@@ -169,7 +169,7 @@ public abstract class CommandBase : InteractionModuleBase<IInteractionContext>
             }
 
             // Check permission
-            if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleType.None)
+            if (opts.RequiredRole.HasValue && opts.RequiredRole.Value != RoleType.None && Context.User != null)
             {
                 var role = opts.RequiredRole.Value;
                 if (Context.Guild == null)
