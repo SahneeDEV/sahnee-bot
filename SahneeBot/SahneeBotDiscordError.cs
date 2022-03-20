@@ -106,7 +106,7 @@ public class SahneeBotDiscordError
     private ISuccess<T> GetMissingRolePermissionsError<T>(string prefix)
     {
         var inviteUrl = _cfg["BotSettings:InviteUrl"];
-        return new Error<T>("The Sahnee-Bot has not enough permissions on your server.\n" +
+        return new Error<T>("The Sahnee-Bot does not have enough permissions on your server.\n" +
                             "-----------------\n" +
                             $"**Due to the update of the Sahnee-Bot on {_release.StartedAt.ToShortDateString()} " +
                             "the bot does not have all permissions required.\n" +
