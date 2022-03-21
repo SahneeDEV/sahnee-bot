@@ -1,4 +1,9 @@
-﻿Version 0.9.98:
+﻿Version 0.9.99:
+-- Attention --
+Aww shit here we go again.
+The next release will be on 03/24/2022 starting at 8:00 PM CET until about 10:00 PM CET the sahnee-bot will be unavailable due to maintanance and database migration.
+#%&
+Version 0.9.98:
 -- Attention --
 Due to unexpected complications we had to roll-back to the previous configuration.
 That means, currently nothing changed for you.
