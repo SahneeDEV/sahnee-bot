@@ -122,15 +122,17 @@ public class SahneeBotTaskContextFactory
                 _logger.LogError(EventIds.Context
                     , exception, "{Error} in {Name} {Type} on guild {Guild}"
                     , exception.GetType().Name, opts.Name, opts.Type, opts.RelatedGuildId);
+            
+                var ticketId = await _exceptionTask.Execute(ctx, 
+                    new SahneeBotReportExceptionTask.Args(opts.Type, opts.Name, opts.Debug
+                        , opts.RelatedGuildId, opts.RelatedUserId, exception));
+                var errorReport = new ErrorReport(new CrashInformation(ticketId, exception), null);
                 if (opts.ErrorReporter != null)
                 {
-                    var ticketId = await _exceptionTask.Execute(ctx, 
-                        new SahneeBotReportExceptionTask.Args(opts.Type, opts.Name, opts.Debug
-                            , opts.RelatedGuildId, opts.RelatedUserId, exception));
-                    await opts.ErrorReporter(ctx, new ErrorReport(new CrashInformation(ticketId, exception), null)
-                        , opts);
-                    reportError = false;
+                    await opts.ErrorReporter(ctx, errorReport, opts);
                 }
+                reportError = false;
+                
                 // Context was not successful in case of error
                 error = new Error<bool>(exception.Message);
             }

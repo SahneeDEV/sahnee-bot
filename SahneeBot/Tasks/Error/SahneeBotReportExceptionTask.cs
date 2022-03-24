@@ -84,7 +84,7 @@ public class SahneeBotReportExceptionTask : ITask<SahneeBotReportExceptionTask.A
                         var users = await pmGuild.GetUsersAsync();
                         return users.Where(pmUser => pmUser.GuildPermissions.Administrator);
                     },
-                    new[] {message}));
+                    new[] {message}, false, true));
         }
         
         return ticketId;

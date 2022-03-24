@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
+using SahneeBot.Formatter.Error;
 using SahneeBotController;
 
 namespace SahneeBot.Events;
@@ -36,6 +37,10 @@ public class WelcomeMessageEvent : EventBase<IGuild>
     {
         //get the default message channel
         var channel = await arg.GetDefaultChannelAsync();
+        if (channel == null)
+        {
+            return new Error<bool>("Please add a text channel to your sever and make sure the bot can access it.");
+        }
         try
         {
             await _welcomeOnNewGuildJoinDiscordFormatter.FormatAndSend(
