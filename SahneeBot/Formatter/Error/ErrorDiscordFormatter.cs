@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Microsoft.Extensions.Configuration;
 using SahneeBotController;
 
 namespace SahneeBot.Formatter.Error;
@@ -26,11 +27,15 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
 
     private readonly DefaultFormatArguments _fmt;
     private readonly Bot _bot;
+    private readonly IConfiguration _cfg;
 
-    public ErrorDiscordFormatter(DefaultFormatArguments fmt, Bot bot)
+    public ErrorDiscordFormatter(DefaultFormatArguments fmt
+        , Bot bot
+        , IConfiguration cfg)
     {
         _fmt = fmt;
         _bot = bot;
+        _cfg = cfg;
     }
 
     public async Task<DiscordFormat> Format(Args arg)
@@ -40,6 +45,7 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
         var embed = _fmt.GetEmbed();
         var guild = guildId.HasValue ? await _bot.Client.GetGuildAsync(guildId.Value) : null;
         var user = userId.HasValue ? await _bot.Client.GetUserAsync(userId.Value) : null;
+        var supportServer = _cfg["BotSettings:SupportServer"];
         embed.Title = $"Failed to execute {interactionName} {interactionType}";
         embed.Color = Color.DarkRed;
         embed.Fields = new List<EmbedFieldBuilder>
@@ -48,14 +54,20 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
             {
                 Name = "Server",
                 Value = _fmt.GetMention(guild),
-                IsInline = true
+                IsInline = true,
             },
             new()
             {
                 Name = "User",
                 Value = _fmt.GetMention(user),
+                IsInline = true,
+            },
+            new()
+            {
+                Name = "Support Server",
+                Value = supportServer,
                 IsInline = true
-            }
+            },
         };
 
         if (reportSensitive)

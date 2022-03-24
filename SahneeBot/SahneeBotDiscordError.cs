@@ -111,6 +111,9 @@ public class SahneeBotDiscordError
                             "-----------------\n" +
                             $"**Due to the update of the Sahnee-Bot on {_release.StartedAt} the bot may no have all " +
                             $"permissions required.\n Please re-invite the bot using [this link]({inviteUrl}).**\n" +
+                            "**Please note that since a lot of people are currently updating the bot you may need to " +
+                            "wait a minute or two after the bot has been invited for commands to appear. If nothing " +
+                            "happens after 15 minutes feel free to join the support server.**\n" +
                             "-----------------\n" +
                             "Please drag the Sahnee-Bot role above all other roles starting with " +
                             $"\"{prefix.TrimEnd()}\" in your Server Settings and make sure that it has the \"Manage " +
