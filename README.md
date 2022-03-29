@@ -148,6 +148,8 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
         "WarningRoleColor": "#607D8B",
         "SupportServer": "https://discord.gg/FfVurUzVfE",
         "Changelog": "./CHANGELOG.md",
+        "ReleaseInformation": "./ReleaseInformation.txt",
+        "InviteUrl": "https://discord.com/api/oauth2/authorize?client_id=689600370430836793&permissions=268627014&redirect_uri=https%3A%2F%2Fsahnee.dev%2Fen%2Fproject%2Fsahnee-bot%2F&scope=bot%20applications.commands",
         "ErrorWebhookUrl": "https://discord.com/api/webhooks/12345/abcde",
         "Jobs": {
             "CleanupWarningRoles": "1:00:00"
@@ -167,6 +169,8 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
 * `BotSettings:WarningRoleColor` - The default color for warning roles on a server.
 * `BotSettings:SupportServer` - A link to the support page for the bot.
 * `BotSettings:Changelog` - The path to the changelog file on disk. Will be scanned for a new version of bot startup.
+* `BotSettings:ReleaseInformation` - A file that contains information about the release of the bot. Will be printed in the `/help` command.
+* `BotSettings:InviteUrl` - The invite URL users should use to invite the bot to their servers.
 * `BotSettings:ErrorWebhookUrl` - A webhook errors will be sent to.
 * `BotSettings:Jobs:CleanupWarningRoles` - The frequency in how often warnings created by the bot that are no longer used will be deleted.
 
