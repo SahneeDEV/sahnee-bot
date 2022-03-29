@@ -16,6 +16,12 @@ public class DefaultFormatArguments
     private readonly Color _color = new(243, 9, 131);
 
     private readonly IConfiguration _configuration;
+
+    /// <summary>
+    /// Max length allowed by discord is 1024. We set our max to 1000 to allow for e.g. some formatting to be added.
+    /// </summary>
+    // ReSharper disable once ConvertToConstant.Global
+    public readonly int DefaultEmbedFieldMaxLength = 1000;
     
     public DefaultFormatArguments(IConfiguration configuration)
     {

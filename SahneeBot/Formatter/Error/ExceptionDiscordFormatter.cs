@@ -59,9 +59,10 @@ public class ExceptionDiscordFormatter : IDiscordFormatter<ExceptionDiscordForma
             embed.AddField("Server", _fmt.GetMention(guild, reportSensitive), true);
             embed.AddField("Timestamp", timestamp, true);
             embed.AddField(interactionType, "`" + fullInteraction + "`", true);
-            embed.AddField(exception.GetType().Name, exception.Message[..Math.Min(exception.Message.Length, 1000)], true);
+            embed.AddField(exception.GetType().Name, exception.Message.MaxLength(_fmt.DefaultEmbedFieldMaxLength)
+                           , true);
             embed.AddField("Stack trace",
-                "```\n" + exception.StackTrace?[..Math.Min(exception.StackTrace?.Length ?? 0, 1000)] + "\n```");
+                "```\n" + exception.StackTrace?.MaxLength(_fmt.DefaultEmbedFieldMaxLength) + "\n```");
         }
         else
         {

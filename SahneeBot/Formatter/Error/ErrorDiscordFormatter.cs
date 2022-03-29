@@ -76,7 +76,7 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
                 new EmbedFieldBuilder
                 {
                     Name = interactionType,
-                    Value = fullInteraction,
+                    Value = fullInteraction.MaxLength(_fmt.DefaultEmbedFieldMaxLength),
                     IsInline = false
                 });
         }
@@ -85,7 +85,7 @@ public class ErrorDiscordFormatter : IDiscordFormatter<ErrorDiscordFormatter.Arg
             new EmbedFieldBuilder
             {
                 Name = "Hint",
-                Value = error.Message,
+                Value = error.Message.MaxLength(_fmt.DefaultEmbedFieldMaxLength),
                 IsInline = false
             });
 
