@@ -4,7 +4,7 @@ A bot for moderating your discord server. The Sahnee-Bot allows you to issue war
 
 ## Get the bot on your server
 
-[Click, click, done](https://discordapp.com/oauth2/authorize?&client_id=689600370430836793&scope=bot&permissions=2416311382)  - Bot hosting provided by [sahnee.dev](https://sahnee.dev)
+[Click, click, done](https://discord.com/api/oauth2/authorize?client_id=689600370430836793&permissions=268627014&redirect_uri=https%3A%2F%2Fsahnee.dev%2Fen%2Fproject%2Fsahnee-bot%2F&scope=bot%20applications.commands)  - Bot hosting provided by [sahnee.dev](https://sahnee.dev)
 
 You're done, enjoy!
 
