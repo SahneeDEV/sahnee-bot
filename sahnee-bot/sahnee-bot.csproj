@@ -9,7 +9,7 @@
     <ItemGroup>
       <PackageReference Include="Discord.Net" Version="2.3.1" />
       <PackageReference Include="Discord.Net.Commands" Version="2.3.1" />
-      <PackageReference Include="Discord.Net.Core" Version="2.3.1" />
+      <PackageReference Include="Discord.Net.Core" Version="3.5.0" />
       <PackageReference Include="Discord.Net.Rest" Version="2.3.1" />
       <PackageReference Include="Discord.Net.Webhook" Version="2.3.1" />
       <PackageReference Include="Discord.Net.WebSocket" Version="2.3.1" />
