@@ -1,0 +1,47 @@
+﻿using Discord;
+using Microsoft.Extensions.DependencyInjection;
+using SahneeBot.Events;
+using SahneeBot.Formatter;
+using SahneeBotController;
+using SahneeBotController.Tasks;
+
+namespace SahneeBot.InteractionComponents;
+
+public abstract class InteractionBase<TArg, TRes> : EventBase<IComponentInteraction>, IInteraction<TArg, TRes>
+{
+    private readonly Bot _bot;
+    protected abstract Task<DiscordFormat> Build(ITaskContext ctx, TArg arg, string id);
+    protected abstract Task<TRes> Handle(ITaskContext ctx, IComponentInteraction interaction, TArg arg);
+    
+
+    protected InteractionBase(IServiceProvider serviceProvider) : base(serviceProvider)
+    {
+        _bot = serviceProvider.GetRequiredService<Bot>();
+    }
+
+    public sealed override void Register()
+    {
+        _bot.Impl(socket => socket.SelectMenuExecuted += Handle
+            , rest => 
+                throw new InvalidOperationException("The interaction event only support the socket client."));
+    }
+
+    public sealed override Task Handle(IComponentInteraction arg)
+    {
+        throw new NotImplementedException();
+    }
+    
+    public async Task<ISuccess<TRes>> Interact(ITaskContext ctx, TArg arg, InteractionSendDelegate del)
+    {
+        // Build interaction component
+        var id = GetType().Name + "_" + Guid.NewGuid();
+        var builder = await Build(ctx, arg, id);
+        // Send interaction component
+        var sendSuccess = await del(ctx, builder);
+        if (!sendSuccess.IsSuccess)
+        {
+            return new Error<TRes>(sendSuccess.Message);
+        }
+        
+    }
+}

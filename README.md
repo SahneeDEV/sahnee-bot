@@ -1,220 +1,177 @@
-# sahnee-bot
-A bot for moderating warnings on your discord server.
+﻿# Sahnee-Bot
 
-With the sahnee-bot you can issue warnings. May it be a single user or everyone on your server. sahnee-bot got you covered.
-Furthermore you can generate a neat looking leaderboard for your server. Not to forget the history about all warnings a user ever got.
+A bot for moderating your discord server. The Sahnee-Bot allows you to issue warnings to misbehaving users. The Bot also features several reporting commands to list the warnings of users on your server.
 
----
+## Get the bot on your server
 
-## Index:
-1. Get the bot on your server
-2. Commands
-3. Permissions
-4. Jobs
-5. External API's
-6. How to install on your own hardware
-    1. Download and run
-    2. The configuration file
-
----
-
-## 1. Get the bot on your server
-
-[Click, click, done](https://discordapp.com/oauth2/authorize?&client_id=689600370430836793&scope=bot&permissions=2416311382)  - Bot hosting provided by [sahnee.dev](https://sahnee.dev)
+[Click, click, done](https://discord.com/api/oauth2/authorize?client_id=689600370430836793&permissions=268627014&redirect_uri=https%3A%2F%2Fsahnee.dev%2Fen%2Fproject%2Fsahnee-bot%2F&scope=bot%20applications.commands)  - Bot hosting provided by [sahnee.dev](https://sahnee.dev)
 
 You're done, enjoy!
 
-## 2. Commands
-* `/warn @UserName "Your reason here! <optional http/s link>"` - Issues a warning to the given user. The user will also be notified personally about their most evil transgression.
-* `/warn @Role "Your reason here! <optional http/s link>"` - Issues a warning to all users in the given group. All users will also be notified personally.
-* `/unwarn @UserName "Your reason here! <optional http/s link>"` - Revokes a warning from the given user. The user will also be notified personally.
-* `/unwarn @UserName` - Revokes a warning from the given user. This allows for not giving a reason why the user has been unwarned. The user will also be notified personally.
-* `/unwarn @Role <optional "Your reason here!">` - Revokes a warning from all users in the given group. A reason doesn't have to be provided.
-* `/warnall "Your reason here! <optional http/s link>"` - Issues a warning to all users and bots on your server.
-* `/warnhistory @UserName` - Shows the warning history for the given user. The default amount is `10`. It can be changes via the configuration file
-* `/warnhistory @UserName <Amount>` - Does the same as the default command but shows a custom amount of historical entries.
-* `/warnhistory @UserName all` - Prints all warnings for a specific user.
-* `/warnerhistory @UserName <Amount>` - Prints all warnings/unwarns a user issued.
-* `/warnleaderboard` - Prints a leaderboard of the top warned people on your guild. The default amount can be set in your configuration.
-* `/warnleaderboard <Amount>` - Does the same as above but prints out a custom amount of people.
-* `/warningstoday <@UserName>` - Shows all warnings of the user that he got in the last 24 hours. Can be used without an username, will then show all warnings/unwarns for the last 24 hours
-* `/cleanuproles` - Will manually run the cleanup for not needed roles on your server.
-* `/migratedatabase` - Will migrate your database to the latest scheme. Will not do anything if scheme is already up-to-date.
-* `/userstats @UserName` - Will show you some Debug information about the given user
-* `/changelog <Amount>` - Will show you the latest changelog. With a given number will show you the last X changelogs
-* `/changeprefix <NewPrefix>` - Will change the prefix the bot is listening on in your guild. Can be any single character.
-* `/addmodrole @Role` - Will grant a role on your discord server the moderator permissions.
-* `/addadminrole @Role` - Will grant a role on your discord server the administrator permissions -> Be careful with this one
-* `/randomwarn @User` - Will return a random warning from a user.
-* `/randomwarn @Role` - Will return a random warning from a random user that is in the group.
-* `/randomunwarn @User` - Will return a random unwarn from a user.
-* `/randomunwarn @Role` - Will return a random unwarn from a random user that is in the group.
+## Commands
 
- _Information_:
-- Bots can be warned but will never receive any message of their warning/unwarn like users would.
-- Links at the end of warn/unwarn/warnall commands will display the file behind that link.
-- Warn/Unwarn/Warnall can have images as attachments. Attachments will not be shown in the history
+The Sahnee-Bot uses Discord slash commands. The following commands are available:
 
-## 3. Permissions
-Since version 0.9.93 the following changes happens:
-* roles can now be individually set and removed. That means, you no longer rely on our given roles.
-* users with the `Serveradministrator` privilege will always have access to every command.
+Legend:
+* `<name>` - Required
+* `{name}` - Optional
 
-Permissions are handled by role names on your discord server.
+### Warning commands
 
-### If self-hosted:
+You can use these commands to issue warnings to your users:
 
-Anything here can be changed to your needs.
-As of now, the `Admins` are not used by the bot anymore because they got obsolete. We use a new permission system. They will make their way out of the config in a future release.
+* `/warn <@user> <reason>` - Issues a warning to the given user. The Sahnee-Bot also sends a private message to the user (unless opted out) *(Moderator permission required)*
+* `/unwarn <@user> <reason>` - Revokes a warning of the given user. *(Moderator permission required)*
 
-Example:
-```json
-    "WarningBot": {
-        "WarningPrefix": "warning: ",
-        "WarningRoleCleanup": "0.00:30:00",
-        "DatabaseCollection": "warningbot",
-        "WarningHistoryCount": 10,
-        "WarningLeaderboardCount": 3,
-        "Admins": [
-            "Owner",
-            "Administrator",
-            "Admin",
-            "Server Admin",
-            "Moderator",
-            "Mod",
-            "Mods",
-            "Staff",
-            "Community Manager"
-        ],
-        "PunishMessage": "Some insulting text here"
-    },
-```
+### Reporting commands
 
-This means, everyone that is in one of the roles mentioned above will be able to access the **Warn** Module.
+The commands below allow you to generate reports on the warnings of the people on your server:
 
+* `/warnings top {max-rankings=10}` - Prints the `max-rankings` users with the most amount of warnings on your server.
+* `/warnings history {max-amount=10} {user} {issuer=False}` - Gets the `max-amount` last warnings on your server. If `user` is specified, only the warnings of this user will be used. If `user` is specified and `issuer=True`, then warnings issued by this user will be used instead.
+* `/warnings between <start> {end=Current date} {user} {issuer=False}` - Gets the all warnings between `start` and `end` on your server. If `user` is specified, only the warnings of this user will be used. If `user` is specified and `issuer=True`, then warnings issued by this user will be used instead.
+* `/warnings random {amount=1} {user} {issuer=False}` - Gets `amount` random warnings on your server. If `user` is specified, only the warnings of this user will be used. If `user` is specified and `issuer=True`, then warnings issued by this user will be used instead.
+* `/warnings today {user} {issuer=False}` - Gets all warnings on your server within the last 24 hours. If `user` is specified, only the warnings of this user will be used. If `user` is specified and `issuer=True`, then warnings issued by this user will be used instead.
 
-## 4. Jobs
+### Configuration commands
 
-Because we've encountered that having so many `warning-roles` on your server, will make creating and modifying your own roles a bit laggy.
-Furthermore because there is a limit on how many roles your server can have, we've create the job-system.
+The following commands can be used to customize the bot on your server:
 
-__Currently these jobs are available:__
+* `/config bind set <channel>` - Sets the channel the bot is bound to. This means that the bot will only process commands sent in the given channel. *(This command ignores the bound channel)* *(Administrator permission required)*
+* `/config bind unset` - Removes the bound channel from the bot. *(This command ignores the bound channel)* *(Administrator permission required)*
+* `/config bind get` - Gets the channel the bot is currently bound to. *(This command ignores the bound channel)*
+* `/config sahnee-permission add <role> <permission>` - Adds a permission to the given role. *(Administrator permission required)*
+* `/config sahnee-permission remove <role> {permission=All}` - Removes a permission from the given role. *(Administrator permission required)*
+* `/config sahnee-permission list` - Lists all roles on your server that have permissions for the bot attached to them. *(Administrator permission required)*
+* `/config role enable` - Enables role creating, causing every user to be assigned a role that displays the amount of warnings they have. (Enabled by default) *(Administrator permission required)*
+* `/config role disable` - Disables the role handling. *(Administrator permission required)*
+* `/config role color <color>` - Sets the color of warning roles created by the bot. The role color has to he a hex string *(Administrator permission required)*
+* `/config role prefix <prefix>` - Sets the prefix of the role names created by the bot (Defaults to `warning: `). *(Administrator permission required)*
+* `/config role status` - Prints the current configuration of the role handling (if roles are created and the prefix). *(Administrator permission required)*
+* `/config pm opt-out` - Opts out of receiving messages from this bot on the current server. *(This command ignores the bound channel)*
+* `/config pm opt-in` - Opts back into receiving messages from this bot on the current server. *(This command ignores the bound channel)*
+* `/config pm am-i-opted-out` - Checks if you are currently opted out of receiving messages from the bot on this server. *(This command ignores the bound channel)*
+* `/config old-users remove-list` - Removes users that left, got banned or got their account deleted, from the current server. *(Administrator permission required)*
 
-| Job-Name | Description | Default execution time
-| -----| ----- | ------|
-| CleanupWarningRoles | This job will go through all of the roles on your server and delete unassigned `warning-roles`| Every 5 hours|
-| ClearDatabaseLog | This job will lock all commands while it's active. The database-log file will be written into the database file| Every day|
+### Miscellaneous commands
 
-## 5. External API's
+The bot also has several other commands that don't fit into a category:
 
-Since version 0.9.93 we support an external API module.
+* `/help` - Prints some general information about the bot.
+* `/changelog {version=latest} {all=False}` - Gets the changelog of the given `version` of the bot. If `all=True` all changelogs after this version will be returned as well.
+* `/cleanup-roles` - Deletes unused roles created by the role handling system that assigns users roles based on their warning number. This command is automatically executed regularly.
 
-As of now, we currently provide only one API: discordbotlist.com
-In the future this list will expand.
+## Permissions
 
-You don't need to use this external API module. You can just leave anything related to this empty in the config file.
+The bot has three permissions:
 
-## 6. How to install on your own hardware
+* `Administrator` - Users with this permission have full access to the bot. Every user with "Administrator" discord permissions automatically has this bot permission.
+* `Moderator` - Users with this permission can issue warnings with the bot. Every user with "Ban Members" discord permissions automatically has this bot permission.
+* `None` - Users without permissions cannot configure the bot or issue warnings.
 
-### 6.1 Download an run
+If the default permissions assigned do not suffice you can assign permissions to roles using the `/config sahnee-permission` commands.
 
-#### Linux:
+## Self hosted guide
 
-1. Clone the repo:
-   ```
-   git clone https://github.com/Sahnee-DE/sahnee-bot.git
-   cd sahnee-bot
-   ```
-3. Build the project
-   ```
-   dotnet publish -c Release -r linux-x64 --self-contained true -o ./build
-   ```
-   Make sure to replace `linux-x64` with whatever OS & processor architecture you are using.
-5. Create a `config.json` file in your `build` directory. You can find a template for it [here](https://github.com/Sahnee-DE/sahnee-bot/blob/master/sahnee-bot/config.json).
-   Make sure to insert your bot `Id` and `Token`. You must also change the value of `ChangeLogPath` to `"./changelog.txt"` (remove one dot)
-7. To start your bot run the `sahnee-bot` command in the `build` directory:
-   ```
-   cd build
-   ./sahnee-bot
-   ```
-    
- You are done! Enjoy your bot.
+You can also host the bot on your own hardware if you want.
 
-#### Windows:
+Currently we are building the sahnee-bot for linux-x64.
+If you want to run the sahnee-bot on a Windows-system, you have to build the sahnee-bot on your own.
 
-Not supported yet.
+### Migrating from Version 0.9.X to Version > 1.0.0
 
-### 6.2. The configuration file
+Because of the change from LiteDb as Database to PostgreSQL as Database, you need to migrate you database to the new schema.
 
-In case you get lost, this is the default config:
+This will be a step by step guide.
+1. Install a PostgreSQL server and create a database with a user that has full access to this database.
+2. Get the modified version of the [LiteDbStudio](https://github.com/Sahnee-DE/LiteDB.Studio) and extract it. (We only increased the limit of entries that can be displayed at once)
+3. Get our [migration tool](https://github.com/Sahnee-DE/sahnee-bot-migrator) and extract it.
+4. Stop your bot.
+5. Download the latest version of the sahnee-bot and run it once, so the database gets initialized with the default tables and columns.
+6. Download the LiteDb files (If the log rotation hasn't been running since the last change there will be two files, one for the database and one log file)
+7. Open the .db file (Make sure you have the log file in the same folder as the db file if you happen to have one)
+8. Now double-click on a table and hit `Run`, next change the tab to `Text`, copy all of the content into the matching file in the migration-tools `db` folder. Repeat this for every table.
+9. The tricky part: in your sahnee-bot-migrator folder there is a `appsettings.json` that needs the `ConnectionStrings:SahneeBotModelContext` to be configured with your PostgreSQL connection data. Please note, that this string differs from the `appsettings.json` used by the bot. If you use non-alphanumerical characters in your password, you need to encode them. Encoding can be done via [this page](https://www.w3schools.com/tags/ref_urlencode.asp). 
+10. Now you run the migration tool. You need to launch the application via a command line (CMD and Powershell work as well).
+11. After the successful migration you are ready to go. Start your bot and have fun!
+
+### Prerequisites
+
+Starting with version 1.0.0 the sahnee-bot switched from the previously used NoSQL LiteDb to a PostgreSQL.
+Thus, for the sahnee-bot to work you now also need to setup a PostgreSQL database.
+Please be aware, that we cannot provide support for your PostgreSQL server.
+
+You need:
+* PostgreSQL `Version 13.X` and later.
+* A user that has full access to a database.
+
+### How to get the bot up and running on linux
+
+* Download the .zip file to your server with for example `wget`.
+* Extract the zip file in a directory. `unzip SahneeBot.zip -d <your destination directory>` (For this you can use the `unzip` package. This can be installed via `sudo apt install unzip`)
+* Copy the example configuration json from below in the `appsettings.json` file of the unzipped SahneeBot folder.
+* If you haven't done so far, you need to create a `Discord Application`. A guide can be found here: [Creating a Discord Bot](https://discordnet.dev/guides/getting_started/first-bot.html) - (To be able to use all features you need to have the following Permission integer: `1101927607366`)
+* Insert the Discord Application Token into the `Discord:Token` string.
+* The next step would be to configure the `ConnectionStrings:SahneeBotModelContext`. (Please be aware, that if you use characters like \` or ; in your password, you need to wrap your password string in `'special;password:'`).
+* Also required is the `BotSettings:ErrorWebhookUrl` parameter. You __need__ to provide this. [How to create a Webhook](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
+* For further configuration customization please refer to the *__Configuration__* part of this Readme.
+* It's recommended to run the bot as a service. Please refer to a guide that suits your OS.
+* Finally you can start the bot.
+
+If you encounter any errors, you can join our [support server](https://discord.gg/kuFQZxkS)
+
+### Configuration
+
+If hosting the bot yourself you will need to adjust the `appsettings.json` file:
 
 ```json
 {
-    "General": {
-        "Id": "<Your ID here>",
-        "Permissions": 268856320,
-        "Token": "<Your token here>",
-        "CommandPrefix": "/",
-        "DatabasePath": "./sahnee-bot.db",
-        "ChangeLogPath": "../changelog.txt",
-        "CommandChannel": "bot-commands",
-        "DatabaseCleanup": "1.00:00:00",
-        "LogLevel": 1
+    "Logging": {
+        "LogLevel": {
+            "Default": "Debug",
+            "System": "Debug",
+            "Microsoft": "Debug"
+        }
     },
-    "WarningBot": {
-        "WarningPrefix": "warning: ",
-        "WarningRoleCleanup": "0.05:00:00",
-        "DatabaseCollection": "warningbot",
-        "WarningHistoryCount": 10,
-        "WarningLeaderboardCount": 3,
-       "Admins": [
-          "Owner",
-          "Administrator",
-          "Admin",
-          "Server Admin"
-       ],
-       "Mods": [
-          "Moderator",
-          "Mod",
-          "Mods",
-          "Staff",
-          "Community Manager"
-       ],
-        "PunishMessage": "Some insult text here"
+    "MachineId": 1,
+    "ConnectionStrings": {
+      "SahneeBotModelContext": "Host=host;Database=database;Username=username;Password=password"
     },
-    "ExternalApi": {
-      "DiscordBotList": {
-         "ApiUrl": "",
-         "BotId": "",
-         "AuthToken": ""
-      }
-   }
+    "Discord": {
+      "Token": "ABCD1234",
+      "Implementation": "Socket"
+    },
+    "BotSettings": {
+        "IconUrl": "https://sahnee.dev/wp-content/uploads/2020/04/sahnee-bot-150x150.png",
+        "Url": "https://sahnee.dev/en/project/sahnee-bot/",
+        "WarningRolePrefix": "warning: ",
+        "WarningRoleColor": "#607D8B",
+        "SupportServer": "https://discord.gg/FfVurUzVfE",
+        "Changelog": "./CHANGELOG.md",
+        "ReleaseInformation": "./ReleaseInformation.txt",
+        "InviteUrl": "https://discord.com/api/oauth2/authorize?client_id=689600370430836793&permissions=268627014&redirect_uri=https%3A%2F%2Fsahnee.dev%2Fen%2Fproject%2Fsahnee-bot%2F&scope=bot%20applications.commands",
+        "ErrorWebhookUrl": "https://discord.com/api/webhooks/12345/abcde",
+        "Jobs": {
+            "CleanupWarningRoles": "1:00:00"
+        }
+    }
 }
 ```
 
-__Let's go through the settings__
+* `Logging` - All keys here allow you to customize the logging of the bot.
+* `MachineId` - Used to modify the key generation of the bot. When using multiple bots in the same database every bot instance needs a unique `MachineId`.
+* `ConnectionStrings:SahneeBotModelContext` - The credentials to the PostgreSQL database of the bot.
+* `Discord:Token` - The discord token of your bot.
+* `Discord:Implementation` - Allows you to set if you want to use the `Socket` or `Rest` discord API implementation. Don't change unless you know what you are doing and absolutely need it.
+* `BotSettings:IconUrl` - The icon of the bot used in messages.
+* `BotSettings:Url` - The homepage the bot links to.
+* `BotSettings:WarningRolePrefix` - The default prefix for warning roles of servers that have not configured their own.
+* `BotSettings:WarningRoleColor` - The default color for warning roles on a server.
+* `BotSettings:SupportServer` - A link to the support page for the bot.
+* `BotSettings:Changelog` - The path to the changelog file on disk. Will be scanned for a new version of bot startup.
+* `BotSettings:ReleaseInformation` - A file that contains information about the release of the bot. Will be printed in the `/help` command.
+* `BotSettings:InviteUrl` - The invite URL users should use to invite the bot to their servers.
+* `BotSettings:ErrorWebhookUrl` - A webhook errors will be sent to.
+* `BotSettings:Jobs:CleanupWarningRoles` - The frequency in how often warnings created by the bot that are no longer used will be deleted.
 
-| Setting | Description |
-| --- | --- |
-| `General:Id` | The client ID of the bot. The client we are hosting publicly is `603990770667487243`, if you want to run your own bot insert your ID here.|
-| `General:Permission`| The permissions of this bot. By default the bot has permission `268856320` which makes it capable of creating roles and adding/removing roles from users. |
-| `General:Token` | Your super secret bot token. [See how to generate one](https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token) [1] |
-| `General:CommandPrefix` | Defines the prefix for using any command. Can be any single character. By default it's set to `/`. |
-| `General:DatabasePath` | Defines the path/location of your database file. We're using LiteDB [2] This will also be the location of the database log file. |
-| `General:ChangeLogPath`| Defines the path of the changelog file. It's plain text. Not needed if you don't want to let your users know about changes or new commands. |
-| `General:CommandChannel` | Defines the channel where the bot will listen for commands. |
-| `General:DatabaseCleanup` | Job that will write the database-log file to the database file. The format is a **TimeSpan**. `0(days).00(hours):00(minutes):00(seconds)`. Please notice the `.` between the _days_ and _hours_. |
-| `General:LogLevel` | Defines the loglevel. Can go from 1 to 5 where with every increased number the output of logs will also increase.|
-| `WarningBot:WarningPrefix` | Users will be given a role based on their warning count. If this value is e.g. set to `"warnings: `" the role of 4 warnings will be named "warnings: 4". |
-| `WarningBot:WarningRoleCleanup` | This is the cleanup job for your `warning-roles`. The format is a **TimeSpan**. `0(days).00(hours):00(minutes):00(seconds)`. Please notice the `.` between the _days_ and _hours_. |
-| `WarningBot:DatabaseCollection` | Name for the Collection(Table) in the database. Only change if you really need to. |
-| `WarningBot:WarningHistoryCount` | The default amount of warnings to show if the `/warnhistory @UserName` command is issued. |
-| `WarningBot:WarningLeaderboardCount` | The default amount of people to show if the `/warnleaderboard` command is issued. |
-| `WarningBot:Admins` | In order to issue warnings a user must have at least one of these permissions. |
-| `WarningBot:PunishMessage`| The Reason of the warning a user gets when he uses the bot incorrectly, like wrong command, too much/many arguments and so on|
-| `ExternalAPI:DiscordBotList:ApiUrl`| This is the API Url that will be provided to you by the discordbotlist site.|
-| `ExternalAPI:DiscordBotList:BotId` | This is the BotId that will be provided to you by the discordbotlist site. |
-| `ExternalAPI:DiscordBotList:AuthToken` | This is the AuthToken that will be provided to you by the discordbotlist site. |
-[1] Source: https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
-
-[2] Source: http://www.litedb.org/
+Time spans for jobs are formatted in the format documented [here](https://docs.microsoft.com/en-us/dotnet/api/system.timespan.parse?view=net-6.0#system-timespan-parse(system-string)) under the section "Remarks" (`[ws][-]{ d | [d.]hh:mm[:ss[.ff]] }[ws]`).
