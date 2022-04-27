@@ -78,9 +78,9 @@ jobs:
           script: |
             echo "Connected to server!"
             cd ~
-            unzip bot.zip
+            unzip -d ~ ~/bot.zip
             rm -r /usr/local/opt/SahneeBot-Test/*
-            cp -r ./SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
+            cp -r ~/SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
             cp ~/appsettings.json ${{ secrets.DEPLOY_DIRECTORY }}
       - name: Block IP in Firewall
         if: always()
