@@ -67,7 +67,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
           source: "./bot.zip"
-          target: "~/bot.zip"
+          target: "${{ secrets.STAGING_DIRECTORY }}/bot.zip"
       - name: SSH into production
         id: discord-bot-main-ssh
         uses: appleboy/ssh-action@master
@@ -78,10 +78,10 @@ jobs:
           script: |
             echo "Connected to server!"
             cd ~
-            unzip -d ~ ~/bot.zip
-            rm -r /usr/local/opt/SahneeBot-Test/*
-            cp -r ~/SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
-            cp ~/appsettings.json ${{ secrets.DEPLOY_DIRECTORY }}
+            unzip -d ${{ secrets.STAGING_DIRECTORY }} ${{ secrets.STAGING_DIRECTORY }}/bot.zip
+            rm -r ${{ secrets.DEPLOY_DIRECTORY }}/*
+            cp -r ${{ secrets.STAGING_DIRECTORY }}/SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
+            cp ${{ secrets.STAGING_APPSETTINGS }} ${{ secrets.DEPLOY_DIRECTORY }}/appsettings.json
       - name: Block IP in Firewall
         if: always()
         run: ./hcloud firewall delete-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in --description "GitHub Actions - sahnee-bot"
