@@ -77,7 +77,7 @@ jobs:
           password: ${{ secrets.DEPLOY_PASSWORD }}
           script: |
             echo "Connected to server!"
-            unzip -d ${{ secrets.STAGING_DIRECTORY }} ${{ secrets.STAGING_DIRECTORY }}/SahneeBot-Linux64.zip
+            unzip -d ${{ secrets.STAGING_DIRECTORY }} ${{ secrets.STAGING_DIRECTORY }}/build/artifact/SahneeBot-Linux64.zip
             rm -r ${{ secrets.DEPLOY_DIRECTORY }}/*
             cp -r ${{ secrets.STAGING_DIRECTORY }}/SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
             cp ${{ secrets.STAGING_APPSETTINGS }} ${{ secrets.DEPLOY_DIRECTORY }}/appsettings.json
