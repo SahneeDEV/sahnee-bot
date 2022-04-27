@@ -54,8 +54,6 @@ jobs:
         with:
           version: 1.29.5
           token: ${{ secrets.HCLOUD_TOKEN }}
-      - name: Enable project
-        run: hcloud context create actions
       - name: Allow IP in Firewall
         run: hcloud firewall add-rule github --source-ips 1.3.5.7/32 --port 22 --protocol tcp --direction in --description "GitHub Actions - sahnee-bot"
       - name: Upload Artifiact to production
