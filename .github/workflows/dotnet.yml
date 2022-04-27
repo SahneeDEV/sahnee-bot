@@ -67,7 +67,7 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
           source: "./bot.zip"
-          target: "${{ secrets.STAGING_DIRECTORY }}/bot.zip"
+          target: "${{ secrets.STAGING_DIRECTORY }}"
       - name: SSH into production
         id: discord-bot-main-ssh
         uses: appleboy/ssh-action@master
@@ -77,7 +77,6 @@ jobs:
           password: ${{ secrets.DEPLOY_PASSWORD }}
           script: |
             echo "Connected to server!"
-            cd ~
             unzip -d ${{ secrets.STAGING_DIRECTORY }} ${{ secrets.STAGING_DIRECTORY }}/bot.zip
             rm -r ${{ secrets.DEPLOY_DIRECTORY }}/*
             cp -r ${{ secrets.STAGING_DIRECTORY }}/SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
