@@ -6,9 +6,6 @@ on:
 
 jobs:
   build:
-    runs-on: self-hosted
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET
@@ -47,6 +44,15 @@ jobs:
         uses: actions/download-artifact@v3.0.0
         with:
           path: bot.zip
+      - name: Public IP
+        id: ip
+        uses: haythem/public-ip@v1.2
+      - name: Install hcloud
+        uses: techknowlogick/action-hcloud@v2
+        with:
+          token: ${{ secrets.HCLOUD_TOKEN }}
+      - name: Allow IP in Firewall
+        run: hcloud firewall add-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in
       - name: Upload Artifiact to production
         uses: appleboy/scp-action@master
         with:
@@ -69,3 +75,6 @@ jobs:
             rm -r /usr/local/opt/SahneeBot-Test/*
             cp -r ./SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
             cp ~/appsettings.json ${{ secrets.DEPLOY_DIRECTORY }}
+      - name: Block IP in Firewall
+        if: always()
+        run: hcloud firewall delete-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in
