@@ -54,11 +54,8 @@ jobs:
         with:
           version: 1.29.5
           token: ${{ secrets.HCLOUD_TOKEN }}
-      #- name: Install hcloud
-      #  run: |
-      #    wget https://github.com/hetznercloud/cli/releases/download/v1.29.5/hcloud-linux-amd64.tar.gz
-      #    tar xvf ./hcloud-linux-amd64.tar.gz
-      #    chmod a+x ./hcloud
+      - name: Enable project
+        run: hcloud context create actions
       - name: Allow IP in Firewall
         run: hcloud firewall add-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in
       - name: Upload Artifiact to production
