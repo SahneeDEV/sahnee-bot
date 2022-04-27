@@ -1,4 +1,4 @@
-﻿name: .NET
+name: .NET
 
 on:
   push:
@@ -28,6 +28,11 @@ jobs:
         run: dotnet publish --no-restore --self-contained true --runtime linux-x64 -o SahneeBot-Linux64
       - name: Zip
         run: zip -r SahneeBot-Linux64.zip SahneeBot-Linux64
+      - name: Artifact
+        uses: actions/upload-artifact@v3.0.0
+        path: SahneeBot-Linux64.zip
+        with:
+          if-no-files-found: error
       - name: Release
         uses: ncipollo/release-action@v1
         with:
