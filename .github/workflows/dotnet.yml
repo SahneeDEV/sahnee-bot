@@ -71,7 +71,7 @@ jobs:
       - name: SSH into production
         id: discord-bot-main-ssh
         uses: appleboy/ssh-action@master
-        with: |
+        with:
           host: ${{ secrets.DEPLOY_HOST }}
           username: ${{ secrets.DEPLOY_USER }}
           password: ${{ secrets.DEPLOY_PASSWORD }}
