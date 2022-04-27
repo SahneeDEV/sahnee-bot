@@ -30,8 +30,8 @@ jobs:
         run: zip -r SahneeBot-Linux64.zip SahneeBot-Linux64
       - name: Artifact
         uses: actions/upload-artifact@v3.0.0
-        path: SahneeBot-Linux64.zip
         with:
+          path: SahneeBot-Linux64.zip
           if-no-files-found: error
       - name: Release
         uses: ncipollo/release-action@v1
