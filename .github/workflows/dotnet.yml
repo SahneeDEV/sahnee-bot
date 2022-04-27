@@ -50,11 +50,12 @@ jobs:
         id: ip
         uses: haythem/public-ip@v1.2
       - name: Install hcloud
-        uses: techknowlogick/action-hcloud@v2
-        with:
-          token: ${{ secrets.HCLOUD_TOKEN }}
+        run: |
+          wget https://github.com/hetznercloud/cli/releases/download/v1.29.5/hcloud-linux-amd64.tar.gz
+          tar xvf ./hcloud-linux-amd64.tar.gz
+          chmod a+x ./hcloud
       - name: Allow IP in Firewall
-        run: hcloud firewall add-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in
+        run: ./hcloud firewall add-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in
       - name: Upload Artifiact to production
         uses: appleboy/scp-action@master
         with:
@@ -79,4 +80,4 @@ jobs:
             cp ~/appsettings.json ${{ secrets.DEPLOY_DIRECTORY }}
       - name: Block IP in Firewall
         if: always()
-        run: hcloud firewall delete-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in
+        run: ./hcloud firewall delete-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in
