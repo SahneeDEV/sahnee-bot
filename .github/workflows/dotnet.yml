@@ -6,6 +6,7 @@ on:
 
 jobs:
   build:
+    runs-on: debian-latest
     steps:
       - uses: actions/checkout@v2
       - name: Setup .NET
@@ -39,6 +40,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
   deploy:
     needs: build
+    runs-on: debian-latest
     steps:
       - name: Download a Build Artifact
         uses: actions/download-artifact@v3.0.0
