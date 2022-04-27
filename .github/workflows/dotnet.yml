@@ -41,7 +41,6 @@ jobs:
           tag: ${{ github.run_number }}
           token: ${{ secrets.GITHUB_TOKEN }}
   deploy:
-    runs-on: self-hosted
     needs: build
     steps:
       - name: Download a Build Artifact
