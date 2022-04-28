@@ -50,7 +50,7 @@ public abstract class UpdateGuildChangelogTask : ITask<UpdateGuildChangelogTask.
                 if (!post.IsSuccess)
                 {
                     _logger.LogWarning(EventIds.Changelog
-                        , "Failed to post warnings to guild {Guild}: {Error}"
+                        , "Failed to post changelog to guild {Guild}: {Error}"
                         , arg.GuildId, post.Message);
                     success = new Error<Version?>(post.Message);
                 }
