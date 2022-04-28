@@ -1,5 +1,10 @@
 ﻿# CHANGELOG
 
+## 1.0.1
+
+The Sahnee-Bot is currently generating an increased amount of errors related to changelog permissions.
+Functionality may be impacted while we work on a solution. Thank you for your patience.
+
 ## 1.0.0
 
 Sahnee-Bot 1.0.0 is a complete rewrite of the Sahnee-Bot using the new Discord slash commands, with a more modern and stable architecture that will allow us to implement even more & better features in the future!
