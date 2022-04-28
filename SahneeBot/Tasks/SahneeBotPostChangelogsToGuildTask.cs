@@ -1,4 +1,5 @@
-﻿using SahneeBot.Formatter;
+﻿using Microsoft.Extensions.Logging;
+using SahneeBot.Formatter;
 using SahneeBotController;
 using SahneeBotController.Tasks;
 
@@ -11,23 +12,27 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
     private readonly Bot _bot;
     private readonly SahneeBotDiscordError _discordError;
     private readonly GetBoundChannelTask _boundChannelTask;
+    private readonly ILogger<SahneeBotPostChangelogsToGuildTask> _logger;
 
     public SahneeBotPostChangelogsToGuildTask(Changelog changelog
         , ChangelogVersionDiscordFormatter fmt
         , GetBoundChannelTask boundChannelTask
         , Bot bot
-        , SahneeBotDiscordError discordError)
+        , SahneeBotDiscordError discordError
+        , ILogger<SahneeBotPostChangelogsToGuildTask> logger)
     {
         _changelog = changelog;
         _fmt = fmt;
         _bot = bot;
         _discordError = discordError;
+        _logger = logger;
         _boundChannelTask = boundChannelTask;
     }
     
     public override async Task<ISuccess<uint>> Execute(ITaskContext ctx, Args arg)
     {
         var (guildId, enumerable) = arg;
+        _logger.LogDebug("Will now send changelogs to guild {Guild}", guildId);
         var set = new HashSet<Version>(enumerable);
         var changelogs = _changelog.Versions
             .Where(v => set.Contains(v.Version))
@@ -36,6 +41,7 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
         var guild = await _bot.Client.GetGuildAsync(guildId);
         if (guild == null)
         {
+            _logger.LogWarning("Could not found the guild {GuildId}", guildId);
             return new Error<uint>("Could not find the server.");
         }
 
@@ -44,6 +50,7 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
             : await guild.GetDefaultChannelAsync();
         if (channel == null)
         {
+            _logger.LogWarning("Could not find a channel to post the changelogs in {GuildId}", guildId);
             return new Error<uint>("Could not find a channel to post the changelogs in.");
         }
 
@@ -51,13 +58,18 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
         {
             if (await _fmt.FormatAndSendMany(changelogs, channel.SendMessageAsync))
             {
+                _logger.LogDebug("Sent the changelog to guild {Guild}", guildId);
                 return new Success<uint>((uint) changelogs.Count);
             }
         }
         catch(Exception exception)
         {
-            var error = await _discordError.TryGetError<uint>(
-                ctx, new SahneeBotDiscordError.ErrorOptions {Exception = exception, GuildId = guildId});
+            _logger.LogWarning(exception, "Failed to post changelogs in guild {Guild} due to error", guildId);
+            var error = await _discordError.TryGetError<uint>(ctx
+                                                              , new SahneeBotDiscordError.ErrorOptions {
+                                                                  Exception = exception
+                                                                  , GuildId = guildId
+                                                              });
             if (error != null)
             {
                 return error;
@@ -66,6 +78,7 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
             throw;
         }
 
+        _logger.LogDebug("No changelogs to post to {Guild}", guildId);
         return new Error<uint>("No changelogs to post.");
     }
 }

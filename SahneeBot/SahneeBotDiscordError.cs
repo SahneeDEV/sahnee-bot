@@ -108,13 +108,6 @@ public class SahneeBotDiscordError
         var inviteUrl = _cfg["BotSettings:InviteUrl"];
         return new Error<T>("The Sahnee-Bot does not have enough permissions on your server.\n" +
                             "-----------------\n" +
-                            $"**Due to the update of the Sahnee-Bot on {_release.StartedAt.ToShortDateString()} " +
-                            "the bot does not have all permissions required.\n" +
-                            $"Please kick the bot and re-invite it using [this link]({inviteUrl}).**\n" +
-                            "**Please note that since a lot of people are currently updating the bot you may need to " +
-                            "wait a minute or two after the bot has been invited for commands to appear. If nothing " +
-                            "happens after 15 minutes feel free to join the support server.**\n" +
-                            "-----------------\n" +
                             "Please drag the Sahnee-Bot role above all other roles starting with " +
                             $"\"{prefix.TrimEnd()}\" in your Server Settings and make sure that it has the \"Manage " +
                             "Roles\" permission.\n" +
