@@ -39,7 +39,7 @@ static IHostBuilder CreateHostBuilder(string[] args)
                 options
                     .UseNpgsql()
                     .LogTo(Console.WriteLine, LogLevel.Information)
-                    .EnableSensitiveDataLogging()
+                    //.EnableSensitiveDataLogging()
                     .EnableDetailedErrors();
             });
         });
