@@ -79,9 +79,11 @@ jobs:
             echo "Connected to server!"
             rm -rf ${{ secrets.STAGING_DIRECTORY }}/SahneeBot-Linux64
             unzip -d ${{ secrets.STAGING_DIRECTORY }} ${{ secrets.STAGING_DIRECTORY }}/build/artifact/SahneeBot-Linux64.zip
+            sudo systemctl stop ${{ secrets.SERVICE_NAME }}
             rm -rf ${{ secrets.DEPLOY_DIRECTORY }}/*
             cp -r ${{ secrets.STAGING_DIRECTORY }}/SahneeBot-Linux64/* ${{ secrets.DEPLOY_DIRECTORY }}
             cp ${{ secrets.STAGING_APPSETTINGS }} ${{ secrets.DEPLOY_DIRECTORY }}/appsettings.json
+            sudo systemctl start ${{ secrets.SERVICE_NAME }}
       - name: Block IP in Firewall
         if: always()
         run: ./hcloud firewall delete-rule github --source-ips ${{ steps.ip.outputs.ipv4 }}/32 --port 22 --protocol tcp --direction in --description "GitHub Actions - sahnee-bot"
