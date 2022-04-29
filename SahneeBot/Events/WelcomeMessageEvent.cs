@@ -51,7 +51,9 @@ public class WelcomeMessageEvent : EventBase<IGuild>
         {
             var error = await _discordError.TryGetError<bool>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                Exception = exception, GuildId = arg.Id
+                Exception = exception
+                , GuildId = arg.Id
+                , Hint = $"The bot does not have permissions to post its welcome message in the channel {channel.Mention}. If you do not want to grant it permissions to this channel please bind it to one of your other channels using `/config bind <channel>`."
             });
             if (error != null)
             {

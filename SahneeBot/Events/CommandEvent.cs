@@ -61,6 +61,7 @@ public class CommandEvent : EventBase<IGuild>
             {
                 Exception = exception
                 , GuildId = arg.Id
+                , Hint = "Your bot is not allowed to create slash commands on your server. Please ensure that you use the official invite link or contact our support."
             });
             if (error != null)
             {

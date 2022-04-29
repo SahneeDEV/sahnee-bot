@@ -69,6 +69,7 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
                                                               , new SahneeBotDiscordError.ErrorOptions {
                                                                   Exception = exception
                                                                   , GuildId = guildId
+                                                                  , Hint = $"Could not post a message in the channel {channel.Mention}."
                                                               });
             if (error != null)
             {

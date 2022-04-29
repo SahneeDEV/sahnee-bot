@@ -66,8 +66,9 @@ public class SahneeBotGuildChangeRoleColorTask: ChangeRoleColorTask
         {
             var error = await _discordError.TryGetError<string>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                Exception = exception,
-                GuildId = arg.GuildId
+                Exception = exception
+                , GuildId = arg.GuildId
+                , Hint = $"The bot could not change the color of your warning roles to `{customColor}`. Please ensure that you use the official invite link and drag the Sahnee-Bot **above** all warning roles in your Server Settings. If that does not help, please contact our support."
             });
             if (error != null)
             {

@@ -56,8 +56,9 @@ public class SahneeBotChangeWarningRoleNameTask : ChangeWarningRoleNameTask
         {
             var error = await _discordError.TryGetError<string>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                Exception = exception,
-                GuildId = args.GuildId
+                Exception = exception
+                , GuildId = args.GuildId
+                , Hint = $"The bot could not rename the roles from `{oldPrefix}` to `{args.WarningRolePrefix}`. Please ensure that you use the official invite link and drag the Sahnee-Bot **above** all warning roles in your Server Settings. If that does not help, please contact our support."
             });
             if (error != null)
             {

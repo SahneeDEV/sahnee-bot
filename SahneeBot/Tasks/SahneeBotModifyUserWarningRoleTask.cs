@@ -92,8 +92,9 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
             }
             var error = await _discordError.TryGetError<ulong>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                Exception = exception,
-                GuildId = args.GuildId
+                Exception = exception
+                , GuildId = args.GuildId
+                , Hint = $"Could not remove the old warning role of {currentGuildUser.Mention}. Please ensure that you use the official invite link and drag the Sahnee-Bot **above** all warning roles in your Server Settings. If that does not help, please contact our support."
             });
             if (error != null)
             {
@@ -122,9 +123,8 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
                     roleColor = new Color(rgb.R, rgb.G, rgb.B);
                 }
                 // Create the new role
-                newRole = await currentGuild
-                    .CreateRoleAsync(newRoleName, default,
-                        roleColor, false, null);
+                newRole = await currentGuild.CreateRoleAsync(newRoleName, default
+                                                             , roleColor, false, null);
                 // Add the new role to the guild
                 await currentGuildUser.AddRoleAsync(newRole);
                 await _checkRoleLimitTask.Execute(ctx, new CheckRoleLimitTask.Args(currentGuild.Id));
@@ -138,8 +138,9 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
                 await removeRolesCommand.Undo();
                 var error = await _discordError.TryGetError<ulong>(ctx, new SahneeBotDiscordError.ErrorOptions
                 {
-                    Exception = exception,
-                    GuildId = args.GuildId
+                    Exception = exception
+                    , GuildId = args.GuildId
+                    , Hint = $"Could not create the new warning role for {currentGuildUser.Mention}. Please ensure that you use the official invite link and drag the Sahnee-Bot **above** all warning roles in your Server Settings. If that does not help, please contact our support."
                 });
                 if (error != null)
                 {
@@ -164,8 +165,9 @@ public class SahneeBotModifyUserWarningRoleTask : ModifyUserWarningRoleTask
             await removeRolesCommand.Undo();
             var error = await _discordError.TryGetError<ulong>(ctx, new SahneeBotDiscordError.ErrorOptions
             {
-                Exception = exception,
-                GuildId = args.GuildId
+                Exception = exception
+                , GuildId = args.GuildId
+                , Hint = $"Could not assign the the warning role to {currentGuildUser.Mention}. Please ensure that you use the official invite link and drag the Sahnee-Bot **above** all warning roles in your Server Settings. If that does not help, please contact our support."
             });
             if (error != null)
             {

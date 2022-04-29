@@ -39,6 +39,11 @@ public class SahneeBotDiscordError
         /// The exception.
         /// </summary>
         public Exception Exception { get; init; }
+        
+        /// <summary>
+        /// A hint to what happened.
+        /// </summary>
+        public string? Hint { get; init; }
     }
 
     /// <summary>
@@ -74,19 +79,19 @@ public class SahneeBotDiscordError
             case HttpException {DiscordCode: DiscordErrorCode.InsufficientPermissions}:
             {
                 var prefix = await GetGuildPrefix(ctx, options.GuildId);
-                return GetMissingRolePermissionsError<T>(prefix);
+                return GetMissingRolePermissionsError<T>(prefix, options.Hint);
             }
             // Bot cannot manage roles
             case HttpException {HttpCode: HttpStatusCode.Forbidden}:
             {
                 var prefix = await GetGuildPrefix(ctx, options.GuildId);
-                return GetMissingRolePermissionsError<T>(prefix);
+                return GetMissingRolePermissionsError<T>(prefix, options.Hint);
             }
             // Missing intent when invited
             case HttpException {DiscordCode: DiscordErrorCode.MissingPermissions}:
             {
                 var prefix = await GetGuildPrefix(ctx, options.GuildId);
-                return GetMissingRolePermissionsError<T>(prefix);
+                return GetMissingRolePermissionsError<T>(prefix, options.Hint);
             }
             default:
             {
@@ -103,10 +108,11 @@ public class SahneeBotDiscordError
         return guildState?.WarningRolePrefix.Trim() ?? "n/a";
     }
     
-    private ISuccess<T> GetMissingRolePermissionsError<T>(string prefix)
+    private ISuccess<T> GetMissingRolePermissionsError<T>(string prefix, string? hint)
     {
         var inviteUrl = _cfg["BotSettings:InviteUrl"];
         return new Error<T>("The Sahnee-Bot does not have enough permissions on your server.\n" +
+                            (string.IsNullOrEmpty(hint) ? "" : ("**Hint:** " + hint + "\n")) + 
                             "-----------------\n" +
                             "Please drag the Sahnee-Bot role above all other roles starting with " +
                             $"\"{prefix.TrimEnd()}\" in your Server Settings and make sure that it has the \"Manage " +

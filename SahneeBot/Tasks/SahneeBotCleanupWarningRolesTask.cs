@@ -94,8 +94,9 @@ public class SahneeBotCleanupWarningRolesTask : ITask<SahneeBotCleanupWarningRol
             {
                 error = await _discordError.TryGetError<uint>(ctx, new SahneeBotDiscordError.ErrorOptions
                 {
-                    Exception = exception,
-                    GuildId = guildId
+                    Exception = exception
+                    , GuildId = guildId
+                    , Hint = $"The bot could not delete the unused warning role {notNeededRole.Mention}. Please ensure that you use the official invite link and drag the Sahnee-Bot **above** all warning roles in your Server Settings. If that does not help, please contact our support."
                 });
                 if (error == null)
                 {
