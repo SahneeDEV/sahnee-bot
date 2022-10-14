@@ -1,5 +1,9 @@
 ﻿# CHANGELOG
 
+## 1.0.2
+
+Fixed an internal error that occurred when the bot does not have permission to post a changelog after a new release. Instead of throwing an error, admins will now be notified about the bot missing permissions.
+
 ## 1.0.1
 
 The Sahnee-Bot is currently generating an increased amount of errors related to changelog permissions.
