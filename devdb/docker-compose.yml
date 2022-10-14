@@ -1,0 +1,8 @@
+version: "3.8"
+services:
+  sahneebot_devdb:
+    image: postgres:14
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: sahneepg

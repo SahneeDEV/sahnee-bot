@@ -36,7 +36,15 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\SahneeBotAdminConsole\SahneeBotAdminConsole.csproj" />
       <ProjectReference Include="..\SahneeBotController\SahneeBotController.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="appsettings.Development.json" />
+      <Content Include="appsettings.Development.json">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </Content>
     </ItemGroup>
 
 </Project>

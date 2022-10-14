@@ -1,12 +1,17 @@
-﻿using Discord;
+﻿using System.Reflection;
+using Discord;
 using Discord.Rest;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Configuration;
+using Microsoft.Extensions.Logging.Console;
+using Microsoft.Extensions.Logging.EventLog;
 using SahneeBot;
 using SahneeBot.Commands;
 using SahneeBot.Events;
@@ -16,14 +21,67 @@ using SahneeBot.InteractionComponents;
 using SahneeBot.Jobs;
 using SahneeBot.Tasks;
 using SahneeBot.Tasks.Error;
+using SahneeBotAdminConsole;
 using SahneeBotController.Tasks;
 using SahneeBotModel;
 using EventHandler = SahneeBot.Events.EventHandler;
 using EventIds = SahneeBot.EventIds;
 
 static IHostBuilder CreateHostBuilder(string[] args)
-    => Host
-        .CreateDefaultBuilder(args)
+    => new HostBuilder()
+        .UseContentRoot(Directory.GetCurrentDirectory())
+        .ConfigureHostConfiguration(config =>
+        {
+            config.AddEnvironmentVariables(prefix: "DOTNET_");
+            if (args is { Length: > 0 })
+            {
+                config.AddCommandLine(args);
+            }
+        })
+        .ConfigureAppConfiguration((hostingContext, config) =>
+        {
+            IHostEnvironment env = hostingContext.HostingEnvironment;
+
+            config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+                .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: false);
+
+            if (env.IsDevelopment() && env.ApplicationName is { Length: > 0 })
+            {
+                var appAssembly = Assembly.Load(new AssemblyName(env.ApplicationName));
+                config.AddUserSecrets(appAssembly, optional: true, reloadOnChange: false);
+            }
+
+            config.AddEnvironmentVariables();
+
+            if (args is { Length: > 0 })
+            {
+                config.AddCommandLine(args);
+            }
+        })
+        .ConfigureLogging((hostingContext, logging) =>
+        {
+            logging.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
+            logging.AddConfiguration();
+            logging.AddConsoleFormatter<SahneeBotConsoleFormatter, SimpleConsoleFormatterOptions>();
+
+            logging.Services.TryAddEnumerable(ServiceDescriptor.Singleton<ILoggerProvider, ConsoleLoggerProvider>());
+            LoggerProviderOptions.RegisterProviderOptions<ConsoleLoggerOptions, ConsoleLoggerProvider>(logging.Services);
+            
+            logging.Configure(options =>
+            {
+                options.ActivityTrackingOptions =
+                    ActivityTrackingOptions.SpanId |
+                    ActivityTrackingOptions.TraceId |
+                    ActivityTrackingOptions.ParentId;
+            });
+
+        })
+        .UseDefaultServiceProvider((context, options) =>
+        {
+            bool isDevelopment = context.HostingEnvironment.IsDevelopment();
+            options.ValidateScopes = isDevelopment;
+            options.ValidateOnBuild = isDevelopment;
+        })
         .ConfigureServices(services =>
         {
             // ID GENERATOR
@@ -155,6 +213,10 @@ var host = CreateHostBuilder(args)
             var url = cfg["BotSettings:ErrorWebhookUrl"];
             return new ErrorWebhook(url != null ? new DiscordWebhookClient(url) : null);
         });
+        // GUI
+        services.AddSingleton<ConsoleWatcherService>();
+        services.AddSingleton<ConsoleApplication>();
+        services.AddSingleton<ConsoleLoggingController>();
     })
     .Build();
 
@@ -207,6 +269,9 @@ void Install(IServiceProvider provider)
 
     var jobHandler = provider.GetRequiredService<IJobHandler>();
     jobHandler.Install();
+
+    var watcher = provider.GetRequiredService<ConsoleWatcherService>();
+    watcher.Install();
 
     logger.LogInformation(EventIds.Startup, "Installed bot");
 }
