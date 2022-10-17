@@ -1,8 +1,12 @@
-﻿# CHANGELOG
+# CHANGELOG
+
+## 1.0.3
+
+Changelogs after a new update are now sent to only a few servers at a time instead of all at once (causing the Discord API to trigger a rate limit). This should reduce the flood of false error messages some servers got after a new update has been released.
 
 ## 1.0.2
 
-Changelogs after a new update are now sent to only a few servers at a time instead of all at once (causing the Discord API to trigger a rate limit). This should reduce the flood of false error messages some servers got after a new update has been released.
+Fixed an internal error that occurred when the bot does not have permission to post a changelog after a new release. Instead of throwing an error, admins will now be notified about the bot missing permissions.
 
 ## 1.0.1
 

@@ -93,6 +93,12 @@ public class SahneeBotDiscordError
                 var prefix = await GetGuildPrefix(ctx, options.GuildId);
                 return GetMissingRolePermissionsError<T>(prefix, options.Hint);
             }
+            // Missing permissions? Not sure how this one can be provoked, but it happens on some guilds
+            case HttpRequestException:
+            {
+                var prefix = await GetGuildPrefix(ctx, options.GuildId);
+                return GetMissingRolePermissionsError<T>(prefix, options.Hint);
+            }
             default:
             {
                 return null;
