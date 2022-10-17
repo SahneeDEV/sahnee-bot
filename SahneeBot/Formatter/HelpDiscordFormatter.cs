@@ -1,4 +1,5 @@
 ﻿using Discord;
+using Microsoft.Extensions.Configuration;
 
 namespace SahneeBot.Formatter;
 
@@ -15,16 +16,19 @@ public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
     private readonly DefaultFormatArguments _defaultFormatArguments;
     private readonly Release _release;
     private readonly Changelog _changelog;
-    private const string WEBSITE = "https://sahnee.dev/en/project/sahnee-bot/";
-    private const string GITHUB = "https://github.com/Sahnee-DE/sahnee-bot";
+    private readonly string _website;
+    private readonly string _github;
 
     public HelpDiscordFormatter(DefaultFormatArguments defaultFormatArguments
         , Release release
-        , Changelog changelog)
+        , Changelog changelog
+        , IConfiguration configuration)
     {
         _defaultFormatArguments = defaultFormatArguments;
         _release = release;
         _changelog = changelog;
+        _website = configuration["BotSettings:Url"];
+        _github = configuration["BotSettings:GithubUrl"];
     }
 
     public Task<DiscordFormat> Format(Args arg)
@@ -36,13 +40,13 @@ public class HelpDiscordFormatter: IDiscordFormatter<HelpDiscordFormatter.Args>
             new()
             {
                 Name = "Website of the bot",
-                Value = WEBSITE,
+                Value = _website,
                 IsInline = true
             },
             new()
             {
                 Name = "GitHub Repository of the bot",
-                Value = GITHUB,
+                Value = _github,
                 IsInline = true
             },
             new()
