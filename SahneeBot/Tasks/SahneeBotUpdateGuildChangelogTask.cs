@@ -1,4 +1,4 @@
-﻿using SahneeBotController.Tasks;
+﻿using SahneeBotController.Tasks.Changelog;
 
 namespace SahneeBot.Tasks;
 

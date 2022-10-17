@@ -17,6 +17,7 @@ using SahneeBot.Jobs;
 using SahneeBot.Tasks;
 using SahneeBot.Tasks.Error;
 using SahneeBotController.Tasks;
+using SahneeBotController.Tasks.Changelog;
 using SahneeBotModel;
 using EventHandler = SahneeBot.Events.EventHandler;
 using EventIds = SahneeBot.EventIds;

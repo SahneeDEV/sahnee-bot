@@ -1,6 +1,6 @@
 ﻿using Discord.Interactions;
 using SahneeBot.Formatter;
-using SahneeBotController.Tasks;
+using SahneeBotController.Tasks.Changelog;
 
 namespace SahneeBot.Commands;
 
