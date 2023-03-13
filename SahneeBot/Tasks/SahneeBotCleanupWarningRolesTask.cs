@@ -59,9 +59,10 @@ public class SahneeBotCleanupWarningRolesTask : ITask<SahneeBotCleanupWarningRol
         foreach (var currentUser in await guild.GetUsersAsync())
         {
             // A user can only have one warning role, otherwise something went wrong
+            // Check role name for null since they can be null for whatever reason
             var userWarningRole = currentUser.RoleIds
                 .Select(guild.GetRole)
-                .FirstOrDefault(r => r.Name.StartsWith(prefix));
+                .FirstOrDefault(r => r.Name != null && r.Name.StartsWith(prefix));
             // Check if already in the list of all roles
             if (userWarningRole == null)
             {
@@ -71,8 +72,9 @@ public class SahneeBotCleanupWarningRolesTask : ITask<SahneeBotCleanupWarningRol
         }
             
         // Get all available warning roles in the current guild
+        // Check role name for null since they can be null for whatever reason
         var availableWarningRoles = guild.Roles
-            .Where(r => r.Name.StartsWith(prefix));
+            .Where(r => r.Name != null && r.Name.StartsWith(prefix));
         // Check if every available role is assigned to a user
         var notNeededRoles = availableWarningRoles
             .Where(r => !assignedRoles.Contains(r.Id))
