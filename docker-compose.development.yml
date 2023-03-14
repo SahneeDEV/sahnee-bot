@@ -1,8 +1,21 @@
-version: "3.8"
+version: '3.8'
 services:
-  sahneebot_devdb:
-    image: postgres:14
-    ports:
-      - 5432:5432
+  db:
+    container_name: pg_container
+    image: postgres
+    restart: always
     environment:
+      POSTGRES_USER: sahneepg
       POSTGRES_PASSWORD: sahneepg
+      POSTGRES_DB: sahneebot
+    ports:
+      - "5432:5432"
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: info@sahnee.dev
+      PGADMIN_DEFAULT_PASSWORD: sahneepg
+    ports:
+      - "5050:80"

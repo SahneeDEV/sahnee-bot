@@ -1,8 +1,10 @@
 # CHANGELOG
 
-## 1.0.3
+## 1.1.1
 
-Changelogs after a new update are now sent to only a few servers at a time instead of all at once (causing the Discord API to trigger a rate limit). This should reduce the flood of false error messages some servers got after a new update has been released.
+- Fixed an internal issue with the database and servers missing a default channel (or the default channel being a voice channel)
+
+Additionally, we are currently conducting a user survey about the Sahnee-Bot. We'd love for everyone to share their opinion, regardless of if you are a server admin, moderator or a normal user: https://click.sahnee.dev/UsEHTYOj - Thank you for your time! 🙂
 
 ## 1.1.0
 
@@ -11,6 +13,10 @@ Changelogs after a new update are now sent to only a few servers at a time inste
 - We updated the changelog distribution system to not overload the bot after each update when sending out all these changelogs to you folks! (hopefully)
 
 Additionally, we are currently conducting a user survey about the Sahnee-Bot. We'd love for everyone to share their opinion, regardless of if you are a server admin, moderator or a normal user: https://click.sahnee.dev/UsEHTYOj - Thank you for your time! 🙂
+
+## 1.0.3
+
+Changelogs after a new update are now sent to only a few servers at a time instead of all at once (causing the Discord API to trigger a rate limit). This should reduce the flood of false error messages some servers got after a new update has been released.
 
 ## 1.0.2
 

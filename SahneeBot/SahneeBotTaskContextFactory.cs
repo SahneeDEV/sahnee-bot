@@ -120,8 +120,8 @@ public class SahneeBotTaskContextFactory
             {
                 // Report exception
                 _logger.LogError(EventIds.Context
-                    , exception, "{Error} in {Name} {Type} on guild {Guild}"
-                    , exception.GetType().Name, opts.Name, opts.Type, opts.RelatedGuildId);
+                    , exception, "{Error} in {Name} {Type} on guild {Guild}: {Message}"
+                    , exception.GetType().Name, opts.Name, opts.Type, opts.RelatedGuildId, exception.Message);
             
                 var ticketId = await _exceptionTask.Execute(ctx, 
                     new SahneeBotReportExceptionTask.Args(opts.Type, opts.Name, opts.Debug
@@ -147,8 +147,8 @@ public class SahneeBotTaskContextFactory
                 {
                     // Report error
                     _logger.LogWarning(EventIds.Context
-                        ,"{Error} in {Name} {Type} on guild {Guild}"
-                        , error.GetType().Name, opts.Name, opts.Type, opts.RelatedGuildId);
+                        ,"{Error} in {Name} {Type} on guild {Guild}: {Message}"
+                        , error.GetType().Name, opts.Name, opts.Type, opts.RelatedGuildId, error.Message);
                     if (opts.ErrorReporter != null && reportError)
                     {
                         await opts.ErrorReporter(ctx, new ErrorReport(null, error), opts);

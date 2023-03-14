@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Discord;
+using Discord.WebSocket;
+using Microsoft.Extensions.Logging;
 using SahneeBot.Formatter;
 using SahneeBotController;
 using SahneeBotController.Tasks;
@@ -49,7 +51,7 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
         var channel = boundChannel.HasValue
             ? await guild.GetTextChannelAsync(boundChannel.Value)
             : await guild.GetDefaultChannelAsync();
-        if (channel == null)
+        if (channel is null or SocketVoiceChannel) // TODO: Dirty fix, but for whatever reason these are text channels too
         {
             _logger.LogWarning("Could not find a channel to post the changelogs in {GuildId}", guildId);
             return new Error<uint>("Could not find a channel to post the changelogs in.");
