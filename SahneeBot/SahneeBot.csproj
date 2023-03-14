@@ -10,8 +10,8 @@
   </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="ColorHelper" Version="1.8.0" />
-      <PackageReference Include="Discord.Net" Version="3.9.0" />
+      <PackageReference Include="ColorHelper" Version="1.6.1" />
+      <PackageReference Include="Discord.Net" Version="3.3.0" />
       <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
         <PrivateAssets>all</PrivateAssets>
         <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -31,9 +31,6 @@
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </Content>
       <None Update="ReleaseInformation.txt">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
-      <None Update="appsettings.Development.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>

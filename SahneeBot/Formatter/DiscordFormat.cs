@@ -114,25 +114,11 @@ public class DiscordFormat
         AllowedMentions? allowedMentions = null,
         RequestOptions? options = null,
         MessageComponent? components = null,
-        Embed? embed = null,
-        MessageFlags flags = MessageFlags.None, 
-        ulong? threadId = null);
+        Embed? embed = null);
 
     public delegate Task SendMessageAsyncDelegate(
         string? text = null,
         bool isTts = false,
-        IEnumerable<Embed>? embeds = null,
-        string? username = null,
-        string? avatarUrl = null,
-        RequestOptions? options = null,
-        AllowedMentions? allowedMentions = null,
-        MessageComponent? components = null,
-        MessageFlags flags = MessageFlags.None, 
-        ulong? threadId = null);
-
-    public delegate Task SendUserMessageAsyncDelegate(
-        string? text = null,
-        bool isTtS = false,
         Embed? embed = null,
         RequestOptions? options = null,
         AllowedMentions? allowedMentions = null,
@@ -156,8 +142,7 @@ public class DiscordFormat
         MessageReference? messageReference = null,
         MessageComponent? components = null,
         ISticker[]? stickers = null,
-        Embed[]? embeds = null,
-        MessageFlags flags = MessageFlags.None);
+        Embed[]? embeds = null);
 
     public delegate Task<ulong> SendWebhookMessageAsyncDelegate(
         string? text = null,
@@ -178,18 +163,13 @@ public class DiscordFormat
     }
     public async Task Send(SendMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
-        await del(Text, sendOptions.IsTts, Embeds?.Select(e => e.Build()).ToArray(), "", string.Empty, 
-            sendOptions.Request, AllowedMentions, Components?.Build());
+        await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, Components?.Build(),
+            Embeds?.Select(e => e.Build()).ToArray());
     }
     public async Task Send(SendChannelMessageAsyncDelegate del, SendOptions sendOptions = default)
     {
         await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions, null,
             Components?.Build(), null, Embeds?.Select(e => e.Build()).ToArray());
-    }
-    public async Task Send(SendUserMessageAsyncDelegate del, SendOptions sendOptions = default)
-    {
-        await del(Text, sendOptions.IsTts, Embed?.Build(), sendOptions.Request, AllowedMentions,
-            Components?.Build(), Embeds?.Select(e => e.Build()).ToArray());
     }
     public async Task Send(SendWebhookMessageAsyncDelegate del, SendOptions sendOptions = default)
     {

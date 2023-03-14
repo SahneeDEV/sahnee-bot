@@ -48,12 +48,6 @@ public static class DiscordFormatterExtensions
         await format.Send(del, sendOptions);
     }
     public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, 
-        DiscordFormat.SendUserMessageAsyncDelegate del, DiscordFormat.SendOptions sendOptions = default)
-    {
-        var format = await discordFormatter.Format(arg);
-        await format.Send(del, sendOptions);
-    }
-    public static async Task FormatAndSend<T>(this IDiscordFormatter<T> discordFormatter, T arg, 
         DiscordFormat.SendWebhookMessageAsyncDelegate del, DiscordFormat.SendOptions sendOptions = default)
     {
         var format = await discordFormatter.Format(arg);
@@ -114,25 +108,6 @@ public static class DiscordFormatterExtensions
 
     public static async Task<bool> SendMany(this IEnumerable<DiscordFormat> formats
         , DiscordFormat.SendChannelMessageAsyncDelegate del
-        , DiscordFormat.SendOptions sendOptions = default
-        , Func<Task>? beforeSendFirst = null)
-    {
-        var sentAny = false;
-        foreach (var format in formats)
-        {
-            if (!sentAny && beforeSendFirst != null)
-            {
-                await beforeSendFirst();
-            }
-            await format.Send(del, sendOptions);
-            sentAny = true;
-        }
-
-        return sentAny;
-    }
-
-    public static async Task<bool> SendMany(this IEnumerable<DiscordFormat> formats
-        , DiscordFormat.SendUserMessageAsyncDelegate del
         , DiscordFormat.SendOptions sendOptions = default
         , Func<Task>? beforeSendFirst = null)
     {
