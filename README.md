@@ -144,15 +144,18 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
     "BotSettings": {
         "IconUrl": "https://sahnee.dev/wp-content/uploads/2020/04/sahnee-bot-150x150.png",
         "Url": "https://sahnee.dev/en/project/sahnee-bot/",
+        "GithubUrl": "https://github.com/SahneeDEV/sahnee-bot",
         "WarningRolePrefix": "warning: ",
         "WarningRoleColor": "#607D8B",
         "SupportServer": "https://discord.gg/FfVurUzVfE",
         "Changelog": "./CHANGELOG.md",
+        "MaxChangelogsSendCount": "5",
         "ReleaseInformation": "./ReleaseInformation.txt",
         "InviteUrl": "https://discord.com/api/oauth2/authorize?client_id=689600370430836793&permissions=268627014&redirect_uri=https%3A%2F%2Fsahnee.dev%2Fen%2Fproject%2Fsahnee-bot%2F&scope=bot%20applications.commands",
         "ErrorWebhookUrl": "https://discord.com/api/webhooks/12345/abcde",
         "Jobs": {
-            "CleanupWarningRoles": "1:00:00"
+            "CleanupWarningRoles": "1:00:00",
+            "UpdateGuildChangelog": "0:01:00"
         }
     }
 }
@@ -165,13 +168,16 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
 * `Discord:Implementation` - Allows you to set if you want to use the `Socket` or `Rest` discord API implementation. Don't change unless you know what you are doing and absolutely need it.
 * `BotSettings:IconUrl` - The icon of the bot used in messages.
 * `BotSettings:Url` - The homepage the bot links to.
+* `BotSettings:GithubUrl` - The source code page the bot links to.
 * `BotSettings:WarningRolePrefix` - The default prefix for warning roles of servers that have not configured their own.
 * `BotSettings:WarningRoleColor` - The default color for warning roles on a server.
 * `BotSettings:SupportServer` - A link to the support page for the bot.
 * `BotSettings:Changelog` - The path to the changelog file on disk. Will be scanned for a new version of bot startup.
+* `BotSettings:MaxChangelogsSendCount` - How many servers will be notified at once about a new version.
 * `BotSettings:ReleaseInformation` - A file that contains information about the release of the bot. Will be printed in the `/help` command.
 * `BotSettings:InviteUrl` - The invite URL users should use to invite the bot to their servers.
 * `BotSettings:ErrorWebhookUrl` - A webhook errors will be sent to.
 * `BotSettings:Jobs:CleanupWarningRoles` - The frequency in how often warnings created by the bot that are no longer used will be deleted.
+* `BotSettings:Jobs:UpdateGuildChangelog` - How often the bot will check if more servers need to be informed about a new version.
 
 Time spans for jobs are formatted in the format documented [here](https://docs.microsoft.com/en-us/dotnet/api/system.timespan.parse?view=net-6.0#system-timespan-parse(system-string)) under the section "Remarks" (`[ws][-]{ d | [d.]hh:mm[:ss[.ff]] }[ws]`).

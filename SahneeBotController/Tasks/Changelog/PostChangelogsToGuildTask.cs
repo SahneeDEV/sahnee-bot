@@ -1,4 +1,4 @@
-﻿namespace SahneeBotController.Tasks;
+﻿namespace SahneeBotController.Tasks.Changelog;
 
 /// <summary>
 /// This task posts the list of given changelog versions to a guild. Returns the amount of changelogs sent.
