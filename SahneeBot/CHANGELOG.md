@@ -1,5 +1,13 @@
 ﻿# CHANGELOG
 
+## 1.1.0
+
+- We updated some internally used libraries to communicate with Discord. This should overall fix some common errors.
+- We fixed an error in the warning cleanup job if a role without a name exists.
+- We updated the changelog distribution system to not overload the bot after each update when sending out all these changelogs to you folks! (hopefully)
+
+Additionally, we are currently conducting a user survey about the Sahnee-Bot. We'd love for everyone to share their opinion, regardless of if you are a server admin, moderator or a normal user: https://click.sahnee.dev/UsEHTYOj - Thank you for your time! 🙂
+
 ## 1.0.2
 
 Fixed an internal error that occurred when the bot does not have permission to post a changelog after a new release. Instead of throwing an error, admins will now be notified about the bot missing permissions.
