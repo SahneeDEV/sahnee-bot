@@ -51,7 +51,7 @@ public class SahneeBotPostChangelogsToGuildTask : PostChangelogsToGuildTask
         var channel = boundChannel.HasValue
             ? await guild.GetTextChannelAsync(boundChannel.Value)
             : await guild.GetDefaultChannelAsync();
-        if (channel is null or SocketVoiceChannel) // TODO: Dirty fix, but for whatever reason these are text channels too
+        if (channel is null)
         {
             _logger.LogWarning("Could not find a channel to post the changelogs in {GuildId}", guildId);
             return new Error<uint>("Could not find a channel to post the changelogs in.");
