@@ -2,6 +2,7 @@
 using SahneeBot.Formatter;
 using SahneeBotController;
 using SahneeBotController.Tasks;
+using SahneeBotController.Tasks.Changelog;
 
 namespace SahneeBot.Tasks;
 

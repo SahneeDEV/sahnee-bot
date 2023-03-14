@@ -1,4 +1,4 @@
-﻿namespace SahneeBotController.Tasks;
+﻿namespace SahneeBotController.Tasks.Changelog;
 
 /// <summary>
 /// Gets the last changelog this guild has received.

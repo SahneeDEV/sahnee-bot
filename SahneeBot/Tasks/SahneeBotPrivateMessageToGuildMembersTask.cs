@@ -64,8 +64,7 @@ public class SahneeBotPrivateMessageToGuildMembersTask : ITask<SahneeBotPrivateM
             }
 
             var sent = false;
-            try
-            {
+            try {
                 _logger.LogDebug(EventIds.Task
                     , "Sending private message to user {User} in guild {Guild}"
                     , user.Id, guild.Id);
