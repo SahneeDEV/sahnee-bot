@@ -175,3 +175,12 @@ If hosting the bot yourself you will need to adjust the `appsettings.json` file:
 * `BotSettings:Jobs:CleanupWarningRoles` - The frequency in how often warnings created by the bot that are no longer used will be deleted.
 
 Time spans for jobs are formatted in the format documented [here](https://docs.microsoft.com/en-us/dotnet/api/system.timespan.parse?view=net-6.0#system-timespan-parse(system-string)) under the section "Remarks" (`[ws][-]{ d | [d.]hh:mm[:ss[.ff]] }[ws]`).
+
+### Discord developer portal settings
+
+* **Bot -> Privileged Gateway Intents**: `Presence Intent`, `Server Members Intent`
+* **OAuth2 -> General -> Redirects**: Add your redirect URL. In the example below `https://sahnee.dev/en/project/sahnee-bot/`
+* **Permissions**: When creating the invite URL the bot needs the following numeric permissions: `268627014`.
+* **Scopes**: The following scopes are required: `bot` and `application.commands`.
+
+This for reference is the official invite URL: `https://discord.com/api/oauth2/authorize?client_id=689600370430836793&permissions=268627014&redirect_uri=https%3A%2F%2Fsahnee.dev%2Fen%2Fproject%2Fsahnee-bot%2F&scope=bot%20applications.commands`
