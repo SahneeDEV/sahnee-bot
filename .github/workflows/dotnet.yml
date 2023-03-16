@@ -27,7 +27,7 @@ jobs:
       - name: Zip
         run: zip -r SahneeBot-Linux64.zip SahneeBot-Linux64
       - name: Artifact
-        uses: actions/upload-artifact@v3.0.0
+        uses: actions/upload-artifact@v3.1.2
         with:
           path: SahneeBot-Linux64.zip
           if-no-files-found: error
