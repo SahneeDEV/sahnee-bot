@@ -48,7 +48,7 @@ jobs:
           path: build
       - name: Public IP
         id: ip
-        uses: haythem/public-ip@v1.2
+        uses: haythem/public-ip@v1.3
       - name: Set hcloud token
         uses: allenevans/set-env@v2.2.0
         with:
